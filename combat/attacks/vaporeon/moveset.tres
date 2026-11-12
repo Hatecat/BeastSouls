@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="Moveset" format=3]
+
+[ext_resource type="Script" path="res://combat/moveset.gd" id="1_script"]
+[ext_resource type="Script" path="res://combat/attack_data.gd" id="2_attack"]
+[ext_resource type="Script" path="res://combat/abilities/ability_data.gd" id="3_ability"]
+[ext_resource type="Resource" path="res://combat/abilities/vaporeon/water_pulse.tres" id="ab0"]
+[ext_resource type="Resource" path="res://combat/abilities/vaporeon/hydro_pump.tres" id="ab1"]
+[ext_resource type="Resource" path="res://combat/abilities/vaporeon/surf.tres" id="ab2"]
+[ext_resource type="Resource" path="res://combat/abilities/vaporeon/aqua_ring.tres" id="ab3"]
+[ext_resource type="Resource" path="res://combat/attacks/vaporeon/light_1.tres" id="light_1"]
+[ext_resource type="Resource" path="res://combat/attacks/vaporeon/light_2.tres" id="light_2"]
+[ext_resource type="Resource" path="res://combat/attacks/vaporeon/light_3.tres" id="light_3"]
+[ext_resource type="Resource" path="res://combat/attacks/vaporeon/heavy_1.tres" id="heavy_1"]
+[ext_resource type="Resource" path="res://combat/attacks/vaporeon/heavy_2.tres" id="heavy_2"]
+[ext_resource type="Resource" path="res://combat/attacks/vaporeon/running.tres" id="running"]
+
+[resource]
+script = ExtResource("1_script")
+light_combo = Array[ExtResource("2_attack")]([ExtResource("light_1"), ExtResource("light_2"), ExtResource("light_3")])
+heavy_combo = Array[ExtResource("2_attack")]([ExtResource("heavy_1"), ExtResource("heavy_2")])
+running_attack = ExtResource("running")
+abilities = Array[ExtResource("3_ability")]([ExtResource("ab0"), ExtResource("ab1"), ExtResource("ab2"), ExtResource("ab3")])

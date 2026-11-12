@@ -23,6 +23,11 @@ var _target_bar: Bar
 var _banner: Label
 var _score: Label
 var _banner_tween: Tween
+var _over: PanelContainer
+var _over_title: Label
+var _over_sub: Label
+var _over_note: Label
+var _over_buttons: HBoxContainer
 
 
 ## Ranura de habilidad: tecla, nombre, coste y recarga (sector que se vacía).
@@ -155,8 +160,7 @@ func _ready() -> void:
 	_banner.add_theme_constant_override("shadow_offset_y", 4)
 	_banner.modulate.a = 0.0
 	add_child(_banner)
-	if beast:
-		beast.died.connect(show_banner.bind("HAS CAÍDO", Color(0.75, 0.1, 0.08)))
+	_build_match_over()
 
 	var help := Label.new()
 	help.text = "WASD mover · Ratón cámara · Espacio: toque esquivar / mantener correr\nClic izq.: ligero · Clic der.: fuerte (mantener = cargar) · Shift: bloquear · Clic de rueda o Tab: fijar objetivo\n1-4: habilidades (gastan Calor, que se gana golpeando) · F1: ver hitboxes · F2: cambiar IA del rival · Esc: soltar ratón"
@@ -174,15 +178,82 @@ func set_score(text: String) -> void:
 	_score.text = text
 
 
-func show_banner(text: String, color: Color) -> void:
+func show_banner(text: String, color: Color, hold := 1.6, fade_in := 0.6) -> void:
 	_banner.text = text
 	_banner.add_theme_color_override("font_color", color)
 	if _banner_tween:
 		_banner_tween.kill()
 	_banner_tween = create_tween()
-	_banner_tween.tween_property(_banner, "modulate:a", 1.0, 0.6)
-	_banner_tween.tween_interval(1.6)
-	_banner_tween.tween_property(_banner, "modulate:a", 0.0, 0.8)
+	_banner_tween.tween_property(_banner, "modulate:a", 1.0, fade_in)
+	_banner_tween.tween_interval(hold)
+	_banner_tween.tween_property(_banner, "modulate:a", 0.0, minf(0.8, hold * 0.6 + 0.15))
+
+
+# --- Fin de partida -------------------------------------------------------------------
+
+func _build_match_over() -> void:
+	_over = PanelContainer.new()
+	_over.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
+	_over.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	_over.grow_vertical = Control.GROW_DIRECTION_BOTH
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.04, 0.03, 0.03, 0.88)
+	style.border_color = Color(0.6, 0.4, 0.2, 0.8)
+	style.set_border_width_all(2)
+	style.set_content_margin_all(36)
+	style.set_corner_radius_all(6)
+	_over.add_theme_stylebox_override("panel", style)
+	var box := VBoxContainer.new()
+	box.add_theme_constant_override("separation", 14)
+	_over.add_child(box)
+	_over_title = Label.new()
+	_over_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_over_title.add_theme_font_size_override("font_size", 64)
+	box.add_child(_over_title)
+	_over_sub = Label.new()
+	_over_sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_over_sub.add_theme_font_size_override("font_size", 24)
+	box.add_child(_over_sub)
+	_over_note = Label.new()
+	_over_note.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_over_note.add_theme_color_override("font_color", Color(0.8, 0.8, 0.8))
+	box.add_child(_over_note)
+	_over_buttons = HBoxContainer.new()
+	_over_buttons.alignment = BoxContainer.ALIGNMENT_CENTER
+	_over_buttons.add_theme_constant_override("separation", 16)
+	box.add_child(_over_buttons)
+	_over.visible = false
+	add_child(_over)
+
+
+## Panel de fin de partida. `buttons`: [[texto, Callable], ...]. Suelta el ratón para poder pulsarlos.
+func show_match_over(title: String, color: Color, subtitle: String, buttons: Array) -> void:
+	_over_title.text = title
+	_over_title.add_theme_color_override("font_color", color)
+	_over_sub.text = subtitle
+	_over_note.text = ""
+	for c in _over_buttons.get_children():
+		c.queue_free()
+	for b: Array in buttons:
+		var btn := Button.new()
+		btn.text = b[0]
+		btn.custom_minimum_size = Vector2(200, 44)
+		btn.pressed.connect(b[1])
+		_over_buttons.add_child(btn)
+	_over.visible = true
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	if _over_buttons.get_child_count() > 0:
+		(_over_buttons.get_child(0) as Button).grab_focus.call_deferred()
+
+
+func set_match_over_note(text: String) -> void:
+	_over_note.text = text
+
+
+func hide_match_over() -> void:
+	if _over.visible:
+		_over.visible = false
+		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
 
 func _make_bar(color: Color, h: float) -> Bar:
@@ -219,7 +290,7 @@ func _process(_delta: float) -> void:
 	var t := camera.lock_target as Beast if camera else null
 	_target_box.visible = t != null
 	if t:
-		_target_name.text = t.name
+		_target_name.text = "%s · %s" % [t.name, t.character.display_name] if t.character and String(t.name) != t.character.display_name else String(t.name)
 		_target_bar.value = t.health / t.max_health
 	if _debug.visible:
 		var target := "—"

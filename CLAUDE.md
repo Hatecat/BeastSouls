@@ -1,15 +1,18 @@
 # BeastSouls
 
 Souls-like 3D en tercera persona con versus online 1v1. Godot 4.7.2, Forward+, Jolt Physics, todo en GDScript.
-Charizard (`assets/models/placeholder/`) es un modelo TEMPORAL de uso privado: no se distribuye.
+Los modelos de `assets/models/placeholder/` (Charizard, Scyther, Gengar, Snorlax, Beedrill, Vaporeon, sacados de
+poke-tactics) son TEMPORALES y de uso privado: no se distribuyen. Se sustituirán por personajes propios.
 
 ## Comandos
 
 ```bash
 G=~/Godot_v4.7.2-stable_linux.x86_64
 $G --path .                                       # jugar (menú principal)
-$G --path . -- --practice                         # directo a la arena contra la IA
+$G --path . -- --practice --char=gengar --rival=snorlax   # directo a la arena contra la IA
 $G --path . -- --host --nick=A --latency=60       # alojar (otra ventana: -- --join=127.0.0.1 --nick=B)
+                                                  # --char=ID --autoready: el selector elige y se marca listo solo
+python3 tools/gen_characters.py                   # regenerar kits de los personajes provisionales
 $G -e --path .                                    # editor
 $G --headless --path . --import                   # registrar clases nuevas (class_name) e importar assets
 $G --headless --path . --script tools/setup_input.gd   # regenerar el InputMap por defecto
@@ -18,7 +21,9 @@ $G --headless --path . --script tools/setup_input.gd   # regenerar el InputMap p
 Probar en partida: script `extends SceneTree` fuera del proyecto pasado con `--script`, que cambia de escena y guarda
 capturas con `root.get_texture().get_image().save_png(...)`. Para no depender del ratón real: poner el ratón en
 `MOUSE_MODE_VISIBLE`, desactivar `PlayerController` y asignar `beast.input` tras cada `await physics_frame`. Si se
-inyecta input al rival, desactivar también su `DummyBrain` (si no, lo sobrescribe). En esos scripts los autoload no son identificadores:
+inyecta input al rival, desactivar también su `DummyBrain` (si no, lo sobrescribe). Los Beasts están congelados (`frozen`) durante la
+cuenta atrás: esperar a `match_flow.phase == 2` (FIGHT). No tipar con clases que usen autoloads (MatchFlow, NetMatch)
+en el script de prueba: se compilan antes de que existan y fallan. En esos scripts los autoload no son identificadores:
 usar `root.get_node("Net")`. Red: lanzar dos instancias (`-- --host` / `-- --join=127.0.0.1`) con el mismo script.
 
 ## Estructura
@@ -34,6 +39,16 @@ usar `root.get_node("Net")`. Red: lanzar dos instancias (`-- --host` / `-- --joi
   `PlayerInput`: fotograma de input serializable (move en mundo, bits `buttons` de un tick y `held`).
   `PlayerController`: lee Input + yaw de cámara → PlayerInput (Espacio: toque = esquivar al soltar, mantener = correr).
   Corre con `process_physics_priority = -10` para ir antes que el Beast. El Beast reinicia su input cada tick.
+- `actors/characters/` — `CharacterDef` (.tres por personaje: escena visual, moveset, `stats` que sobrescriben
+  exports del Beast, tamaño de cápsula, altura de fijado, valoraciones del selector) y `Roster` (lista ordenada).
+  `Beast.apply_character(def)` cambia todo en tiempo de ejecución (restaura las estadísticas del anterior). Los kits
+  provisionales los genera `tools/gen_characters.py` (ataques = plantillas de Charizard escaladas; habilidades
+  con las 4 clases genéricas; ranuras: 1 distancia, 2 cerca, 3 área, 4 mejora → lo que espera `DummyBrain`).
+  Los efectos (`Fx`) toman el color de la habilidad (`AbilityData.color`).
+- `game/` — `Session` (autoload: personajes elegidos y estado del rival en el lobby; escucha la red siempre para
+  no perder eventos entre escenas) y `MatchFlow` (al mejor de 3: cuenta atrás con `Beast.frozen`, K.O., marcador,
+  panel de fin, revancha, volver al selector). Online manda el anfitrión (eventos "round", "round_over"); cada
+  máquina solo coloca/revive a SU Beast.
 - `actors/dummy/` — `DummyBrain`: IA de práctica (PASSIVE / STRAFE / AGGRESSIVE / GUARD) que genera PlayerInput.
 - `camera/` — `ThirdPersonCamera`: rig top_level (yaw) → Pitch → SpringArm3D (máscara solo "world") → Camera3D,
   movida en `_process` con la posición interpolada. Fijar objetivo: grupo "lockable" + `get_lock_position()`;
@@ -60,9 +75,12 @@ usar `root.get_node("Net")`. Red: lanzar dos instancias (`-- --host` / `-- --joi
   ataques/habilidades contra el Beast LOCAL: la VÍCTIMA decide los golpes y los confirma al atacante con un evento
   fiable (`NetMatch`: "hit", "died", marcador). `deal_hit()` ignora víctimas remotas. `Net` (autoload): host/join,
   saludo con versión de protocolo, simulación de latencia/jitter/pérdida en el emisor (`--latency= --jitter=
-  --loss=`). Las señales de desconexión de `multiplayer` se conectan DIFERIDAS (cerrar el peer dentro de su poll
+  --loss=`). Al cambiar de modelo, el visual viejo se esconde y se libera 0.5 s después (liberarlo en el mismo fotograma deja
+  materiales colgando en el renderizador). Las señales de desconexión de `multiplayer` se conectan DIFERIDAS (cerrar el peer dentro de su poll
   cuelga Godot). `NetMatch.setup()` va antes de `add_child`.
 - `ui/main_menu` — escena inicial: práctica, alojar, unirse; acepta argumentos tras `--` (ver main_menu.gd).
+  Después va a `ui/character_select` (vista previa 3D en SubViewport; práctica: tú y luego la IA; online: cada uno
+  elige, "Listo", y el anfitrión arranca).
 - `levels/` — `arena_test/` (escena principal: arena con pilares, rampa, muros y un rival de práctica; reaparición
   a los 3 s; F1 hitboxes, F2 modo de la IA),
   `sandbox/` (visor de modelo, ←/→ cambian de clip), `common/world_env.tres` (Environment compartido).

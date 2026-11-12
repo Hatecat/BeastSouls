@@ -1,0 +1,393 @@
+extends Control
+## Selector de personaje con vista previa 3D.
+##   Práctica: eliges tu bestia y después la de la IA.
+##   Online: cada uno elige la suya y pulsa "Listo"; el anfitrión arranca cuando los dos lo están.
+
+const MENU := "res://ui/main_menu.tscn"
+
+var _online := false
+## Práctica: 0 = eligiendo la tuya, 1 = eligiendo la de la IA.
+var _step := 0
+var _is_ready := false
+var _selected: CharacterDef
+
+var _title: Label
+var _list: VBoxContainer
+var _buttons: Dictionary[StringName, Button] = {}
+var _name: Label
+var _role: Label
+var _desc: Label
+var _ratings: VBoxContainer
+var _abilities: VBoxContainer
+var _status: Label
+var _back: Button
+var _next: Button
+
+var _pivot: Node3D
+var _cam: Camera3D
+var _previews: Dictionary[StringName, CharacterVisual] = {}
+
+
+func _ready() -> void:
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	_online = Net.is_online()
+	_build()
+	if _online:
+		Session.rival_pick_changed.connect(_refresh_status)
+		Session.match_start.connect(_on_match_start)
+		Net.disconnected.connect(_on_disconnected)
+	_select(Roster.find(Session.my_character))
+	_update_step()
+	if _online:
+		Session.send_pick(false)
+	if Session.auto_ready:
+		_auto.call_deferred()
+
+
+func _exit_tree() -> void:
+	for pair in [[Session.rival_pick_changed, _refresh_status], [Session.match_start, _on_match_start], [Net.disconnected, _on_disconnected]]:
+		if (pair[0] as Signal).is_connected(pair[1]):
+			(pair[0] as Signal).disconnect(pair[1])
+
+
+func _process(delta: float) -> void:
+	if _pivot:
+		_pivot.rotate_y(delta * 0.5)
+
+
+# --- Construcción ---------------------------------------------------------------------
+
+func _build() -> void:
+	var bg := ColorRect.new()
+	bg.color = Color(0.06, 0.05, 0.05)
+	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	add_child(bg)
+
+	var margin := MarginContainer.new()
+	margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	for side in ["left", "right", "top", "bottom"]:
+		margin.add_theme_constant_override("margin_" + side, 36)
+	add_child(margin)
+	var root := VBoxContainer.new()
+	root.add_theme_constant_override("separation", 16)
+	margin.add_child(root)
+
+	_title = Label.new()
+	_title.add_theme_font_size_override("font_size", 40)
+	_title.add_theme_color_override("font_color", Color(0.95, 0.6, 0.25))
+	root.add_child(_title)
+
+	var main := HBoxContainer.new()
+	main.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	main.add_theme_constant_override("separation", 24)
+	root.add_child(main)
+
+	# Lista de personajes.
+	_list = VBoxContainer.new()
+	_list.custom_minimum_size.x = 300
+	_list.add_theme_constant_override("separation", 8)
+	main.add_child(_list)
+	var group := ButtonGroup.new()
+	for def in Roster.all():
+		var b := Button.new()
+		b.text = "%s\n%s" % [def.display_name, def.role]
+		b.toggle_mode = true
+		b.button_group = group
+		b.alignment = HORIZONTAL_ALIGNMENT_LEFT
+		b.custom_minimum_size.y = 64
+		b.add_theme_font_size_override("font_size", 18)
+		for st in ["normal", "hover", "pressed", "focus", "hover_pressed", "disabled"]:
+			b.add_theme_stylebox_override(st, _card_style(def.color, st))
+		b.pressed.connect(_on_pick.bind(def))
+		_list.add_child(b)
+		_buttons[def.id] = b
+
+	# Vista previa 3D.
+	var center := VBoxContainer.new()
+	center.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	center.add_theme_constant_override("separation", 6)
+	main.add_child(center)
+	var view := SubViewportContainer.new()
+	view.stretch = true
+	view.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	center.add_child(view)
+	var vp := SubViewport.new()
+	vp.own_world_3d = true
+	vp.msaa_3d = Viewport.MSAA_4X
+	view.add_child(vp)
+	_build_stage(vp)
+	_name = Label.new()
+	_name.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_name.add_theme_font_size_override("font_size", 44)
+	center.add_child(_name)
+	_role = Label.new()
+	_role.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_role.add_theme_font_size_override("font_size", 20)
+	_role.add_theme_color_override("font_color", Color(0.8, 0.8, 0.8))
+	center.add_child(_role)
+
+	# Detalles.
+	var right := VBoxContainer.new()
+	right.custom_minimum_size.x = 360
+	right.add_theme_constant_override("separation", 10)
+	main.add_child(right)
+	_desc = Label.new()
+	_desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_desc.add_theme_font_size_override("font_size", 17)
+	right.add_child(_desc)
+	right.add_child(HSeparator.new())
+	_ratings = VBoxContainer.new()
+	right.add_child(_ratings)
+	right.add_child(HSeparator.new())
+	var ab_title := Label.new()
+	ab_title.text = "Habilidades (coste de Calor)"
+	ab_title.add_theme_color_override("font_color", Color(0.8, 0.8, 0.8))
+	right.add_child(ab_title)
+	_abilities = VBoxContainer.new()
+	_abilities.add_theme_constant_override("separation", 6)
+	right.add_child(_abilities)
+
+	# Barra inferior.
+	var bottom := HBoxContainer.new()
+	bottom.add_theme_constant_override("separation", 16)
+	root.add_child(bottom)
+	_status = Label.new()
+	_status.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_status.add_theme_font_size_override("font_size", 18)
+	bottom.add_child(_status)
+	_back = Button.new()
+	_back.custom_minimum_size = Vector2(200, 50)
+	_back.pressed.connect(_on_back)
+	bottom.add_child(_back)
+	_next = Button.new()
+	_next.custom_minimum_size = Vector2(240, 50)
+	_next.add_theme_font_size_override("font_size", 20)
+	_next.pressed.connect(_on_next)
+	bottom.add_child(_next)
+
+
+func _card_style(color: Color, state: String) -> StyleBoxFlat:
+	var s := StyleBoxFlat.new()
+	var on := state in ["pressed", "hover_pressed"]
+	s.bg_color = Color(color.r * 0.35, color.g * 0.35, color.b * 0.35, 0.95) if on else Color(0.12, 0.1, 0.1, 0.95)
+	if state == "hover":
+		s.bg_color = Color(0.18, 0.15, 0.14)
+	s.border_color = color if on or state == "focus" else Color(color.r, color.g, color.b, 0.5)
+	s.border_width_left = 8
+	s.set_border_width(SIDE_TOP, 2 if on or state == "focus" else 0)
+	s.set_border_width(SIDE_BOTTOM, 2 if on or state == "focus" else 0)
+	s.set_border_width(SIDE_RIGHT, 2 if on or state == "focus" else 0)
+	if state == "focus":
+		s.draw_center = false
+	s.set_content_margin_all(10)
+	s.content_margin_left = 20
+	s.set_corner_radius_all(4)
+	return s
+
+
+func _build_stage(vp: SubViewport) -> void:
+	var env := WorldEnvironment.new()
+	env.environment = load("res://levels/common/world_env.tres")
+	vp.add_child(env)
+	var sun := DirectionalLight3D.new()
+	sun.rotation_degrees = Vector3(-40, 35, 0)
+	sun.shadow_enabled = true
+	sun.light_energy = 1.2
+	vp.add_child(sun)
+	var rim := OmniLight3D.new()
+	rim.position = Vector3(-2.5, 3.0, -3.0)
+	rim.light_color = Color(1.0, 0.65, 0.4)
+	rim.light_energy = 2.0
+	rim.omni_range = 9.0
+	vp.add_child(rim)
+	var floor := MeshInstance3D.new()
+	var disc := CylinderMesh.new()
+	disc.top_radius = 2.4
+	disc.bottom_radius = 2.6
+	disc.height = 0.2
+	var m := StandardMaterial3D.new()
+	m.albedo_color = Color(0.16, 0.13, 0.12)
+	m.roughness = 0.9
+	disc.material = m
+	floor.mesh = disc
+	floor.position.y = -0.1
+	vp.add_child(floor)
+	_pivot = Node3D.new()
+	_pivot.rotation.y = 0.5
+	vp.add_child(_pivot)
+	_cam = Camera3D.new()
+	_cam.fov = 38
+	vp.add_child(_cam)
+
+
+# --- Selección ------------------------------------------------------------------------
+
+func _on_pick(def: CharacterDef) -> void:
+	_select(def)
+	_play_flourish()
+	if _online:
+		Session.my_character = def.id
+		Session.send_pick(false)
+	elif _step == 0:
+		Session.my_character = def.id
+	else:
+		Session.rival_character = def.id
+
+
+func _select(def: CharacterDef) -> void:
+	_selected = def
+	_buttons[def.id].button_pressed = true
+	_name.text = def.display_name
+	_name.add_theme_color_override("font_color", def.color)
+	_role.text = def.role
+	_desc.text = def.description
+	for c in _ratings.get_children():
+		c.queue_free()
+	var health: float = def.stats.get(&"max_health", 100.0)
+	_rating_row("Vida  (%d)" % health, def.rating_health, def.color)
+	_rating_row("Velocidad", def.rating_speed, def.color)
+	_rating_row("Poder", def.rating_power, def.color)
+	_rating_row("Alcance", def.rating_range, def.color)
+	for c in _abilities.get_children():
+		c.queue_free()
+	var i := 1
+	for ab in def.moveset.abilities:
+		var row := HBoxContainer.new()
+		row.add_theme_constant_override("separation", 10)
+		var swatch := ColorRect.new()
+		swatch.color = ab.color
+		swatch.custom_minimum_size = Vector2(18, 18)
+		swatch.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		row.add_child(swatch)
+		var l := Label.new()
+		l.text = "%d · %s  (%d)" % [i, ab.display_name, ab.heat_cost]
+		row.add_child(l)
+		_abilities.add_child(row)
+		i += 1
+	_show_preview(def)
+
+
+func _rating_row(label: String, value: int, color: Color) -> void:
+	var row := HBoxContainer.new()
+	var l := Label.new()
+	l.text = label
+	l.custom_minimum_size.x = 150
+	row.add_child(l)
+	for k in 5:
+		var pip := ColorRect.new()
+		pip.custom_minimum_size = Vector2(30, 12)
+		pip.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		pip.color = color if k < value else Color(0.25, 0.22, 0.22)
+		row.add_child(pip)
+		var gap := Control.new()
+		gap.custom_minimum_size.x = 4
+		row.add_child(gap)
+	_ratings.add_child(row)
+
+
+func _show_preview(def: CharacterDef) -> void:
+	for id in _previews:
+		_previews[id].visible = id == def.id
+	if not _previews.has(def.id):
+		var v: CharacterVisual = def.visual.instantiate()
+		_pivot.add_child(v)
+		v.action_finished.connect(func(_a: StringName) -> void: v.play(&"idle", 0.25))
+		_previews[def.id] = v
+	var h: float = _previews[def.id].target_height
+	var dist := 2.4 + h * 1.6
+	var look := Vector3(0, h * 0.5, 0)
+	var tw := create_tween().set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_CUBIC)
+	var from := _cam.position if _cam.position != Vector3.ZERO else look + Vector3(0, h * 0.25, dist)
+	_cam.position = from
+	tw.tween_method(func(p: Vector3) -> void:
+		_cam.position = p
+		_cam.look_at(look), from, look + Vector3(0, h * 0.25, dist), 0.35)
+
+
+func _play_flourish() -> void:
+	var v: CharacterVisual = _previews.get(_selected.id)
+	if v and not _selected.moveset.abilities.is_empty():
+		v.play(_selected.moveset.abilities[-1].action, 0.15)
+
+
+# --- Flujo ----------------------------------------------------------------------------
+
+func _update_step() -> void:
+	for b in _buttons.values():
+		b.disabled = _online and _is_ready
+	if _online:
+		_title.text = "ELIGE TU BESTIA"
+		_back.text = "Salir"
+		_next.text = "Cancelar" if _is_ready else "¡LISTO!"
+		_refresh_status()
+	elif _step == 0:
+		_title.text = "ELIGE TU BESTIA"
+		_back.text = "◂ Menú"
+		_next.text = "Elegir rival ▸"
+		_status.text = ""
+		_select(Roster.find(Session.my_character))
+	else:
+		_title.text = "ELIGE AL RIVAL (IA)"
+		_back.text = "◂ Atrás"
+		_next.text = "¡LUCHAR!"
+		_status.text = "Tú: %s" % Roster.find(Session.my_character).display_name
+		_select(Roster.find(Session.rival_character))
+
+
+func _refresh_status() -> void:
+	if not _online:
+		return
+	var who := Net.remote_nick
+	if Session.rival_pick == &"":
+		_status.text = "%s está entrando…" % who
+	else:
+		_status.text = "%s: %s · %s" % [who, Roster.find(Session.rival_pick).display_name,
+				"✔ LISTO" if Session.rival_ready else "eligiendo…"]
+	_status.add_theme_color_override("font_color", Color(0.6, 1.0, 0.6) if Session.rival_ready else Color(0.85, 0.85, 0.85))
+	_try_start()
+
+
+func _try_start() -> void:
+	if _online and Net.mode == Net.Mode.HOST and _is_ready and Session.rival_ready and Session.rival_pick != &"":
+		Session.host_start()
+
+
+func _on_next() -> void:
+	if _online:
+		_is_ready = not _is_ready
+		Session.send_pick(_is_ready)
+		_update_step()
+	elif _step == 0:
+		_step = 1
+		_update_step()
+	else:
+		get_tree().change_scene_to_file(Session.ARENA)
+
+
+func _on_back() -> void:
+	if _online:
+		Net.close()
+		get_tree().change_scene_to_file(MENU)
+	elif _step == 1:
+		_step = 0
+		_update_step()
+	else:
+		get_tree().change_scene_to_file(MENU)
+
+
+func _on_match_start() -> void:
+	get_tree().change_scene_to_file.call_deferred(Session.ARENA)
+
+
+func _on_disconnected(_reason: String) -> void:
+	get_tree().change_scene_to_file.call_deferred(MENU)
+
+
+## Pruebas automáticas (--autoready): elige lo que diga Session y entra.
+func _auto() -> void:
+	await get_tree().create_timer(0.5).timeout
+	if _online:
+		if not _is_ready:
+			_on_next()
+	else:
+		get_tree().change_scene_to_file(Session.ARENA)

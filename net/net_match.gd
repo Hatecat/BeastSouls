@@ -1,9 +1,8 @@
 class_name NetMatch
 extends Node
 ## Partida online 1 contra 1: envía el estado del Beast local, alimenta el proxy del rival y gestiona los
-## eventos (golpe confirmado, muerte) y el marcador.
+## eventos de combate (golpe confirmado, muerte). Las rondas y el marcador van en MatchFlow.
 
-signal score_changed(mine: int, theirs: int)
 ## El rival ha caído (lo decide su máquina).
 signal remote_died
 signal ended(reason: String)
@@ -14,8 +13,6 @@ signal ended(reason: String)
 var local: Beast
 var remote: Beast
 var proxy: NetProxy
-var score_mine := 0
-var score_theirs := 0
 
 var _send_accum := 0.0
 
@@ -61,8 +58,6 @@ func _on_remote_hit_local(target: Beast, result: Beast.HitResult, atk: AttackDat
 
 
 func _on_local_died() -> void:
-	score_theirs += 1
-	score_changed.emit(score_mine, score_theirs)
 	Net.send_event({type = "died"})
 
 
@@ -71,6 +66,4 @@ func _on_event(e: Dictionary) -> void:
 		"hit":
 			local.confirm_remote_hit(remote, int(e.result) as Beast.HitResult, float(e.gain), float(e.hitstop))
 		"died":
-			score_mine += 1
-			score_changed.emit(score_mine, score_theirs)
 			remote_died.emit()

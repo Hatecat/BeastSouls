@@ -1,0 +1,43 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://actors/visuals/character_visual.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://assets/models/placeholder/scyther.glb" id="2_model"]
+
+[node name="ScytherVisual" type="Node3D"]
+script = ExtResource("1_script")
+model_scene = ExtResource("2_model")
+target_height = 2.0
+action_map = Dictionary[StringName, StringName]({
+&"attack_heavy_1": &"fight_b_body",
+&"attack_heavy_2": &"fight_b_bite",
+&"attack_light_1": &"fight_b_claw",
+&"attack_light_2": &"fight_b_punch",
+&"attack_light_3": &"fight_b_claw",
+&"attack_running": &"fight_b_body",
+&"block": &"fight_b",
+&"death": &"ko",
+&"dodge": &"fight_b_body",
+&"hit": &"hit",
+&"idle": &"idle",
+&"run": &"walk",
+&"skill_air_slash": &"fight_d_breath",
+&"skill_fury_cutter": &"fight_b_claw",
+&"skill_swords_dance": &"fight_d_boost",
+&"skill_x_scissor": &"fight_d_sound",
+&"walk": &"walk"
+})
+action_speed = Dictionary[StringName, float]({
+&"attack_light_3": 1.15,
+&"dodge": 1.6,
+&"run": 1.8
+})
+sockets = Dictionary[StringName, StringName]({
+&"chest": &"Spine",
+&"foot_l": &"LFoot",
+&"foot_r": &"RFoot",
+&"hand_l": &"LForeArm",
+&"hand_r": &"RForeArm",
+&"head": &"Head",
+&"mouth": &"Jaw",
+&"tail_tip": &"Hips"
+})

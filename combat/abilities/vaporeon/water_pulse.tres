@@ -1,0 +1,38 @@
+[gd_resource type="Resource" script_class="ProjectileAbility" format=3]
+
+[ext_resource type="Script" path="res://combat/abilities/projectile_ability.gd" id="1_script"]
+[ext_resource type="Script" path="res://combat/attack_data.gd" id="2_attack"]
+
+[sub_resource type="Resource" id="hit"]
+script = ExtResource("2_attack")
+display_name = "Hidropulso"
+damage = 16
+poise_damage = 40
+guard_stamina_damage = 25
+stamina_cost = 0
+stagger_time = 0.6
+knockback = 6
+hitstop = 0.06
+heat_gain = 0
+
+[resource]
+script = ExtResource("1_script")
+hit = SubResource("hit")
+display_name = "Hidropulso"
+color = Color(0.3, 0.62, 1, 1)
+action = &"skill_water_pulse"
+anim_speed = 1.8
+heat_cost = 20
+cooldown = 3
+duration = 0.8
+cancel_start = 0.6
+tracking = 6
+track_until = 0.3
+spawn_time = 0.3
+spawn_offset = Vector3(0, 1, -1.2)
+speed = 20
+radius = 0.45
+lifetime = 2
+homing = 1
+explode_radius = 2
+visual_scale = 1.1

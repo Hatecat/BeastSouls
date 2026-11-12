@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="CharacterDef" format=3]
+
+[ext_resource type="Script" path="res://actors/characters/character_def.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://actors/visuals/charizard_visual.tscn" id="2_visual"]
+[ext_resource type="Resource" path="res://combat/attacks/charizard/moveset.tres" id="3_moveset"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"charizard"
+display_name = "Charizard"
+role = "Equilibrado"
+description = "Dragón de fuego versátil. Quema a distancia y aguanta bien el cuerpo a cuerpo."
+color = Color(1, 0.55, 0.2, 1)
+visual = ExtResource("2_visual")
+moveset = ExtResource("3_moveset")
+stats = Dictionary[StringName, Variant]({
+
+})
+body_radius = 0.55
+body_height = 2.0
+lock_height = 1.3
+rating_health = 3
+rating_speed = 3
+rating_power = 3
+rating_range = 4

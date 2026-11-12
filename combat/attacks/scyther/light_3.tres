@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="AttackData" format=3]
+
+[ext_resource type="Script" path="res://combat/attack_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+display_name = "Tajo giratorio"
+action = &"attack_light_3"
+anim_speed = 1.529
+duration = 0.765
+active_start = 0.255
+active_end = 0.383
+combo_start = 0.425
+cancel_start = 0.468
+damage = 15.3
+poise_damage = 21.2
+guard_stamina_damage = 21.2
+stamina_cost = 18.0
+stagger_time = 0.6
+knockback = 4.0
+hitstop = 0.09
+hitbox_offset_start = Vector3(0, 0.9, -0.54)
+hitbox_offset_end = Vector3(0, 0.9, -0.54)
+hitbox_radius = 1.35
+lunge_speed = 2.0
+lunge_start = 0.085
+lunge_end = 0.255
+tracking = 5.0
+heat_gain = 10.0

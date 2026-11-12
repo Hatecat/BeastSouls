@@ -2,6 +2,9 @@ class_name Fx
 extends RefCounted
 ## Constructores de efectos visuales reutilizables. Solo presentación.
 
+## Color por defecto de los efectos (fuego).
+const FIRE := Color(1.0, 0.42, 0.12)
+
 static var _soft_tex: GradientTexture2D
 ## Materiales y mallas ya creados, por clave. Crear recursos nuevos en cada efecto cuesta decenas
 ## de milisegundos en partida (el renderizador los registra); reutilizarlos lo deja en ~0.
@@ -14,20 +17,20 @@ static func _cached(key: String, build: Callable) -> Variant:
 	return _cache[key]
 
 
-## Chorro de fuego continuo (lanzallamas). Emite hacia -Z del nodo.
-static func flame_jet() -> GPUParticles3D:
+## Chorro continuo (lanzallamas, hidrobomba...). Emite hacia -Z del nodo.
+static func flame_jet(color := FIRE) -> GPUParticles3D:
 	var p := GPUParticles3D.new()
 	p.amount = 110
 	p.lifetime = 0.55
 	p.local_coords = false
 	p.emitting = false
 	p.visibility_aabb = AABB(Vector3(-6, -6, -10), Vector3(12, 12, 14))
-	p.process_material = _cached("flame_ppm", _flame_ppm.bind(Vector3(0, 0, -1), 11.0, 9.0, 12.0))
+	p.process_material = _cached("flame_ppm_" + color.to_html(), _flame_ppm.bind(Vector3(0, 0, -1), 11.0, 9.0, 12.0, color))
 	p.draw_pass_1 = _cached("quad_0.7", _billboard_quad.bind(0.7, true))
 	return p
 
 
-static func _flame_ppm(direction: Vector3, spread: float, v_min: float, v_max: float) -> ParticleProcessMaterial:
+static func _flame_ppm(direction: Vector3, spread: float, v_min: float, v_max: float, c: Color) -> ParticleProcessMaterial:
 	var m := ParticleProcessMaterial.new()
 	m.direction = direction
 	m.spread = spread
@@ -39,11 +42,12 @@ static func _flame_ppm(direction: Vector3, spread: float, v_min: float, v_max: f
 	m.scale_min = 0.5
 	m.scale_max = 0.9
 	m.scale_curve = _curve_tex([Vector2(0, 0.25), Vector2(0.5, 1.0), Vector2(1, 1.6)])
+	var hot := c.lerp(Color.WHITE, 0.4)
 	m.color_ramp = _gradient_tex([
-		[0.0, Color(1.6, 1.1, 0.45, 0.7)],
-		[0.25, Color(1.5, 0.55, 0.12, 0.6)],
-		[0.65, Color(0.8, 0.16, 0.03, 0.35)],
-		[1.0, Color(0.1, 0.03, 0.02, 0.0)]])
+		[0.0, Color(hot.r * 1.6, hot.g * 1.6, hot.b * 1.6, 0.7)],
+		[0.25, Color(c.r * 1.5, c.g * 1.5, c.b * 1.5, 0.6)],
+		[0.65, Color(c.r * 0.8, c.g * 0.6, c.b * 0.6, 0.35)],
+		[1.0, Color(c.r * 0.1, c.g * 0.1, c.b * 0.1, 0.0)]])
 	m.angle_min = -180.0
 	m.angle_max = 180.0
 	return m
@@ -80,11 +84,11 @@ static func _embers_ppm(color: Color, radius: float, burst: bool) -> ParticlePro
 	return m
 
 
-## Núcleo de la bola de fuego: esfera emisiva + estela + luz.
-static func fireball_visual() -> Node3D:
+## Núcleo de un proyectil (bola de fuego, bola sombra...): esfera emisiva + estela + luz.
+static func fireball_visual(color := FIRE) -> Node3D:
 	var root := Node3D.new()
 	var core := MeshInstance3D.new()
-	core.mesh = _cached("fireball_core", func():
+	core.mesh = _cached("fireball_core_" + color.to_html(), func():
 		var sphere := SphereMesh.new()
 		sphere.radius = 0.32
 		sphere.height = 0.64
@@ -92,7 +96,7 @@ static func fireball_visual() -> Node3D:
 		sphere.rings = 12
 		var mat := StandardMaterial3D.new()
 		mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-		mat.albedo_color = Color(2.0, 0.85, 0.25)
+		mat.albedo_color = Color(color.r * 2.0 + 0.1, color.g * 2.0 + 0.1, color.b * 2.0 + 0.1)
 		sphere.material = mat
 		return sphere)
 	core.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
@@ -101,12 +105,12 @@ static func fireball_visual() -> Node3D:
 	trail.amount = 90
 	trail.lifetime = 0.35
 	trail.local_coords = false
-	trail.process_material = _cached("trail_ppm", _flame_ppm.bind(Vector3(0, 0, 1), 25.0, 1.0, 2.5))
+	trail.process_material = _cached("trail_ppm_" + color.to_html(), _flame_ppm.bind(Vector3(0, 0, 1), 25.0, 1.0, 2.5, color))
 	trail.draw_pass_1 = _cached("quad_0.7", _billboard_quad.bind(0.7, true))
 	trail.emitting = true
 	root.add_child(trail)
 	var light := OmniLight3D.new()
-	light.light_color = Color(1.0, 0.55, 0.2)
+	light.light_color = color.lerp(Color.WHITE, 0.2)
 	light.light_energy = 2.5
 	light.omni_range = 5.0
 	root.add_child(light)
@@ -142,9 +146,13 @@ static func shockwave(parent: Node, pos: Vector3, radius: float, color := Color(
 
 ## Crea cada efecto una vez, escondido bajo el suelo, para que Godot compile sus shaders al
 ## cargar el nivel y no a mitad de combate (evita tirones la primera vez que se usan).
-static func prewarm(parent: Node3D) -> void:
+## `colors`: colores de los efectos que se van a usar (los de las habilidades de los personajes en juego).
+static func prewarm(parent: Node3D, colors: Array[Color] = []) -> void:
 	var at := Vector3(0, -2.0, 0)
-	var nodes: Array[Node3D] = [flame_jet(), embers(Color(1.0, 0.4, 0.1), 0.5, 40), fireball_visual()]
+	var nodes: Array[Node3D] = [embers(Color(1.0, 0.4, 0.1), 0.5, 40)]
+	for c in [FIRE] + colors:
+		nodes.append(flame_jet(c))
+		nodes.append(fireball_visual(c))
 	for n in nodes:
 		parent.add_child(n)
 		n.global_position = at
@@ -152,17 +160,18 @@ static func prewarm(parent: Node3D) -> void:
 			(n as GPUParticles3D).emitting = true
 	for k in HitFx.Kind.values():
 		HitFx.spawn(parent, at, Vector3.UP, k)
-	explosion(parent, at)
-	shockwave(parent, at, 1.0)
+	for c in [FIRE] + colors:
+		explosion(parent, at, c)
+		shockwave(parent, at, 1.0, c)
 	await parent.get_tree().create_timer(0.5).timeout
 	for n in nodes:
 		n.queue_free()
 
 
 ## Explosión: chispas grandes + destello.
-static func explosion(parent: Node, pos: Vector3) -> void:
-	HitFx.spawn(parent, pos, Vector3.UP, HitFx.Kind.HIT, 2.5)
-	var burst := embers(Color(1.0, 0.45, 0.1), 0.6, 60, true)
+static func explosion(parent: Node, pos: Vector3, color := FIRE, size := 1.0) -> void:
+	HitFx.spawn(parent, pos, Vector3.UP, HitFx.Kind.HIT, 2.5 * size)
+	var burst := embers(color, 0.6 * size, 60, true)
 	burst.one_shot = true
 	burst.explosiveness = 0.9
 	burst.emitting = true

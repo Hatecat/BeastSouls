@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="CharacterDef" format=3]
+
+[ext_resource type="Script" path="res://actors/characters/character_def.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://actors/visuals/vaporeon_visual.tscn" id="2_visual"]
+[ext_resource type="Resource" path="res://combat/attacks/vaporeon/moveset.tres" id="3_moveset"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"vaporeon"
+display_name = "Vaporeon"
+role = "Controlador"
+description = "Mucho aguante y control a media distancia: empuja con agua y se cura."
+color = Color(0.3, 0.62, 1, 1)
+visual = ExtResource("2_visual")
+moveset = ExtResource("3_moveset")
+stats = Dictionary[StringName, Variant]({
+&"max_health": 120,
+&"jog_speed": 4.4,
+&"max_poise": 12
+})
+body_radius = 0.6
+body_height = 1.5
+lock_height = 1.0
+rating_health = 4
+rating_speed = 3
+rating_power = 2
+rating_range = 5

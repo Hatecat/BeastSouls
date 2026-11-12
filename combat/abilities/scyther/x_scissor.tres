@@ -1,0 +1,32 @@
+[gd_resource type="Resource" script_class="AreaAbility" format=3]
+
+[ext_resource type="Script" path="res://combat/abilities/area_ability.gd" id="1_script"]
+[ext_resource type="Script" path="res://combat/attack_data.gd" id="2_attack"]
+
+[sub_resource type="Resource" id="hit"]
+script = ExtResource("2_attack")
+display_name = "Tijera X"
+damage = 18
+poise_damage = 60
+guard_stamina_damage = 40
+stamina_cost = 0
+stagger_time = 0.8
+knockback = 6
+hitstop = 0.1
+heat_gain = 0
+
+[resource]
+script = ExtResource("1_script")
+hit = SubResource("hit")
+display_name = "Tijera X"
+color = Color(0.55, 1, 0.4, 1)
+action = &"skill_x_scissor"
+heat_cost = 35
+cooldown = 10
+duration = 1
+cancel_start = 0.8
+tracking = 6
+track_until = 0.3
+trigger_time = 0.35
+radius = 3.5
+caster_shake = 0.3

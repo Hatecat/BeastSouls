@@ -16,12 +16,12 @@ extends AbilityData
 
 func start(beast: Beast, cast: Dictionary) -> void:
 	cast.next_tick = channel_start
-	var jet := Fx.flame_jet()
+	var jet := Fx.flame_jet(color)
 	jet.top_level = true
 	beast.add_child(jet)
 	cast.fx = jet
 	var light := OmniLight3D.new()
-	light.light_color = Color(1.0, 0.5, 0.15)
+	light.light_color = color
 	light.light_energy = 0.0
 	light.omni_range = 7.0
 	light.top_level = true

@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="AttackData" format=3]
+
+[ext_resource type="Script" path="res://combat/attack_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+display_name = "Panzazo"
+action = &"attack_light_3"
+anim_speed = 1.13
+duration = 1.035
+active_start = 0.345
+active_end = 0.517
+combo_start = 0.575
+cancel_start = 0.632
+damage = 23.4
+poise_damage = 32.5
+guard_stamina_damage = 32.5
+stamina_cost = 18.0
+stagger_time = 0.6
+knockback = 4.0
+hitstop = 0.09
+hitbox_offset_start = Vector3(0, 1.25, -0.75)
+hitbox_offset_end = Vector3(0, 1.25, -0.75)
+hitbox_radius = 1.88
+lunge_speed = 2.0
+lunge_start = 0.115
+lunge_end = 0.345
+tracking = 5.0
+heat_gain = 10.0
+hyper_armor = 30

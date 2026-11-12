@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="CharacterDef" format=3]
+
+[ext_resource type="Script" path="res://actors/characters/character_def.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://actors/visuals/beedrill_visual.tscn" id="2_visual"]
+[ext_resource type="Resource" path="res://combat/attacks/beedrill/moveset.tres" id="3_moveset"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"beedrill"
+display_name = "Beedrill"
+role = "Hostigador"
+description = "Rápido y venenoso: casi todos sus golpes envenenan. Presiona sin parar."
+color = Color(0.85, 1, 0.25, 1)
+visual = ExtResource("2_visual")
+moveset = ExtResource("3_moveset")
+stats = Dictionary[StringName, Variant]({
+&"max_health": 90,
+&"jog_speed": 5,
+&"sprint_speed": 8.5,
+&"strafe_speed": 3.6,
+&"max_poise": 6
+})
+body_radius = 0.5
+body_height = 2.0
+lock_height = 1.4
+rating_health = 2
+rating_speed = 4
+rating_power = 3
+rating_range = 3

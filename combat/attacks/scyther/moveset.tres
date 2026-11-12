@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="Moveset" format=3]
+
+[ext_resource type="Script" path="res://combat/moveset.gd" id="1_script"]
+[ext_resource type="Script" path="res://combat/attack_data.gd" id="2_attack"]
+[ext_resource type="Script" path="res://combat/abilities/ability_data.gd" id="3_ability"]
+[ext_resource type="Resource" path="res://combat/abilities/scyther/air_slash.tres" id="ab0"]
+[ext_resource type="Resource" path="res://combat/abilities/scyther/fury_cutter.tres" id="ab1"]
+[ext_resource type="Resource" path="res://combat/abilities/scyther/x_scissor.tres" id="ab2"]
+[ext_resource type="Resource" path="res://combat/abilities/scyther/swords_dance.tres" id="ab3"]
+[ext_resource type="Resource" path="res://combat/attacks/scyther/light_1.tres" id="light_1"]
+[ext_resource type="Resource" path="res://combat/attacks/scyther/light_2.tres" id="light_2"]
+[ext_resource type="Resource" path="res://combat/attacks/scyther/light_3.tres" id="light_3"]
+[ext_resource type="Resource" path="res://combat/attacks/scyther/heavy_1.tres" id="heavy_1"]
+[ext_resource type="Resource" path="res://combat/attacks/scyther/heavy_2.tres" id="heavy_2"]
+[ext_resource type="Resource" path="res://combat/attacks/scyther/running.tres" id="running"]
+
+[resource]
+script = ExtResource("1_script")
+light_combo = Array[ExtResource("2_attack")]([ExtResource("light_1"), ExtResource("light_2"), ExtResource("light_3")])
+heavy_combo = Array[ExtResource("2_attack")]([ExtResource("heavy_1"), ExtResource("heavy_2")])
+running_attack = ExtResource("running")
+abilities = Array[ExtResource("3_ability")]([ExtResource("ab0"), ExtResource("ab1"), ExtResource("ab2"), ExtResource("ab3")])

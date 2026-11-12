@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="CharacterDef" format=3]
+
+[ext_resource type="Script" path="res://actors/characters/character_def.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://actors/visuals/gengar_visual.tscn" id="2_visual"]
+[ext_resource type="Resource" path="res://combat/attacks/gengar/moveset.tres" id="3_moveset"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"gengar"
+display_name = "Gengar"
+role = "Embaucador"
+description = "Esquivas largas con mucha invulnerabilidad. Proyectiles teledirigidos e hipnosis que aturde."
+color = Color(0.62, 0.3, 1, 1)
+visual = ExtResource("2_visual")
+moveset = ExtResource("3_moveset")
+stats = Dictionary[StringName, Variant]({
+&"max_health": 95,
+&"jog_speed": 4.6,
+&"max_poise": 8,
+&"dodge_distance": 5.5,
+&"dodge_iframes": Vector2(0.02, 0.46)
+})
+body_radius = 0.6
+body_height = 1.8
+lock_height = 1.1
+rating_health = 3
+rating_speed = 4
+rating_power = 3
+rating_range = 4

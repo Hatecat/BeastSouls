@@ -1,13 +1,12 @@
 extends Node3D
 ## Arena: práctica contra la IA o versus online (si Net está conectado al cargar la escena).
+## Los personajes salen de Session; las rondas (al mejor de 3) las lleva MatchFlow.
 ##   F1: mostrar/ocultar hitboxes activas.
 ##   F2: cambiar el modo de la IA del rival (solo en práctica).
 
 const MENU := "res://ui/main_menu.tscn"
 ## Puntos de aparición [posición, orientación]: 0 = anfitrión / jugador, 1 = invitado / rival.
 const SPAWNS := [[Vector3(0, 0, 6), 0.0], [Vector3(0, 0, -4), PI]]
-
-@export var respawn_delay := 3.0
 
 @onready var hud: Hud = $HUD
 @onready var player: Beast = $Player
@@ -16,45 +15,44 @@ const SPAWNS := [[Vector3(0, 0, 6), 0.0], [Vector3(0, 0, -4), PI]]
 @onready var dummy_brain: DummyBrain = $DummyBrain
 
 var net_match: NetMatch
-var _spawns := {}
+var match_flow: MatchFlow
 
 
 func _ready() -> void:
-	Fx.prewarm(self)
-	if Net.is_online():
-		_setup_online()
+	var mine := Roster.find(Session.my_character)
+	var theirs := Roster.find(Session.rival_character)
+	player.apply_character(mine)
+	rival.apply_character(theirs)
+	camera.fit_to_size(clampf(mine.body_height / 2.0, 0.85, 1.35))
+	Fx.prewarm(self, _effect_colors([mine, theirs]))
+	var online := Net.is_online()
+	if online:
+		dummy_brain.queue_free()
+		dummy_brain = null
+		hud.dummy_brain = null
+		player.name = Net.nick.validate_node_name()
+		rival.name = Net.remote_nick.validate_node_name()
+		net_match = NetMatch.new()
+		net_match.name = "NetMatch"
+		net_match.setup(player, rival)  # antes de add_child: su _ready usa el proxy
+		add_child(net_match)
+		net_match.ended.connect(_on_net_ended)
 	else:
-		rival.died.connect(hud.show_banner.bind("VICTORIA", Color(0.95, 0.8, 0.35)))
-		rival.died.connect(_on_died.bind(rival))
-		_spawns[rival] = [rival.global_position, rival.facing]
-	_spawns[player] = [player.global_position, player.facing]
-	player.died.connect(_on_died.bind(player))
+		rival.name = theirs.display_name
+	match_flow = MatchFlow.new()
+	match_flow.name = "MatchFlow"
+	match_flow.setup(player, rival, hud, SPAWNS, online, net_match)
+	match_flow.camera = camera
+	add_child(match_flow)
 
 
-func _setup_online() -> void:
-	dummy_brain.queue_free()
-	dummy_brain = null
-	hud.dummy_brain = null
-	var mine: Array = SPAWNS[Net.side]
-	var theirs: Array = SPAWNS[1 - Net.side]
-	_place(player, mine)
-	_place(rival, theirs)
-	rival.name = Net.remote_nick.validate_node_name()
-	camera.snap_behind()
-	net_match = NetMatch.new()
-	net_match.name = "NetMatch"
-	net_match.setup(player, rival)  # antes de add_child: su _ready usa el proxy
-	add_child(net_match)
-	net_match.remote_died.connect(hud.show_banner.bind("VICTORIA", Color(0.95, 0.8, 0.35)))
-	net_match.score_changed.connect(func(a: int, b: int) -> void: hud.set_score("%s  %d – %d  %s" % [Net.nick, a, b, Net.remote_nick]))
-	net_match.ended.connect(_on_net_ended)
-	hud.set_score("%s  0 – 0  %s" % [Net.nick, Net.remote_nick])
-
-
-func _place(b: Beast, spawn: Array) -> void:
-	b.global_position = spawn[0]
-	b.facing = spawn[1]
-	b.reset_physics_interpolation()
+func _effect_colors(defs: Array[CharacterDef]) -> Array[Color]:
+	var out: Array[Color] = []
+	for d in defs:
+		for a in d.moveset.abilities:
+			if a.color not in out:
+				out.append(a.color)
+	return out
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -64,15 +62,9 @@ func _unhandled_input(event: InputEvent) -> void:
 		dummy_brain.next_mode()
 
 
-func _on_died(b: Beast) -> void:
-	await get_tree().create_timer(respawn_delay).timeout
-	if not is_instance_valid(b):
-		return
-	_place(b, _spawns[b])
-	b.revive()
-
-
 func _on_net_ended(reason: String) -> void:
+	match_flow.queue_free()
+	hud.hide_match_over()
 	hud.show_banner("RIVAL DESCONECTADO" if reason == "left" else "CONEXIÓN PERDIDA", Color(0.8, 0.8, 0.8))
 	await get_tree().create_timer(3.0).timeout
 	Net.close()

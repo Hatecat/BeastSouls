@@ -1,0 +1,35 @@
+[gd_resource type="Resource" script_class="ChannelAbility" format=3]
+
+[ext_resource type="Script" path="res://combat/abilities/channel_ability.gd" id="1_script"]
+[ext_resource type="Script" path="res://combat/attack_data.gd" id="2_attack"]
+
+[sub_resource type="Resource" id="hit"]
+script = ExtResource("2_attack")
+display_name = "Hidrobomba"
+damage = 4
+poise_damage = 6
+guard_stamina_damage = 8
+stamina_cost = 0
+stagger_time = 0.3
+knockback = 1.5
+hitstop = 0.05
+heat_gain = 0
+
+[resource]
+script = ExtResource("1_script")
+hit = SubResource("hit")
+display_name = "Hidrobomba"
+color = Color(0.3, 0.62, 1, 1)
+action = &"skill_hydro_pump"
+heat_cost = 40
+cooldown = 9
+duration = 1.7
+cancel_start = 1.5
+tracking = 1.8
+track_until = 1.45
+channel_start = 0.35
+channel_end = 1.45
+tick_interval = 0.15
+cone_range = 7.5
+cone_angle_deg = 18
+origin_offset = Vector3(0, 1, -0.9)

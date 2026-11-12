@@ -1,0 +1,42 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://actors/visuals/character_visual.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://assets/models/placeholder/vaporeon.glb" id="2_model"]
+
+[node name="VaporeonVisual" type="Node3D"]
+script = ExtResource("1_script")
+model_scene = ExtResource("2_model")
+target_height = 1.6
+action_map = Dictionary[StringName, StringName]({
+&"attack_heavy_1": &"fight_b_body",
+&"attack_heavy_2": &"fight_b_punch",
+&"attack_light_1": &"fight_b_bite",
+&"attack_light_2": &"fight_b_kick",
+&"attack_light_3": &"fight_b_tail",
+&"attack_running": &"fight_b_body",
+&"block": &"fight_b",
+&"death": &"ko",
+&"dodge": &"fight_b_kick",
+&"hit": &"hit",
+&"idle": &"idle",
+&"run": &"walk",
+&"skill_aqua_ring": &"fight_d_boost",
+&"skill_hydro_pump": &"fight_d_breath",
+&"skill_surf": &"fight_d_mind",
+&"skill_water_pulse": &"fight_d_breath",
+&"walk": &"walk"
+})
+action_speed = Dictionary[StringName, float]({
+&"dodge": 1.6,
+&"run": 1.8
+})
+sockets = Dictionary[StringName, StringName]({
+&"chest": &"Spine2_05",
+&"foot_l": &"LFoot_036",
+&"foot_r": &"RFoot_040",
+&"hand_l": &"LHand_017",
+&"hand_r": &"RHand_021",
+&"head": &"Head_07",
+&"mouth": &"Head_07",
+&"tail_tip": &"Tail9_031"
+})

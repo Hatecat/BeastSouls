@@ -9,6 +9,7 @@ extends Node3D
 signal lock_changed(target: Node3D)
 
 @export var follow: Beast
+var _base_framing := {}
 @export_group("Encuadre")
 @export var height := 1.8
 @export var distance := 4.6
@@ -89,6 +90,16 @@ func _ready() -> void:
 
 
 ## Coloca la cámara detrás del personaje al instante.
+## Escala el encuadre (altura y distancia, libre y fijado) para personajes más grandes o pequeños.
+func fit_to_size(scale: float) -> void:
+	if _base_framing.is_empty():
+		_base_framing = {height = height, distance = distance, lock_distance = lock_distance, lock_height = lock_height}
+	height = _base_framing.height * scale
+	distance = _base_framing.distance * scale
+	lock_distance = _base_framing.lock_distance * scale
+	lock_height = _base_framing.lock_height * scale
+
+
 func snap_behind() -> void:
 	if follow == null:
 		return

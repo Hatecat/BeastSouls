@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="BuffAbility" format=3]
+
+[ext_resource type="Script" path="res://combat/abilities/buff_ability.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+display_name = "Danza espadas"
+color = Color(0.85, 1, 0.85, 1)
+action = &"skill_swords_dance"
+heat_cost = 45
+cooldown = 20
+duration = 1.1
+cancel_start = 0.9
+tracking = 0
+track_until = 0
+buff_id = &"danza_espadas"
+trigger_time = 0.4
+buff_duration = 8
+damage_multiplier = 1.4
+speed_multiplier = 1
+action_speed_multiplier = 1.05

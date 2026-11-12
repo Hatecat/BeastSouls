@@ -11,6 +11,9 @@ var radius := 0.4
 var lifetime := 2.0
 var homing := 1.2
 var explode_radius := 1.8
+var color := Fx.FIRE
+## Escala del efecto visual (no de la colisión).
+var visual_scale := 1.0
 
 var _age := 0.0
 var _done := false
@@ -18,7 +21,8 @@ var _visual: Node3D
 
 
 func _ready() -> void:
-	_visual = Fx.fireball_visual()
+	_visual = Fx.fireball_visual(color)
+	_visual.scale = Vector3.ONE * visual_scale
 	add_child(_visual)
 
 
@@ -66,5 +70,5 @@ func _explode(pos: Vector3, direct: Beast = null) -> void:
 					victims.append(v)
 		for v in victims:
 			owner_beast.deal_hit(v, hit, pos)
-	Fx.explosion(get_parent(), pos)
+	Fx.explosion(get_parent(), pos, color, clampf(explode_radius / 1.8, 0.4, 1.5))
 	queue_free()

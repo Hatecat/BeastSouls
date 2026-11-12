@@ -1,0 +1,42 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://actors/visuals/character_visual.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://assets/models/placeholder/gengar.glb" id="2_model"]
+
+[node name="GengarVisual" type="Node3D"]
+script = ExtResource("1_script")
+model_scene = ExtResource("2_model")
+target_height = 1.8
+action_map = Dictionary[StringName, StringName]({
+&"attack_heavy_1": &"fight_b_bite",
+&"attack_heavy_2": &"fight_b_body",
+&"attack_light_1": &"fight_b_claw",
+&"attack_light_2": &"fight_b_punch",
+&"attack_light_3": &"fight_b_kick",
+&"attack_running": &"fight_b_body",
+&"block": &"fight_b",
+&"death": &"ko",
+&"dodge": &"fight_b_kick",
+&"hit": &"hit",
+&"idle": &"idle",
+&"run": &"walk",
+&"skill_dark_pulse": &"fight_d_breath",
+&"skill_hypnosis": &"fight_d_sound",
+&"skill_nasty_plot": &"fight_d_boost",
+&"skill_shadow_ball": &"fight_d_breath",
+&"walk": &"walk"
+})
+action_speed = Dictionary[StringName, float]({
+&"dodge": 1.6,
+&"run": 1.7
+})
+sockets = Dictionary[StringName, StringName]({
+&"chest": &"Hips",
+&"foot_l": &"LFoot",
+&"foot_r": &"RFoot",
+&"hand_l": &"LHand",
+&"hand_r": &"RHand",
+&"head": &"Head",
+&"mouth": &"Jaw",
+&"tail_tip": &"Tail"
+})

@@ -1,0 +1,41 @@
+[gd_resource type="Resource" script_class="ProjectileAbility" format=3]
+
+[ext_resource type="Script" path="res://combat/abilities/projectile_ability.gd" id="1_script"]
+[ext_resource type="Script" path="res://combat/attack_data.gd" id="2_attack"]
+
+[sub_resource type="Resource" id="hit"]
+script = ExtResource("2_attack")
+display_name = "Pin misil"
+damage = 6
+poise_damage = 8
+guard_stamina_damage = 8
+stamina_cost = 0
+stagger_time = 0.25
+knockback = 1
+hitstop = 0.02
+heat_gain = 0
+burn_time = 1.5
+
+[resource]
+script = ExtResource("1_script")
+hit = SubResource("hit")
+display_name = "Pin misil"
+color = Color(0.85, 1, 0.25, 1)
+action = &"skill_pin_missile"
+anim_speed = 1.8
+heat_cost = 15
+cooldown = 2.5
+duration = 0.85
+cancel_start = 0.7
+tracking = 8
+track_until = 0.6
+spawn_time = 0.2
+spawn_offset = Vector3(0, 1.4, -1)
+speed = 30
+radius = 0.25
+lifetime = 1.2
+homing = 2
+explode_radius = 0
+visual_scale = 0.45
+count = 3
+interval = 0.12

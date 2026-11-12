@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="CharacterDef" format=3]
+
+[ext_resource type="Script" path="res://actors/characters/character_def.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://actors/visuals/snorlax_visual.tscn" id="2_visual"]
+[ext_resource type="Resource" path="res://combat/attacks/snorlax/moveset.tres" id="3_moveset"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"snorlax"
+display_name = "Snorlax"
+role = "Tanque"
+description = "Enorme y lento. Mucha vida y armadura en casi todos sus golpes; el Terremoto no se puede bloquear."
+color = Color(1, 0.92, 0.65, 1)
+visual = ExtResource("2_visual")
+moveset = ExtResource("3_moveset")
+stats = Dictionary[StringName, Variant]({
+&"max_health": 150,
+&"jog_speed": 3.6,
+&"sprint_speed": 6,
+&"strafe_speed": 2.6,
+&"max_poise": 30,
+&"max_stamina": 120,
+&"dodge_distance": 3.4,
+&"turn_speed": 9,
+&"walk_anim_speed": 2
+})
+body_radius = 0.85
+body_height = 2.6
+lock_height = 1.6
+rating_health = 5
+rating_speed = 1
+rating_power = 5
+rating_range = 3

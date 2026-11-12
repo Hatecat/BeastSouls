@@ -2,13 +2,15 @@ extends Control
 ## Menú principal: práctica contra la IA, alojar o unirse a una partida online.
 ##
 ## Argumentos de línea de comandos (tras `--`), para pruebas automáticas o accesos directos:
-##   --practice                 entra directo a la práctica
+##   --practice                 entra directo a la práctica (personajes: --char=ID --rival=ID)
+##   --autoready                el selector elige solo (--char) y se marca listo: para pruebas automáticas
 ##   --host                     aloja y espera rival
 ##   --join=IP                  se une a IP
 ##   --port=N  --nick=NOMBRE
 ##   --latency=MS --jitter=MS --loss=0.05   simulación de red (lo que envía este lado)
 
 const ARENA := "res://levels/arena_test/arena_test.tscn"
+const SELECT := "res://ui/character_select.tscn"
 
 var _nick: LineEdit
 var _address: LineEdit
@@ -131,7 +133,7 @@ func _prepare() -> void:
 
 func _on_practice() -> void:
 	Net.close()
-	get_tree().change_scene_to_file(ARENA)
+	get_tree().change_scene_to_file(SELECT)
 
 
 func _on_host() -> void:
@@ -167,7 +169,7 @@ func _on_cancel() -> void:
 
 func _on_connected() -> void:
 	_status.text = "¡Conectado con %s!" % Net.remote_nick
-	get_tree().change_scene_to_file.call_deferred(ARENA)
+	get_tree().change_scene_to_file.call_deferred(SELECT)
 
 
 func _on_failed(reason: String) -> void:
@@ -195,7 +197,8 @@ func _apply_args() -> void:
 	Net.sim_jitter_ms = int(args.get("jitter", "0"))
 	Net.sim_loss = float(args.get("loss", "0"))
 	if args.has("practice"):
-		_on_practice.call_deferred()
+		Net.close()
+		get_tree().change_scene_to_file.call_deferred(ARENA)
 	elif args.has("host"):
 		_on_host.call_deferred()
 	elif args.has("join"):

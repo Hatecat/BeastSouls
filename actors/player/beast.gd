@@ -31,6 +31,10 @@ const ABILITY_SLOTS := 4
 static var debug_hitboxes := false
 
 @export var moveset: Moveset
+## Personaje aplicado (apply_character). Null = lo que trae la escena.
+var character: CharacterDef
+## Sin control (cuenta atrás, fin de ronda): ignora el input y no recibe golpes.
+var frozen := false
 ## Proxy de un jugador remoto: no simula; su estado llega por la red (NetProxy) y solo se presenta.
 ## Los golpes A un Beast remoto no se aplican aquí: los decide su dueño (la víctima).
 var is_remote := false
@@ -155,6 +159,8 @@ var _knockback := Vector3.ZERO
 var _anim := &""
 var _debug_sphere: MeshInstance3D
 var _cast := {}
+## Valores originales de las estadísticas que ha sobrescrito algún CharacterDef.
+var _stat_defaults := {}
 var _burn_fx: GPUParticles3D
 var _aura_fx: GPUParticles3D
 
@@ -179,6 +185,8 @@ func _physics_process(delta: float) -> void:
 
 ## Avanza la simulación un tick.
 func simulate(inp: PlayerInput, delta: float) -> void:
+	if frozen:
+		inp = PlayerInput.new()
 	_update_buffer(inp, delta)
 	if _hitstop > 0.0:
 		# Congelado por impacto: no avanza nada salvo el buffer de input.
@@ -217,6 +225,8 @@ func simulate(inp: PlayerInput, delta: float) -> void:
 # --- Consultas -------------------------------------------------------------------
 
 func is_invulnerable() -> bool:
+	if frozen:
+		return true
 	return state == State.DODGE and state_time >= _dodge_iframes.x and state_time <= _dodge_iframes.y
 
 
@@ -242,6 +252,55 @@ func horizontal_speed() -> float:
 
 static func yaw_of(dir: Vector3) -> float:
 	return atan2(-dir.x, -dir.z)
+
+
+## Cambia de personaje: modelo, moveset, estadísticas y tamaño del cuerpo. Deja al Beast como recién revivido.
+func apply_character(def: CharacterDef) -> void:
+	if def == null:
+		return
+	character = def
+	moveset = def.moveset
+	# Restaurar lo que cambió el personaje anterior y aplicar lo del nuevo.
+	for k: StringName in _stat_defaults:
+		set(k, _stat_defaults[k])
+	for k: StringName in def.stats:
+		if not _stat_defaults.has(k):
+			_stat_defaults[k] = get(k)
+		set(k, def.stats[k])
+	var old := get_node_or_null(^"Visual")
+	if old:
+		# Liberarlo en el mismo fotograma en que se creó deja materiales colgando en el renderizador:
+		# se esconde y se libera un poco después.
+		old.name = &"OldVisual"
+		old.visible = false
+		if is_inside_tree():
+			get_tree().create_timer(0.5).timeout.connect(old.queue_free)
+		else:
+			old.free()
+	visual = def.visual.instantiate()
+	visual.name = &"Visual"
+	add_child(visual)
+	# Las formas son subrecursos compartidos entre instancias de beast.tscn: duplicar antes de tocar.
+	var shape := $Shape as CollisionShape3D
+	var cap := shape.shape.duplicate() as CapsuleShape3D
+	cap.radius = def.body_radius
+	cap.height = maxf(def.body_height, def.body_radius * 2.0)
+	shape.shape = cap
+	shape.position.y = cap.height * 0.5
+	var hurt := $Hurtbox/Shape as CollisionShape3D
+	var hcap := hurt.shape.duplicate() as CapsuleShape3D
+	hcap.radius = def.body_radius + 0.1
+	hcap.height = cap.height + 0.1
+	hurt.shape = hcap
+	hurt.position.y = hcap.height * 0.5
+	lock_point.position.y = def.lock_height
+	for fx in [_burn_fx, _aura_fx, _debug_sphere]:
+		if fx:
+			fx.queue_free()
+	_burn_fx = null
+	_aura_fx = null
+	_debug_sphere = null
+	revive()
 
 
 ## Vuelve a la vida con todo lleno (respawn de la arena de pruebas / nueva ronda).

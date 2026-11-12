@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="BuffAbility" format=3]
+
+[ext_resource type="Script" path="res://combat/abilities/buff_ability.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+display_name = "Descanso"
+color = Color(0.6, 0.8, 1, 1)
+action = &"skill_rest"
+heat_cost = 60
+cooldown = 30
+duration = 1.6
+cancel_start = 1.4
+tracking = 0
+track_until = 0
+buff_id = &"descanso"
+trigger_time = 0.6
+buff_duration = 4
+damage_multiplier = 1
+speed_multiplier = 0.6
+action_speed_multiplier = 0.85
+heal = 0.35
