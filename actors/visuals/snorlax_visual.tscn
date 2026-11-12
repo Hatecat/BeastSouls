@@ -7,6 +7,8 @@
 script = ExtResource("1_script")
 model_scene = ExtResource("2_model")
 target_height = 2.7
+surface = &"fur"
+lean_scale = 0.6
 action_map = Dictionary[StringName, StringName]({
 &"attack_heavy_1": &"fight_b_body",
 &"attack_heavy_2": &"fight_b_bite",

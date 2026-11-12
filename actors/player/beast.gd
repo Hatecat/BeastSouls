@@ -164,6 +164,8 @@ var _step_accum := 0.0
 ## Este tick se ha saltado: no pegar al suelo (velocity.y = -0.5) antes de despegar.
 var _jumped := false
 var _was_airborne := false
+## Último instante del ataque hasta el que se ha dibujado la estela (-1 = sin empezar).
+var _trail_t := -1.0
 var _debug_sphere: MeshInstance3D
 var _cast := {}
 ## Valores originales de las estadísticas que ha sobrescrito algún CharacterDef.
@@ -328,6 +330,7 @@ func revive() -> void:
 	action_seq += 1
 	hurtbox.set_deferred(&"monitorable", true)
 	_anim = &""
+	visual.reset_motion()
 	if state != State.LOCOMOTION:
 		_set_state(State.LOCOMOTION)
 	_update_presentation()
@@ -925,8 +928,14 @@ func _update_presentation() -> void:
 			visual.set_playback_speed(visual.get_action_length(&"dodge") / _dodge_duration)
 		State.ATTACK:
 			if _anim != attack.action:
-				_play_anim(attack.action, 0.06, attack.anim_speed)
-			visual.set_playback_speed(0.04 if is_charging() else action_speed_multiplier())
+				_anim = attack.action
+				_sound_for(attack.action)
+			# El clip va clavado al reloj de la simulación: el impacto cae dentro de la ventana activa.
+			var ct := _attack_clip_time(attack, state_time)
+			var rate := 0.0
+			if not is_charging():
+				rate = (_attack_clip_time(attack, state_time + 0.02) - ct) / 0.02 * action_speed_multiplier()
+			visual.drive(attack.action, ct, rate)
 		State.ABILITY:
 			if _anim != ability.action:
 				_play_anim(ability.action, 0.08, ability.anim_speed)
@@ -966,9 +975,59 @@ func _update_presentation() -> void:
 				visual.set_playback_speed(h / walk_anim_speed)
 	if _hitstop > 0.0:
 		visual.set_playback_speed(0.0)
+	_update_trail()
+	var looking := locked_on and is_instance_valid(lock_target) and (state == State.LOCOMOTION or state == State.BLOCK)
+	visual.look_at_point((lock_target as Beast).get_lock_position() if looking and lock_target is Beast else Vector3.INF)
 	_update_footsteps(get_physics_process_delta_time())
 	_update_status_fx()
 	_update_debug_hitbox()
+
+
+## Instante del clip para el instante `t` del ataque: anticipación que acelera, golpe seco justo en la ventana
+## activa (el impacto del clip en su centro) y recuperación que frena.
+func _attack_clip_time(a: AttackData, t: float) -> float:
+	var length := visual.get_clip_length(a.action)
+	if length <= 0.0:
+		return 0.0
+	var impact := visual.get_impact_time(a.action)
+	var strike_from := impact - minf(0.07, impact * 0.5)
+	var strike_to := impact + minf(0.09, (length - impact) * 0.5)
+	if t < a.active_start:
+		return strike_from * pow(t / maxf(a.active_start, 0.01), 1.6)
+	if t < a.active_end:
+		return lerpf(strike_from, strike_to, (t - a.active_start) / maxf(a.active_end - a.active_start, 0.01))
+	var u := clampf((t - a.active_end) / maxf(a.duration - a.active_end, 0.01), 0.0, 1.0)
+	return lerpf(strike_to, length, 1.0 - (1.0 - u) * (1.0 - u))
+
+
+## Estela que barre el mismo arco que la hitbox durante la ventana activa (con pasos intermedios para que
+## la curva salga suave aunque la ventana dure pocos ticks).
+func _update_trail() -> void:
+	if state != State.ATTACK or attack == null or state_time < attack.active_start:
+		_trail_t = -1.0
+		return
+	var from := _trail_t
+	if from < 0.0:
+		from = attack.active_start
+		visual.begin_trail(_trail_color())
+	var to := minf(state_time, attack.active_end)
+	if to <= from and _trail_t >= 0.0:
+		return
+	var basis := Basis(Vector3.UP, facing)
+	var steps := 4
+	for i in range(1 if _trail_t >= 0.0 else 0, steps + 1):
+		var off := attack.hitbox_offset_at(lerpf(from, to, i / float(steps)))
+		var flat := Vector3(off.x, 0.0, off.z)
+		var dir := flat.normalized() if flat.length() > 0.05 else Vector3.FORWARD
+		var center := global_position + Vector3(0.0, off.y, 0.0)
+		var reach := flat.length() + attack.hitbox_radius * 0.8
+		visual.add_trail(center + basis * (dir * reach * 0.45), center + basis * (dir * reach))
+	_trail_t = to
+
+
+func _trail_color() -> Color:
+	var c := character.color if character else Color(1.0, 0.8, 0.5)
+	return c.lerp(Color.WHITE, 0.45)
 
 
 func _play_anim(action: StringName, blend: float, speed := 1.0) -> void:
@@ -1045,6 +1104,13 @@ func _fx_hit_received(attacker: Beast, result: HitResult) -> void:
 		_:
 			visual.flash(Color(1.0, 0.35, 0.2, 0.6), 0.15)
 	HitFx.spawn(get_parent(), pos, toward_attacker.normalized(), kind, 1.0 if result != HitResult.BLOCKED else 0.6)
+	var strength := 0.12
+	match result:
+		HitResult.BLOCKED:
+			strength = 0.06
+		HitResult.STAGGERED, HitResult.GUARD_BREAK, HitResult.KILLED:
+			strength = 0.22
+	visual.flinch(-toward_attacker, strength)
 
 
 ## Quemadura (ascuas en el cuerpo) y aura de las mejoras.

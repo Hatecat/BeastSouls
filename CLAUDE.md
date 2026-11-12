@@ -14,6 +14,7 @@ $G --path . -- --host --nick=A --latency=60       # alojar (otra ventana: -- --j
                                                   # --char=ID --autoready: el selector elige y se marca listo solo
 python3 tools/gen_characters.py                   # regenerar kits de los personajes provisionales
 python3 tools/gen_textures.py                     # regenerar texturas procedurales del coliseo (numpy + Pillow)
+python3 tools/gen_character_textures.py            # regenerar el microdetalle de piel de los personajes
 python3 tools/gen_music.py                        # regenerar música y ambiente (numpy + ffmpeg/libvorbis)
 $G --path . -- --practice --stage=test --quality=2   # escenario de pruebas; calidad 0..3
 $G -e --path .                                    # editor
@@ -35,6 +36,20 @@ usar `root.get_node("Net")`. Red: lanzar dos instancias (`-- --host` / `-- --joi
   LÓGICOS de acción (`idle`, `walk`, `run`, `dodge`, `attack_light_1..3`, `attack_heavy_1..2`, `block`, `hit`,
   `death`, `skill_*`) y de socket (`mouth`, `head`, `hand_l/r`, `foot_l/r`, `chest`, `tail_tip`). Cada modelo es una
   escena (p. ej. `charizard_visual.tscn`) con `action_map`, `action_speed` y `sockets`. Cambiar de modelo = otra escena.
+  Encima de los clips hay una capa procedural (solo presentación, igual para el Beast local y el proxy remoto):
+  - `_process`: inclinación del cuerpo con la aceleración y los giros y aplastar/estirar (salto, aterrizaje,
+    golpes), sobre un nodo `Pivot` entre el visual y el modelo; se calcula del propio movimiento del nodo.
+  - `PoseModifier` (SkeletonModifier3D): la cabeza mira al rival fijado (`look_at_point`) y el torso se dobla al
+    recibir un golpe (`flinch`); rota en el espacio del visual, no depende de los ejes de los huesos.
+  - `SpringBoneSimulator3D` en las cadenas cuyo nombre contiene `spring_patterns` (colas, antenas, orejas).
+  - Ataques: `drive(action, clip_time, rate)` clava el clip al `state_time` de la simulación.
+    `_analyze_attacks()` busca en cada clip de ataque el instante de máximo avance (impacto) y
+    `Beast._attack_clip_time()` lo hace caer en la ventana activa (anticipación que acelera, golpe seco,
+    recuperación que frena). `AttackTrail`: estela que barre el mismo arco que la hitbox (`Beast._update_trail`).
+  - Materiales: `character.gdshader` + `surface` (skin/scales/chitin/ghost/fur/wet → `SURFACES`): microdetalle
+    repetido de `assets/textures/characters/` (RG normal, B altura; `tools/gen_character_textures.py`), barniz,
+    contorno, luz que atraviesa y brillo de borde. Ojos y piezas con recorte conservan su material.
+  Probado y descartado: subdividir las mallas en Blender (saca costuras y no mejora la silueta).
 - `actors/player/` — `Beast` (beast.gd/.tscn): CharacterBody3D con la simulación (estados LOCOMOTION, BLOCK, DODGE,
   ATTACK, ABILITY, STAGGER, DEAD; estamina, postura, Calor, recargas, mejoras, quemadura, esquiva con i-frames,
   input buffer, hitstop). `simulate(PlayerInput, delta)` es la única entrada de la lógica. Todo daño pasa por
