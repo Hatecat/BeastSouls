@@ -6,6 +6,7 @@
 [ext_resource type="Script" path="res://actors/player/player_controller.gd" id="4_ctrl"]
 [ext_resource type="Script" path="res://actors/dummy/dummy_brain.gd" id="5_brain"]
 [ext_resource type="Script" path="res://ui/hud.gd" id="6_hud"]
+[ext_resource type="Script" path="res://levels/arena_test/arena_test.gd" id="7_arena"]
 
 [sub_resource type="CameraAttributesPractical" id="cam_attr"]
 
@@ -109,6 +110,7 @@ size = Vector3(0.6, 1.2, 6)
 size = Vector3(0.6, 1.2, 6)
 
 [node name="ArenaTest" type="Node3D"]
+script = ExtResource("7_arena")
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = ExtResource("1_env")
@@ -244,7 +246,7 @@ shape = SubResource("WallB_shape")
 [node name="Player" parent="." instance=ExtResource("2_beast")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 6)
 
-[node name="Dummy" parent="." instance=ExtResource("2_beast")]
+[node name="Rival" parent="." instance=ExtResource("2_beast")]
 transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, -4)
 
 [node name="Camera" parent="." instance=ExtResource("3_cam")]
@@ -256,10 +258,12 @@ camera = NodePath("../Camera")
 
 [node name="DummyBrain" type="Node" parent="." node_paths=PackedStringArray("beast", "target")]
 script = ExtResource("5_brain")
-beast = NodePath("../Dummy")
+beast = NodePath("../Rival")
 target = NodePath("../Player")
+mode = 2
 
-[node name="HUD" type="CanvasLayer" parent="." node_paths=PackedStringArray("beast", "camera")]
+[node name="HUD" type="CanvasLayer" parent="." node_paths=PackedStringArray("beast", "camera", "dummy_brain")]
 script = ExtResource("6_hud")
 beast = NodePath("../Player")
 camera = NodePath("../Camera")
+dummy_brain = NodePath("../DummyBrain")

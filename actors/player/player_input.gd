@@ -16,6 +16,7 @@ const ABILITY_4 := 64
 ## Bits de `held` (botones mantenidos).
 const SPRINT := 1
 const BLOCK := 2
+const HEAVY_HELD := 4  ## Fuerte mantenido: carga el ataque.
 
 ## Dirección de movimiento en el MUNDO (XZ), longitud 0..1. Ya viene relativa a la cámara.
 var move := Vector2.ZERO

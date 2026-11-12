@@ -1,0 +1,28 @@
+[gd_resource type="Resource" script_class="AttackData" format=3]
+
+[ext_resource type="Script" path="res://combat/attack_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+display_name = "Puñetazo"
+action = &"attack_light_2"
+anim_speed = 1.35
+duration = 0.68
+active_start = 0.2
+active_end = 0.32
+combo_start = 0.3
+cancel_start = 0.4
+damage = 12.0
+poise_damage = 15.0
+guard_stamina_damage = 18.0
+stamina_cost = 14.0
+stagger_time = 0.45
+knockback = 2.5
+hitstop = 0.07
+hitbox_offset_start = Vector3(0.4, 1.1, -1.0)
+hitbox_offset_end = Vector3(0.0, 1.1, -1.35)
+hitbox_radius = 0.75
+lunge_speed = 3.5
+lunge_start = 0.08
+lunge_end = 0.26
+tracking = 6.0

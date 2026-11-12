@@ -1,20 +1,36 @@
 class_name Beast
 extends CharacterBody3D
-## Una bestia jugable: simulación de movimiento, esquiva y estamina.
+## Una bestia jugable: simulación de movimiento, combate y recursos.
 ##
 ## La simulación (`simulate`) solo depende de un PlayerInput y del delta, nunca de `Input`:
 ## así la puede alimentar el jugador local, una IA o (Fase 5) la red.
-## La presentación (animaciones, giro del modelo) va aparte en `_update_presentation`.
+## La presentación (animaciones, giro del modelo, efectos) va en `_update_presentation` y en los
+## `_fx_*`; nunca decide nada de la partida.
 
 signal state_changed(old_state: State, new_state: State)
+## Este Beast ha golpeado a `target` (también al ser bloqueado).
+signal hit_landed(target: Beast, result: HitResult)
+## Este Beast ha recibido un golpe de `attacker`.
+signal hit_received(attacker: Beast, result: HitResult, damage: float)
+signal died
 
-enum State { LOCOMOTION, DODGE, DEAD }
+enum State { LOCOMOTION, DODGE, ATTACK, BLOCK, STAGGER, DEAD }
+enum HitResult { IGNORED, HIT, STAGGERED, BLOCKED, GUARD_BREAK, KILLED }
+
+## Capa de físicas de las hurtboxes (capa 4 → bit 8).
+const HURTBOX_MASK := 8
+
+## Dibuja las hitboxes activas (F1 en la arena de pruebas).
+static var debug_hitboxes := false
+
+@export var moveset: Moveset
 
 @export_group("Movimiento")
 @export var jog_speed := 4.5
 @export var sprint_speed := 7.5
 ## Velocidad al moverse con un objetivo fijado (caminar de lado / hacia atrás).
 @export var strafe_speed := 3.2
+@export var block_speed := 2.0
 @export var acceleration := 12.0
 @export var deceleration := 16.0
 ## Rapidez de giro hacia la dirección deseada (mayor = más brusco).
@@ -29,8 +45,23 @@ enum State { LOCOMOTION, DODGE, DEAD }
 @export var backstep_distance := 2.2
 @export var backstep_duration := 0.4
 @export var backstep_iframes := Vector2(0.03, 0.2)
-## Tramo final de la esquiva en el que ya se puede encadenar otra.
+## Tramo final de la esquiva en el que ya se puede encadenar otra acción.
 @export var dodge_recovery := 0.12
+
+@export_group("Defensa")
+## Postura base: cuánto daño de postura aguanta antes de quedar aturdido.
+@export var max_poise := 10.0
+@export var poise_regen := 15.0
+@export var poise_regen_delay := 1.5
+## Fracción de daño que absorbe el bloqueo.
+@export var block_absorb := 0.85
+## Medio ángulo (grados) del frente que cubre el bloqueo.
+@export var block_angle := 75.0
+## Retroceso tras bloquear un golpe (no se puede atacar).
+@export var block_recoil := 0.25
+@export var guard_break_time := 1.2
+## Multiplicador de la regeneración de estamina con la guardia alzada.
+@export var block_regen_factor := 0.4
 
 @export_group("Recursos")
 @export var max_health := 100.0
@@ -42,16 +73,19 @@ enum State { LOCOMOTION, DODGE, DEAD }
 ## Tras vaciar la estamina corriendo, no se puede volver a correr hasta recuperar esto.
 @export var exhausted_threshold := 20.0
 ## Tiempo que se recuerda una pulsación que aún no se pudo ejecutar (input buffer).
-@export var input_buffer_time := 0.25
+@export var input_buffer_time := 0.3
 
 @export_group("Presentación")
 ## Velocidad (m/s) a la que el clip de caminar se ve natural con speed_scale 1.
 @export var walk_anim_speed := 2.6
 ## Velocidad (m/s) a la que el clip de correr se ve natural con speed_scale 1.
 @export var run_anim_speed := 7.0
+## Instante (fracción) del clip "block" que se usa como pose de guardia.
+@export var block_pose := 0.15
 
 @onready var visual: CharacterVisual = $Visual
 @onready var lock_point: Marker3D = $LockPoint
+@onready var hurtbox: Area3D = $Hurtbox
 
 ## Input del tick actual. El controlador (local, IA o red) lo reemplaza cada tick.
 var input := PlayerInput.new()
@@ -61,29 +95,42 @@ var state_time := 0.0
 var facing := 0.0
 var health := 0.0
 var stamina := 0.0
+var poise := 0.0
 var sprinting := false
 var locked_on := false
+## Ataque en curso (estado ATTACK).
+var attack: AttackData
+## Carga acumulada del ataque en curso (segundos).
+var charge := 0.0
 
 var _exhausted := false
 var _regen_wait := 0.0
+var _poise_wait := 0.0
 var _dodge_dir := Vector3.ZERO
 var _dodge_distance := 0.0
 var _dodge_duration := 0.0
 var _dodge_iframes := Vector2.ZERO
 var _buffered := 0
 var _buffer_time := 0.0
+var _combo_chain: Array[AttackData] = []
+var _combo_index := -1
+var _charge_done := false
+var _hit_targets: Array[Beast] = []
+var _hitstop := 0.0
+var _stagger_duration := 0.0
+var _recoil := 0.0
+var _knockback := Vector3.ZERO
 var _anim := &""
+var _debug_sphere: MeshInstance3D
 
 
 func _ready() -> void:
 	add_to_group(&"beasts")
 	add_to_group(&"lockable")
-	health = max_health
-	stamina = max_stamina
 	# La rotación del nodo en el editor solo marca la orientación inicial; el cuerpo no rota.
 	facing = rotation.y
 	rotation.y = 0.0
-	_update_presentation()
+	revive()
 
 
 func _physics_process(delta: float) -> void:
@@ -95,23 +142,33 @@ func _physics_process(delta: float) -> void:
 
 ## Avanza la simulación un tick.
 func simulate(inp: PlayerInput, delta: float) -> void:
-	state_time += delta
 	_update_buffer(inp, delta)
+	if _hitstop > 0.0:
+		# Congelado por impacto: no avanza nada salvo el buffer de input.
+		_hitstop -= delta
+		_update_presentation()
+		return
+	state_time += delta
 	locked_on = is_instance_valid(inp.lock_target) and inp.lock_target != self
 	match state:
 		State.LOCOMOTION:
 			_tick_locomotion(inp, delta)
+		State.BLOCK:
+			_tick_block(inp, delta)
 		State.DODGE:
 			_tick_dodge(inp, delta)
+		State.ATTACK:
+			_tick_attack(inp, delta)
+		State.STAGGER:
+			_tick_stagger(inp, delta)
 		State.DEAD:
-			velocity.x = move_toward(velocity.x, 0.0, deceleration * delta)
-			velocity.z = move_toward(velocity.z, 0.0, deceleration * delta)
+			_brake(delta)
 	if is_on_floor():
 		velocity.y = -0.5
 	else:
 		velocity.y -= gravity * delta
 	move_and_slide()
-	_tick_stamina(delta)
+	_tick_resources(delta)
 	_update_presentation()
 
 
@@ -123,6 +180,10 @@ func is_invulnerable() -> bool:
 
 func is_dead() -> bool:
 	return state == State.DEAD
+
+
+func is_charging() -> bool:
+	return state == State.ATTACK and attack and attack.chargeable and not _charge_done and state_time >= attack.charge_point
 
 
 func get_lock_position() -> Vector3:
@@ -141,12 +202,96 @@ static func yaw_of(dir: Vector3) -> float:
 	return atan2(-dir.x, -dir.z)
 
 
+## Vuelve a la vida con todo lleno (respawn de la arena de pruebas / nueva ronda).
+func revive() -> void:
+	health = max_health
+	stamina = max_stamina
+	poise = max_poise
+	_hitstop = 0.0
+	_buffered = 0
+	velocity = Vector3.ZERO
+	hurtbox.set_deferred(&"monitorable", true)
+	_anim = &""
+	if state != State.LOCOMOTION:
+		_set_state(State.LOCOMOTION)
+	_update_presentation()
+
+
+# --- Recibir golpes -------------------------------------------------------------------
+
+## Aplica un golpe de `attacker`. En red lo llamará solo el host (autoridad).
+func receive_hit(attacker: Beast, atk: AttackData, multiplier := 1.0) -> HitResult:
+	if is_dead() or is_invulnerable():
+		return HitResult.IGNORED
+	var to_attacker := attacker.global_position - global_position
+	to_attacker.y = 0.0
+	var push_dir := -to_attacker.normalized() if to_attacker.length_squared() > 0.001 else -forward()
+	var damage := atk.damage * multiplier
+	var result: HitResult
+	var front := forward().angle_to(to_attacker) <= deg_to_rad(block_angle)
+
+	if state == State.BLOCK and front:
+		damage *= 1.0 - block_absorb
+		_spend_stamina(atk.guard_stamina_damage * multiplier)
+		health -= damage
+		if health <= 0.0:
+			result = HitResult.KILLED
+		elif stamina <= 0.0:
+			result = HitResult.GUARD_BREAK
+			_enter_stagger(guard_break_time, push_dir * atk.knockback)
+		else:
+			result = HitResult.BLOCKED
+			_recoil = block_recoil
+			_knockback = push_dir * atk.knockback * 0.6
+	else:
+		health -= damage
+		poise -= atk.poise_damage * multiplier
+		_poise_wait = poise_regen_delay
+		if health <= 0.0:
+			result = HitResult.KILLED
+		elif poise + _current_hyper_armor() <= 0.0:
+			result = HitResult.STAGGERED
+			poise = max_poise
+			_enter_stagger(atk.stagger_time, push_dir * atk.knockback)
+		else:
+			result = HitResult.HIT
+
+	if result == HitResult.KILLED:
+		health = 0.0
+		_die()
+	_hitstop = atk.hitstop
+	hit_received.emit(attacker, result, damage)
+	_fx_hit_received(attacker, result)
+	return result
+
+
+func _current_hyper_armor() -> float:
+	if state == State.ATTACK and attack and state_time <= attack.active_end:
+		return attack.hyper_armor
+	return 0.0
+
+
+func _enter_stagger(duration: float, knock: Vector3) -> void:
+	_stagger_duration = duration
+	_knockback = knock
+	_anim = &""
+	_set_state(State.STAGGER)
+
+
+func _die() -> void:
+	_set_state(State.DEAD)
+	hurtbox.set_deferred(&"monitorable", false)
+	died.emit()
+
+
 # --- Estados ---------------------------------------------------------------------
 
 func _set_state(new_state: State) -> void:
 	var old := state
 	state = new_state
 	state_time = 0.0
+	if new_state != State.ATTACK:
+		attack = null
 	state_changed.emit(old, new_state)
 
 
@@ -154,19 +299,47 @@ func _tick_locomotion(inp: PlayerInput, delta: float) -> void:
 	var dir := inp.move_3d()
 	var amount := minf(dir.length(), 1.0)
 	sprinting = inp.is_held(PlayerInput.SPRINT) and amount > 0.3 and not _exhausted and stamina > 0.0
-	if _try_dodge(inp):
+	if _try_actions(inp):
+		return
+	if inp.is_held(PlayerInput.BLOCK):
+		sprinting = false
+		_set_state(State.BLOCK)
+		_tick_block(inp, delta)
 		return
 	var speed := sprint_speed if sprinting else (strafe_speed if locked_on else jog_speed)
-	var desired := dir.normalized() * amount * speed if amount > 0.01 else Vector3.ZERO
-	var h := Vector3(velocity.x, 0.0, velocity.z)
-	var rate := acceleration if desired.length() > h.length() else deceleration
-	h = h.lerp(desired, 1.0 - exp(-rate * delta))
-	velocity.x = h.x
-	velocity.z = h.z
+	_steer(dir, amount, speed, delta)
 	if locked_on and not sprinting:
 		_face_towards(inp.lock_target.global_position - global_position, delta)
 	elif amount > 0.05:
 		_face_towards(dir, delta)
+
+
+func _tick_block(inp: PlayerInput, delta: float) -> void:
+	sprinting = false
+	if _recoil > 0.0:
+		# Retroceso de un golpe bloqueado: solo se puede esquivar.
+		_recoil -= delta
+		_knockback = _knockback.move_toward(Vector3.ZERO, 12.0 * delta)
+		velocity.x = _knockback.x
+		velocity.z = _knockback.z
+		_try_dodge(inp)
+		return
+	if not inp.is_held(PlayerInput.BLOCK):
+		_set_state(State.LOCOMOTION)
+		return
+	if _try_actions(inp):
+		return
+	var dir := inp.move_3d()
+	_steer(dir, minf(dir.length(), 1.0), block_speed, delta)
+	if locked_on:
+		_face_towards(inp.lock_target.global_position - global_position, delta)
+	elif dir.length() > 0.05:
+		_face_towards(dir, delta)
+
+
+## Intenta empezar una acción con lo que hay en el buffer: ataque o esquiva.
+func _try_actions(inp: PlayerInput) -> bool:
+	return _try_attack(inp) or _try_dodge(inp)
 
 
 func _try_dodge(inp: PlayerInput) -> bool:
@@ -187,6 +360,7 @@ func _try_dodge(inp: PlayerInput) -> bool:
 		_dodge_iframes = dodge_iframes
 		facing = yaw_of(_dodge_dir)
 	sprinting = false
+	_combo_index = -1
 	_anim = &""  # para que una esquiva encadenada reinicie el clip
 	_spend_stamina(dodge_cost)
 	_set_state(State.DODGE)
@@ -205,7 +379,153 @@ func _tick_dodge(inp: PlayerInput, delta: float) -> void:
 	velocity.x = _dodge_dir.x * speed
 	velocity.z = _dodge_dir.z * speed
 	if state_time >= _dodge_duration - dodge_recovery:
-		_try_dodge(inp)
+		_try_actions(inp)
+
+
+# --- Ataques ------------------------------------------------------------------------
+
+func _try_attack(inp: PlayerInput) -> bool:
+	if moveset == null or stamina <= 0.0:
+		return false
+	var kind := 0
+	if _buffered & PlayerInput.LIGHT:
+		kind = PlayerInput.LIGHT
+	elif _buffered & PlayerInput.HEAVY:
+		kind = PlayerInput.HEAVY
+	else:
+		return false
+	var atk: AttackData
+	if kind == PlayerInput.LIGHT and sprinting and moveset.running_attack:
+		atk = moveset.running_attack
+		_combo_index = -1
+	else:
+		var chain := moveset.light_combo if kind == PlayerInput.LIGHT else moveset.heavy_combo
+		if chain.is_empty():
+			return false
+		# Se continúa el combo solo si venimos de un ataque del mismo tipo.
+		var continuing := state == State.ATTACK and _combo_chain == chain and _combo_index >= 0
+		_combo_index = (_combo_index + 1) % chain.size() if continuing else 0
+		_combo_chain = chain
+		atk = chain[_combo_index]
+	_buffered &= ~kind
+	_start_attack(atk, inp)
+	return true
+
+
+func _start_attack(atk: AttackData, inp: PlayerInput) -> void:
+	# Orientación inicial: al objetivo fijado o hacia donde apunta el stick.
+	if locked_on:
+		var to := inp.lock_target.global_position - global_position
+		to.y = 0.0
+		if to.length_squared() > 0.01:
+			facing = yaw_of(to)
+	elif inp.move.length() > 0.2:
+		facing = yaw_of(inp.move_3d())
+	sprinting = false
+	_spend_stamina(atk.stamina_cost)
+	_set_state(State.ATTACK)
+	attack = atk
+	charge = 0.0
+	_charge_done = not atk.chargeable
+	_hit_targets.clear()
+	_anim = &""
+
+
+func _tick_attack(inp: PlayerInput, delta: float) -> void:
+	var a := attack
+	# Carga: el ataque se congela en charge_point mientras se mantenga el botón.
+	if not _charge_done and state_time >= a.charge_point:
+		if inp.is_held(PlayerInput.HEAVY_HELD) and charge < a.max_charge:
+			charge += delta
+			state_time = a.charge_point
+		else:
+			_charge_done = true
+	# Seguimiento del objetivo durante la anticipación.
+	if state_time < a.active_start and a.tracking > 0.0:
+		var want := Vector3.ZERO
+		if locked_on:
+			want = inp.lock_target.global_position - global_position
+		elif inp.move.length() > 0.2:
+			want = inp.move_3d()
+		want.y = 0.0
+		if want.length_squared() > 0.001:
+			facing = rotate_toward(facing, yaw_of(want), a.tracking * delta)
+	# Embestida.
+	if state_time >= a.lunge_start and state_time <= a.lunge_end and not is_charging():
+		var f := forward() * a.lunge_speed
+		velocity.x = f.x
+		velocity.z = f.z
+	else:
+		_brake(delta)
+	# Golpe.
+	if a.is_active_at(state_time):
+		_check_hits(a)
+	# Salidas.
+	if state_time >= a.combo_start and _try_attack(inp):
+		return
+	if state_time >= a.cancel_start and _try_dodge(inp):
+		return
+	if state_time >= a.duration:
+		_set_state(State.LOCOMOTION)
+
+
+## Multiplicador por carga del ataque en curso.
+func charge_multiplier() -> float:
+	if attack == null or not attack.chargeable or attack.max_charge <= 0.0:
+		return 1.0
+	return lerpf(1.0, attack.charge_multiplier, clampf(charge / attack.max_charge, 0.0, 1.0))
+
+
+func hitbox_center() -> Vector3:
+	if attack == null:
+		return global_position
+	return global_position + Basis(Vector3.UP, facing) * attack.hitbox_offset_at(state_time)
+
+
+func _check_hits(a: AttackData) -> void:
+	var shape := SphereShape3D.new()
+	shape.radius = a.hitbox_radius
+	var q := PhysicsShapeQueryParameters3D.new()
+	q.shape = shape
+	q.transform = Transform3D(Basis.IDENTITY, hitbox_center())
+	q.collision_mask = HURTBOX_MASK
+	q.collide_with_areas = true
+	q.collide_with_bodies = false
+	for r in get_world_3d().direct_space_state.intersect_shape(q, 8):
+		var victim := (r.collider as Node).get_parent() as Beast
+		if victim == null or victim == self or victim in _hit_targets:
+			continue
+		var result := victim.receive_hit(self, a, charge_multiplier())
+		if result == HitResult.IGNORED:
+			continue  # esquivado: si sigue dentro tras las i-frames, puede alcanzarle
+		_hit_targets.append(victim)
+		_hitstop = a.hitstop
+		hit_landed.emit(victim, result)
+
+
+func _tick_stagger(_inp: PlayerInput, delta: float) -> void:
+	_knockback = _knockback.move_toward(Vector3.ZERO, 10.0 * delta)
+	velocity.x = _knockback.x
+	velocity.z = _knockback.z
+	if state_time >= _stagger_duration:
+		_set_state(State.LOCOMOTION)
+
+
+# --- Movimiento común ----------------------------------------------------------------
+
+func _steer(dir: Vector3, amount: float, speed: float, delta: float) -> void:
+	var desired := dir.normalized() * amount * speed if amount > 0.01 else Vector3.ZERO
+	var h := Vector3(velocity.x, 0.0, velocity.z)
+	var rate := acceleration if desired.length() > h.length() else deceleration
+	h = h.lerp(desired, 1.0 - exp(-rate * delta))
+	velocity.x = h.x
+	velocity.z = h.z
+
+
+func _brake(delta: float) -> void:
+	var h := Vector3(velocity.x, 0.0, velocity.z).move_toward(Vector3.ZERO, deceleration * delta)
+	velocity.x = h.x
+	velocity.z = h.z
 
 
 func _face_towards(dir: Vector3, delta: float) -> void:
@@ -222,22 +542,27 @@ func _spend_stamina(amount: float) -> void:
 	_regen_wait = stamina_regen_delay
 
 
-func _tick_stamina(delta: float) -> void:
+func _tick_resources(delta: float) -> void:
 	if sprinting and horizontal_speed() > 1.0:
 		stamina = maxf(0.0, stamina - sprint_cost * delta)
 		_regen_wait = stamina_regen_delay * 0.5
 	_regen_wait -= delta
-	if _regen_wait <= 0.0 and state != State.DODGE:
-		stamina = minf(max_stamina, stamina + stamina_regen * delta)
+	if _regen_wait <= 0.0 and state != State.DODGE and state != State.ATTACK and state != State.DEAD:
+		var regen := stamina_regen * (block_regen_factor if state == State.BLOCK else 1.0)
+		stamina = minf(max_stamina, stamina + regen * delta)
 	if stamina <= 0.0:
 		_exhausted = true
 	elif _exhausted and stamina >= exhausted_threshold:
 		_exhausted = false
+	_poise_wait -= delta
+	if _poise_wait <= 0.0:
+		poise = minf(max_poise, poise + poise_regen * delta)
 
 
 func _update_buffer(inp: PlayerInput, delta: float) -> void:
 	if inp.buttons != 0:
-		_buffered |= inp.buttons
+		# Solo se recuerda la última pulsación (como en los souls): un ataque pisa a una esquiva.
+		_buffered = inp.buttons
 		_buffer_time = input_buffer_time
 	else:
 		_buffer_time -= delta
@@ -253,10 +578,23 @@ func _update_presentation() -> void:
 		State.DODGE:
 			if _anim != &"dodge":
 				_play_anim(&"dodge", 0.06)
-				# Encaja el clip en la duración de la esquiva.
-				visual.set_playback_speed(visual.get_action_length(&"dodge") / _dodge_duration)
+			# Encaja el clip en la duración de la esquiva.
+			visual.set_playback_speed(visual.get_action_length(&"dodge") / _dodge_duration)
+		State.ATTACK:
+			if _anim != attack.action:
+				_play_anim(attack.action, 0.06, attack.anim_speed)
+			visual.set_playback_speed(0.04 if is_charging() else 1.0)
+		State.BLOCK:
+			if _anim != &"block":
+				_anim = &"block"
+				visual.hold_pose(&"block", block_pose, 0.1)
+		State.STAGGER:
+			if _anim != &"hit":
+				_play_anim(&"hit", 0.04)
+			visual.set_playback_speed(visual.get_action_length(&"hit") / maxf(_stagger_duration, 0.1))
 		State.DEAD:
-			_play_anim(&"death", 0.2)
+			_play_anim(&"death", 0.15)
+			visual.set_playback_speed(1.0)
 		State.LOCOMOTION:
 			var h := horizontal_speed()
 			if h < 0.3:
@@ -268,10 +606,55 @@ func _update_presentation() -> void:
 			else:
 				_play_anim(&"walk", 0.2)
 				visual.set_playback_speed(h / walk_anim_speed)
+	if _hitstop > 0.0:
+		visual.set_playback_speed(0.0)
+	_update_debug_hitbox()
 
 
-func _play_anim(action: StringName, blend: float) -> void:
+func _play_anim(action: StringName, blend: float, speed := 1.0) -> void:
 	if _anim == action:
 		return
 	_anim = action
-	visual.play(action, blend)
+	visual.play(action, blend, speed)
+
+
+func _fx_hit_received(attacker: Beast, result: HitResult) -> void:
+	if result == HitResult.IGNORED:
+		return
+	var toward_attacker := (attacker.get_lock_position() - get_lock_position())
+	var pos := get_lock_position() + toward_attacker.limit_length(0.5)
+	var kind := HitFx.Kind.HIT
+	match result:
+		HitResult.BLOCKED:
+			kind = HitFx.Kind.BLOCK
+			visual.flash(Color(0.6, 0.8, 1.0, 0.5), 0.1)
+		HitResult.GUARD_BREAK:
+			kind = HitFx.Kind.GUARD_BREAK
+			visual.flash(Color(1.0, 0.9, 0.5, 0.7), 0.25)
+		_:
+			visual.flash(Color(1.0, 0.35, 0.2, 0.6), 0.15)
+	HitFx.spawn(get_parent(), pos, toward_attacker.normalized(), kind, 1.0 if result != HitResult.BLOCKED else 0.6)
+
+
+func _update_debug_hitbox() -> void:
+	var show := debug_hitboxes and state == State.ATTACK and attack and attack.is_active_at(state_time)
+	if not show:
+		if _debug_sphere:
+			_debug_sphere.visible = false
+		return
+	if _debug_sphere == null:
+		_debug_sphere = MeshInstance3D.new()
+		_debug_sphere.mesh = SphereMesh.new()
+		var m := StandardMaterial3D.new()
+		m.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		m.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		m.albedo_color = Color(1.0, 0.1, 0.1, 0.35)
+		m.no_depth_test = true
+		_debug_sphere.material_override = m
+		_debug_sphere.top_level = true
+		_debug_sphere.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		add_child(_debug_sphere)
+	_debug_sphere.visible = true
+	_debug_sphere.global_position = hitbox_center()
+	var d := attack.hitbox_radius * 2.0
+	_debug_sphere.scale = Vector3(d, d, d)

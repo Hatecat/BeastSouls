@@ -31,6 +31,8 @@ var anim_player: AnimationPlayer
 var current_action: StringName = &""
 
 var _socket_nodes: Dictionary[StringName, BoneAttachment3D] = {}
+var _flash_mat: StandardMaterial3D
+var _flash_tween: Tween
 
 
 func _ready() -> void:
@@ -70,6 +72,31 @@ func play(action: StringName, blend := -1.0, speed := 1.0) -> bool:
 		anim_player.seek(0.0, true)
 	anim_player.play(clip, default_blend if blend < 0.0 else blend, s)
 	return true
+
+
+## Congela el modelo en un instante (fracción 0..1) de una acción: poses estáticas como la guardia.
+func hold_pose(action: StringName, fraction: float, blend := -1.0) -> void:
+	if not play(action, blend):
+		return
+	var clip := anim_player.get_animation(get_clip(action))
+	anim_player.seek(clip.length * fraction, true)
+	anim_player.speed_scale = 0.0
+
+
+## Destello breve sobre todo el modelo (al recibir un golpe, al bloquear...).
+func flash(color: Color, duration := 0.12) -> void:
+	if _flash_mat == null:
+		_flash_mat = StandardMaterial3D.new()
+		_flash_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		_flash_mat.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+		_flash_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		for m: MeshInstance3D in model.find_children("*", "MeshInstance3D", true, false):
+			m.material_overlay = _flash_mat
+	if _flash_tween:
+		_flash_tween.kill()
+	_flash_mat.albedo_color = color
+	_flash_tween = create_tween()
+	_flash_tween.tween_property(_flash_mat, "albedo_color:a", 0.0, duration).from(color.a)
 
 
 ## Transparencia del modelo entero (0 = opaco, 1 = invisible). La usa la cámara cuando queda muy pegada.

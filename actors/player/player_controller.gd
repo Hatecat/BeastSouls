@@ -20,6 +20,8 @@ func _ready() -> void:
 	if camera and beast:
 		camera.follow = beast
 		camera.snap_behind()
+		beast.hit_landed.connect(_on_hit_landed)
+		beast.hit_received.connect(_on_hit_received)
 	_capture_mouse(true)
 
 
@@ -58,6 +60,8 @@ func _physics_process(delta: float) -> void:
 			frame.buttons |= PlayerInput.LIGHT
 		if Input.is_action_just_pressed("attack_heavy"):
 			frame.buttons |= PlayerInput.HEAVY
+		if Input.is_action_pressed("attack_heavy"):
+			frame.held |= PlayerInput.HEAVY_HELD
 	for i in 4:
 		if Input.is_action_just_pressed("ability_%d" % (i + 1)):
 			frame.buttons |= PlayerInput.ABILITY_1 << i
@@ -83,6 +87,20 @@ func _unhandled_input(event: InputEvent) -> void:
 			camera.switch_target(-1)
 		elif event.is_action_pressed("target_next"):
 			camera.switch_target(1)
+
+
+func _on_hit_landed(_target: Beast, result: Beast.HitResult) -> void:
+	camera.add_shake(0.15 if result == Beast.HitResult.BLOCKED else 0.3)
+
+
+func _on_hit_received(_attacker: Beast, result: Beast.HitResult, _damage: float) -> void:
+	match result:
+		Beast.HitResult.BLOCKED:
+			camera.add_shake(0.25)
+		Beast.HitResult.IGNORED:
+			pass
+		_:
+			camera.add_shake(0.55)
 
 
 func _capture_mouse(on: bool) -> void:

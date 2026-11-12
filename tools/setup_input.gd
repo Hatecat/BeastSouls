@@ -65,6 +65,8 @@ func _initialize() -> void:
 		# Depuración (visor de animaciones del sandbox)
 		"debug_prev": [0.5, [_key(KEY_LEFT)]],
 		"debug_next": [0.5, [_key(KEY_RIGHT)]],
+		"debug_hitboxes": [0.5, [_key(KEY_F1)]],
+		"debug_ai": [0.5, [_key(KEY_F2)]],
 	}
 	for action: String in actions:
 		var def: Array = actions[action]
