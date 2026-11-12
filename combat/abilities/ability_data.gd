@@ -27,6 +27,8 @@ extends Resource
 @export var track_until := 0.3
 ## Fracción de la velocidad de trote con la que se puede andar mientras tanto (0 = quieto).
 @export var move_factor := 0.0
+## Si recibir un golpe corta el lanzamiento aunque no rompa la postura.
+@export var interruptible := true
 
 
 func start(_beast: Beast, _cast: Dictionary) -> void:

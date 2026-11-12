@@ -53,7 +53,12 @@ usar `root.get_node("Net")`. Red: lanzar dos instancias (`-- --host` / `-- --joi
   Probado y descartado: subdividir las mallas en Blender (saca costuras y no mejora la silueta).
 - `actors/player/` — `Beast` (beast.gd/.tscn): CharacterBody3D con la simulación (estados LOCOMOTION, BLOCK, DODGE,
   ATTACK, ABILITY, STAGGER, DEAD; estamina, postura, Calor, recargas, mejoras, quemadura, esquiva con i-frames,
-  input buffer, hitstop). `simulate(PlayerInput, delta)` es la única entrada de la lógica. Todo daño pasa por
+  input buffer, hitstop). `simulate(PlayerInput, delta)` es la única entrada de la lógica.
+  Golpes recibidos (`receive_hit`): todo golpe empuja (`_knock`: `AttackData.knockback` × `knockback_distance`
+  metros en `knockback_time`; la mitad al bloquear). Si rompe la postura → STAGGER (`stagger_time`). Si no la
+  rompe: corta la acción en curso cuando es interrumpible (`AttackData.interruptible` y sin `hyper_armor`;
+  `AbilityData.interruptible`, falso en las de área y en las de Snorlax) con un STAGGER corto (`flinch_time`); si
+  no, el Beast sigue a lo suyo pero se desliza (`_push`). Todo daño pasa por
   `deal_hit()` → `receive_hit()` (en red: solo el host). Consultas: `beasts_in_sphere()`, `beasts_in_cone()`.
   `PlayerInput`: fotograma de input serializable (move en mundo, bits `buttons` de un tick y `held`).
   `PlayerController`: lee Input + yaw de cámara → PlayerInput (Espacio: toque = esquivar al soltar, mantener = correr).

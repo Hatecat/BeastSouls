@@ -76,6 +76,11 @@ var action_seq := 0
 @export var block_angle := 75.0
 ## Retroceso tras bloquear un golpe (no se puede atacar).
 @export var block_recoil := 0.25
+## Retroceso al recibir un golpe: metros por punto de `AttackData.knockback`, recorridos en `knockback_time`.
+@export var knockback_distance := 0.42
+@export var knockback_time := 0.32
+## Aturdimiento breve cuando un golpe corta un ataque o habilidad sin romper la postura.
+@export var flinch_time := 0.3
 @export var guard_break_time := 1.2
 ## Multiplicador de la regeneración de estamina con la guardia alzada.
 @export var block_regen_factor := 0.4
@@ -159,6 +164,10 @@ var _hitstop := 0.0
 var _stagger_duration := 0.0
 var _recoil := 0.0
 var _knockback := Vector3.ZERO
+var _knock_decel := 10.0
+## Deslizamiento al aguantar un golpe sin perder el control (se suma al movimiento normal).
+var _push := Vector3.ZERO
+var _push_decel := 10.0
 var _anim := &""
 var _step_accum := 0.0
 ## Este tick se ha saltado: no pegar al suelo (velocity.y = -0.5) antes de despegar.
@@ -228,7 +237,14 @@ func simulate(inp: PlayerInput, delta: float) -> void:
 		velocity.y = -0.5
 	else:
 		velocity.y -= gravity * delta
-	move_and_slide()
+	if _push != Vector3.ZERO:
+		# Deslizamiento por un golpe aguantado: encima del movimiento del estado, sin tocar su velocidad.
+		velocity += _push
+		move_and_slide()
+		velocity -= _push
+		_push = _push.move_toward(Vector3.ZERO, _push_decel * delta)
+	else:
+		move_and_slide()
 	_tick_resources(delta)
 	_update_presentation()
 
@@ -326,6 +342,8 @@ func revive() -> void:
 	burn_time = 0.0
 	_hitstop = 0.0
 	_buffered = 0
+	_push = Vector3.ZERO
+	_knockback = Vector3.ZERO
 	velocity = Vector3.ZERO
 	action_seq += 1
 	hurtbox.set_deferred(&"monitorable", true)
@@ -361,11 +379,11 @@ func receive_hit(attacker: Beast, atk: AttackData, multiplier := 1.0, source := 
 			result = HitResult.KILLED
 		elif stamina <= 0.0:
 			result = HitResult.GUARD_BREAK
-			_enter_stagger(guard_break_time, push_dir * atk.knockback)
+			_enter_stagger(guard_break_time, _knock(push_dir, atk.knockback))
 		else:
 			result = HitResult.BLOCKED
 			_recoil = block_recoil
-			_knockback = push_dir * atk.knockback * 0.6
+			_knockback = _knock(push_dir, atk.knockback * 0.5)
 	else:
 		health -= damage
 		poise -= atk.poise_damage * multiplier
@@ -375,9 +393,16 @@ func receive_hit(attacker: Beast, atk: AttackData, multiplier := 1.0, source := 
 		elif poise + _current_hyper_armor() <= 0.0:
 			result = HitResult.STAGGERED
 			poise = max_poise
-			_enter_stagger(atk.stagger_time, push_dir * atk.knockback)
+			_enter_stagger(atk.stagger_time, _knock(push_dir, atk.knockback))
 		else:
 			result = HitResult.HIT
+			if _interrupted_by_hit():
+				# El golpe corta la acción en curso (ataque ligero, lanzamiento): aturdimiento corto.
+				_enter_stagger(flinch_time, _knock(push_dir, atk.knockback * 0.8))
+			elif state != State.STAGGER:
+				# Aguanta (armadura o postura suficiente): no pierde el control, pero el golpe lo desplaza.
+				_push = _knock(push_dir, atk.knockback * (0.3 if _current_hyper_armor() > 0.0 else 0.5))
+				_push_decel = _knock_decel
 
 	if result == HitResult.KILLED:
 		health = 0.0
@@ -390,6 +415,23 @@ func receive_hit(attacker: Beast, atk: AttackData, multiplier := 1.0, source := 
 	hit_received.emit(attacker, result, damage)
 	_fx_hit_received(attacker, result)
 	return result
+
+
+## Velocidad inicial de un retroceso de fuerza `amount` (recorre amount * knockback_distance metros frenando
+## de forma uniforme en knockback_time). Deja en `_knock_decel` la frenada correspondiente.
+func _knock(dir: Vector3, amount: float) -> Vector3:
+	var speed := 2.0 * amount * knockback_distance / knockback_time
+	_knock_decel = maxf(speed / knockback_time, 1.0)
+	return dir * speed
+
+
+## ¿Un golpe que no rompe la postura corta lo que está haciendo?
+func _interrupted_by_hit() -> bool:
+	if state == State.ATTACK and attack:
+		return attack.interruptible and attack.hyper_armor <= 0.0
+	if state == State.ABILITY and ability:
+		return ability.interruptible
+	return false
 
 
 func _current_hyper_armor() -> float:
@@ -458,7 +500,7 @@ func _tick_block(inp: PlayerInput, delta: float) -> void:
 	if _recoil > 0.0:
 		# Retroceso de un golpe bloqueado: solo se puede esquivar.
 		_recoil -= delta
-		_knockback = _knockback.move_toward(Vector3.ZERO, 12.0 * delta)
+		_knockback = _knockback.move_toward(Vector3.ZERO, _knock_decel * delta)
 		velocity.x = _knockback.x
 		velocity.z = _knockback.z
 		_try_dodge(inp)
@@ -838,7 +880,7 @@ func action_speed_multiplier() -> float:
 
 
 func _tick_stagger(_inp: PlayerInput, delta: float) -> void:
-	_knockback = _knockback.move_toward(Vector3.ZERO, 10.0 * delta)
+	_knockback = _knockback.move_toward(Vector3.ZERO, _knock_decel * delta)
 	velocity.x = _knockback.x
 	velocity.z = _knockback.z
 	if state_time >= _stagger_duration:

@@ -9,6 +9,10 @@ extends AbilityData
 @export var caster_shake := 0.5
 
 
+func _init() -> void:
+	interruptible = false  # los golpes de área son compromisos lentos: aguantan los golpes flojos
+
+
 func tick(beast: Beast, _cast: Dictionary, t: float, delta: float) -> void:
 	if not crossed(t, delta, trigger_time):
 		return

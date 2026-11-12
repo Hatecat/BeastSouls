@@ -22,6 +22,7 @@ hit = SubResource("hit")
 display_name = "Terremoto"
 color = Color(0.75, 0.55, 0.3, 1)
 action = &"skill_earthquake"
+interruptible = false
 heat_cost = 45
 cooldown = 15
 duration = 1.4

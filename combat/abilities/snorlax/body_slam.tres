@@ -21,6 +21,7 @@ hit = SubResource("hit")
 display_name = "Golpe cuerpo"
 color = Color(0.75, 0.55, 0.3, 1)
 action = &"skill_body_slam"
+interruptible = false
 heat_cost = 30
 cooldown = 8
 duration = 1.1

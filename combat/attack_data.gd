@@ -55,6 +55,9 @@ extends Resource
 @export var tracking := 6.0
 ## Postura extra mientras dura el ataque (hasta active_end): "hiper armadura".
 @export var hyper_armor := 0.0
+## Si recibir un golpe corta este ataque aunque no rompa la postura. Con hiper armadura no se corta nunca
+## (solo si el golpe rompe la postura).
+@export var interruptible := true
 
 @export_group("Carga")
 @export var chargeable := false

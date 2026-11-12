@@ -185,7 +185,7 @@ func _fill_guide() -> void:
 	for c in _guide_box.get_children():
 		c.queue_free()
 	var intro := Label.new()
-	intro.text = "Estamina (verde): la gastan ataques, bloqueos, esquivas y correr; se recupera sola. Postura: si la vacías a golpes, el rival queda aturdido. Calor (naranja): se gana golpeando y paga las habilidades."
+	intro.text = "Estamina (verde): la gastan ataques, bloqueos, esquivas y correr; se recupera sola. Postura: si la vacías a golpes, el rival queda aturdido. Cada golpe empuja al que lo recibe y le corta los ataques ligeros y casi todas las habilidades. Calor (naranja): se gana golpeando y paga las habilidades."
 	intro.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	intro.add_theme_font_size_override("font_size", 15)
 	_guide_box.add_child(intro)
