@@ -14,6 +14,20 @@ extends AbilityData
 @export var fx_socket: StringName = &"mouth"
 
 
+func kind() -> StringName:
+	return &"channel"
+
+
+func summary() -> String:
+	var ticks := int((channel_end - channel_start) / maxf(tick_interval, 0.01))
+	return "Chorro de %d m · %d × %.1f de daño%s" % [roundi(cone_range), ticks, hit.damage if hit else 0.0,
+			" · te puedes mover" if move_factor > 0.0 else ""]
+
+
+func reach() -> float:
+	return cone_range * 0.8
+
+
 func start(beast: Beast, cast: Dictionary) -> void:
 	cast.next_tick = channel_start
 	var jet := Fx.flame_jet(color)

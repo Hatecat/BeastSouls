@@ -8,8 +8,33 @@ extends Resource
 @export var heavy_combo: Array[AttackData] = []
 ## Ataque ligero mientras se corre.
 @export var running_attack: AttackData
-## Kit de habilidades (teclas 1-4 / cruceta), en orden de ranura.
+## Catálogo de habilidades del personaje (hasta 10). El jugador equipa 4 antes del combate; las 4 primeras
+## son la selección por defecto. Las equipadas están en `Beast.abilities`.
 @export var abilities: Array[AbilityData] = []
+
+const LOADOUT_SIZE := 4
+
+
+## Deja `picks` (índices del catálogo) en una selección válida: sin repetidos, dentro del catálogo y completa.
+func valid_loadout(picks: Array) -> Array[int]:
+	var out: Array[int] = []
+	for p: Variant in picks:
+		var i := int(p)
+		if i >= 0 and i < abilities.size() and i not in out and out.size() < LOADOUT_SIZE:
+			out.append(i)
+	var next := 0
+	while out.size() < mini(LOADOUT_SIZE, abilities.size()):
+		if next not in out:
+			out.append(next)
+		next += 1
+	return out
+
+
+func loadout_abilities(picks: Array) -> Array[AbilityData]:
+	var out: Array[AbilityData] = []
+	for i in valid_loadout(picks):
+		out.append(abilities[i])
+	return out
 
 
 ## Índice estable de un ataque (para la red): ligeros, luego fuertes, luego el de carrera. -1 si no está.

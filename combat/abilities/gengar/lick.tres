@@ -1,0 +1,36 @@
+[gd_resource type="Resource" script_class="ChannelAbility" format=3]
+
+[ext_resource type="Script" path="res://combat/abilities/channel_ability.gd" id="1_script"]
+[ext_resource type="Script" path="res://combat/attack_data.gd" id="2_attack"]
+
+[sub_resource type="Resource" id="hit"]
+script = ExtResource("2_attack")
+display_name = "Lengüetazo"
+damage = 3.6
+poise_damage = 9
+guard_stamina_damage = 7.2
+stamina_cost = 0
+stagger_time = 0.3
+knockback = 0.8
+hitstop = 0.05
+heat_gain = 0
+
+[resource]
+script = ExtResource("1_script")
+hit = SubResource("hit")
+display_name = "Lengüetazo"
+color = Color(0.9, 0.4, 0.7, 1)
+action = &"skill_dark_pulse"
+heat_cost = 25
+cooldown = 6
+duration = 1.2
+cancel_start = 1
+tracking = 5
+track_until = 0.95
+channel_start = 0.2
+channel_end = 0.95
+tick_interval = 0.13
+cone_range = 3.2
+cone_angle_deg = 50
+origin_offset = Vector3(0, 1, -0.5)
+move_factor = 0.5

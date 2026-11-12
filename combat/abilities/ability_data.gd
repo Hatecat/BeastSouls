@@ -31,6 +31,25 @@ extends Resource
 @export var interruptible := true
 
 
+## Tipo de habilidad (para la IA y el selector): projectile, channel, area, buff, dash.
+func kind() -> StringName:
+	return &""
+
+
+## Una línea para el selector: qué hace, con sus números.
+func summary() -> String:
+	return ""
+
+
+## Distancia útil aproximada (m): la IA la usa para decidir cuándo lanzarla.
+func reach() -> float:
+	return 4.0
+
+
+static func kind_label(k: StringName) -> String:
+	return {&"projectile": "Distancia", &"channel": "Chorro", &"area": "Área", &"buff": "Mejora", &"dash": "Embestida"}.get(k, "Habilidad")
+
+
 func start(_beast: Beast, _cast: Dictionary) -> void:
 	pass
 

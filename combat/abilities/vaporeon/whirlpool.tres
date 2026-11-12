@@ -1,0 +1,32 @@
+[gd_resource type="Resource" script_class="AreaAbility" format=3]
+
+[ext_resource type="Script" path="res://combat/abilities/area_ability.gd" id="1_script"]
+[ext_resource type="Script" path="res://combat/attack_data.gd" id="2_attack"]
+
+[sub_resource type="Resource" id="hit"]
+script = ExtResource("2_attack")
+display_name = "Torbellino"
+damage = 15
+poise_damage = 55
+guard_stamina_damage = 35
+stamina_cost = 0
+stagger_time = 0.8
+knockback = 10
+hitstop = 0.1
+heat_gain = 0
+
+[resource]
+script = ExtResource("1_script")
+hit = SubResource("hit")
+display_name = "Torbellino"
+color = Color(0.3, 0.62, 1, 1)
+action = &"skill_surf"
+heat_cost = 25
+cooldown = 7
+duration = 0.95
+cancel_start = 0.75
+tracking = 4
+track_until = 0.35
+trigger_time = 0.3
+radius = 3.6
+caster_shake = 0.4

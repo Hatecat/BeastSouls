@@ -7,16 +7,22 @@
 [ext_resource type="Resource" path="res://combat/abilities/charizard/flamethrower.tres" id="ab1"]
 [ext_resource type="Resource" path="res://combat/abilities/charizard/roar.tres" id="ab2"]
 [ext_resource type="Resource" path="res://combat/abilities/charizard/dragon_dance.tres" id="ab3"]
-[ext_resource type="Resource" path="res://combat/attacks/charizard/light_1.tres" id="a0"]
-[ext_resource type="Resource" path="res://combat/attacks/charizard/light_2.tres" id="a1"]
-[ext_resource type="Resource" path="res://combat/attacks/charizard/light_3.tres" id="a2"]
-[ext_resource type="Resource" path="res://combat/attacks/charizard/heavy_1.tres" id="a3"]
-[ext_resource type="Resource" path="res://combat/attacks/charizard/heavy_2.tres" id="a4"]
-[ext_resource type="Resource" path="res://combat/attacks/charizard/running.tres" id="a5"]
+[ext_resource type="Resource" path="res://combat/abilities/charizard/ember.tres" id="ab4"]
+[ext_resource type="Resource" path="res://combat/abilities/charizard/flare_blitz.tres" id="ab5"]
+[ext_resource type="Resource" path="res://combat/abilities/charizard/heat_wave.tres" id="ab6"]
+[ext_resource type="Resource" path="res://combat/abilities/charizard/fire_spin.tres" id="ab7"]
+[ext_resource type="Resource" path="res://combat/abilities/charizard/roost.tres" id="ab8"]
+[ext_resource type="Resource" path="res://combat/abilities/charizard/fire_blast.tres" id="ab9"]
+[ext_resource type="Resource" path="res://combat/attacks/charizard/light_1.tres" id="light_1"]
+[ext_resource type="Resource" path="res://combat/attacks/charizard/light_2.tres" id="light_2"]
+[ext_resource type="Resource" path="res://combat/attacks/charizard/light_3.tres" id="light_3"]
+[ext_resource type="Resource" path="res://combat/attacks/charizard/heavy_1.tres" id="heavy_1"]
+[ext_resource type="Resource" path="res://combat/attacks/charizard/heavy_2.tres" id="heavy_2"]
+[ext_resource type="Resource" path="res://combat/attacks/charizard/running.tres" id="running"]
 
 [resource]
 script = ExtResource("1_script")
-light_combo = Array[ExtResource("2_attack")]([ExtResource("a0"), ExtResource("a1"), ExtResource("a2")])
-heavy_combo = Array[ExtResource("2_attack")]([ExtResource("a3"), ExtResource("a4")])
-running_attack = ExtResource("a5")
-abilities = Array[ExtResource("3_ability")]([ExtResource("ab0"), ExtResource("ab1"), ExtResource("ab2"), ExtResource("ab3")])
+light_combo = Array[ExtResource("2_attack")]([ExtResource("light_1"), ExtResource("light_2"), ExtResource("light_3")])
+heavy_combo = Array[ExtResource("2_attack")]([ExtResource("heavy_1"), ExtResource("heavy_2")])
+running_attack = ExtResource("running")
+abilities = Array[ExtResource("3_ability")]([ExtResource("ab0"), ExtResource("ab1"), ExtResource("ab2"), ExtResource("ab3"), ExtResource("ab4"), ExtResource("ab5"), ExtResource("ab6"), ExtResource("ab7"), ExtResource("ab8"), ExtResource("ab9")])

@@ -14,6 +14,23 @@ extends AbilityData
 @export_range(0.0, 1.0) var heal := 0.0
 
 
+func kind() -> StringName:
+	return &"buff"
+
+
+func summary() -> String:
+	var parts := PackedStringArray()
+	if heal > 0.0:
+		parts.append("cura %d %%" % roundi(heal * 100.0))
+	if damage_multiplier != 1.0:
+		parts.append("daño %+d %%" % roundi((damage_multiplier - 1.0) * 100.0))
+	if speed_multiplier != 1.0:
+		parts.append("velocidad %+d %%" % roundi((speed_multiplier - 1.0) * 100.0))
+	if action_speed_multiplier != 1.0:
+		parts.append("rapidez de ataque %+d %%" % roundi((action_speed_multiplier - 1.0) * 100.0))
+	return "%d s: %s" % [roundi(buff_duration), ", ".join(parts)]
+
+
 func tick(beast: Beast, _cast: Dictionary, t: float, delta: float) -> void:
 	if not crossed(t, delta, trigger_time):
 		return

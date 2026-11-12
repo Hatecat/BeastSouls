@@ -7,6 +7,12 @@
 [ext_resource type="Resource" path="res://combat/abilities/scyther/fury_cutter.tres" id="ab1"]
 [ext_resource type="Resource" path="res://combat/abilities/scyther/x_scissor.tres" id="ab2"]
 [ext_resource type="Resource" path="res://combat/abilities/scyther/swords_dance.tres" id="ab3"]
+[ext_resource type="Resource" path="res://combat/abilities/scyther/razor_leaf.tres" id="ab4"]
+[ext_resource type="Resource" path="res://combat/abilities/scyther/quick_attack.tres" id="ab5"]
+[ext_resource type="Resource" path="res://combat/abilities/scyther/night_slash.tres" id="ab6"]
+[ext_resource type="Resource" path="res://combat/abilities/scyther/blade_cyclone.tres" id="ab7"]
+[ext_resource type="Resource" path="res://combat/abilities/scyther/razor_wind.tres" id="ab8"]
+[ext_resource type="Resource" path="res://combat/abilities/scyther/focus_energy.tres" id="ab9"]
 [ext_resource type="Resource" path="res://combat/attacks/scyther/light_1.tres" id="light_1"]
 [ext_resource type="Resource" path="res://combat/attacks/scyther/light_2.tres" id="light_2"]
 [ext_resource type="Resource" path="res://combat/attacks/scyther/light_3.tres" id="light_3"]
@@ -19,4 +25,4 @@ script = ExtResource("1_script")
 light_combo = Array[ExtResource("2_attack")]([ExtResource("light_1"), ExtResource("light_2"), ExtResource("light_3")])
 heavy_combo = Array[ExtResource("2_attack")]([ExtResource("heavy_1"), ExtResource("heavy_2")])
 running_attack = ExtResource("running")
-abilities = Array[ExtResource("3_ability")]([ExtResource("ab0"), ExtResource("ab1"), ExtResource("ab2"), ExtResource("ab3")])
+abilities = Array[ExtResource("3_ability")]([ExtResource("ab0"), ExtResource("ab1"), ExtResource("ab2"), ExtResource("ab3"), ExtResource("ab4"), ExtResource("ab5"), ExtResource("ab6"), ExtResource("ab7"), ExtResource("ab8"), ExtResource("ab9")])

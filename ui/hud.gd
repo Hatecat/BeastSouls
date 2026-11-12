@@ -330,7 +330,7 @@ func _process(_delta: float) -> void:
 	_stamina.value = beast.stamina / beast.max_stamina
 	_heat.custom_minimum_size.x = beast.max_heat * px_per_point * 0.6
 	_heat.value = beast.heat / beast.max_heat
-	var abilities: Array = beast.moveset.abilities if beast.moveset else []
+	var abilities: Array = beast.abilities
 	for i in _slots.size():
 		var slot := _slots[i]
 		slot.ability = abilities[i] if i < abilities.size() else null

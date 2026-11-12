@@ -15,7 +15,7 @@ signal failed(reason: String)
 signal snapshot_received(data: Array)
 signal event_received(data: Dictionary)
 
-const PROTOCOL_VERSION := 2
+const PROTOCOL_VERSION := 3
 const DEFAULT_PORT := 24700
 const HANDSHAKE_TIMEOUT_MS := 8000
 const CHANNEL_EVENTS := 0

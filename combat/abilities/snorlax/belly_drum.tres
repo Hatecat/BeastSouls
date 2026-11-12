@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="BuffAbility" format=3]
+
+[ext_resource type="Script" path="res://combat/abilities/buff_ability.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+display_name = "Tambor"
+color = Color(1, 0.6, 0.4, 1)
+action = &"skill_rest"
+heat_cost = 55
+cooldown = 26
+duration = 1.5
+cancel_start = 1.3
+tracking = 0
+track_until = 0
+buff_id = &"belly_drum"
+trigger_time = 0.6
+buff_duration = 10
+damage_multiplier = 1.5
+speed_multiplier = 0.9
+action_speed_multiplier = 1
+heal = 0
+interruptible = false

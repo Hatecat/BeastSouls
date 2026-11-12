@@ -92,6 +92,7 @@ ABILITY_SCRIPTS = {
     "channel": ("ChannelAbility", "res://combat/abilities/channel_ability.gd"),
     "area": ("AreaAbility", "res://combat/abilities/area_ability.gd"),
     "buff": ("BuffAbility", "res://combat/abilities/buff_ability.gd"),
+    "dash": ("DashAbility", "res://combat/abilities/dash_ability.gd"),
 }
 
 
@@ -118,6 +119,9 @@ def make_ability(cid, file, kind, name, col, action, hit=None, **kw):
 
 
 def make_moveset(cid, attacks, abilities):
+    """`abilities`: las 4 por defecto (ranuras 1 distancia, 2 cerca, 3 área, 4 mejora). Se completa el catálogo
+    hasta 10 con las de EXTRA_KITS[cid] si existen."""
+    abilities = list(abilities) + [f(cid) for f in EXTRA_KITS.get(cid, [])]
     ext = ['[ext_resource type="Script" path="res://combat/attack_data.gd" id="2_attack"]',
            '[ext_resource type="Script" path="res://combat/abilities/ability_data.gd" id="3_ability"]']
     for i, a in enumerate(abilities):
@@ -145,6 +149,168 @@ def make_def(cid, name, role, desc, col, stats, body, ratings):
     write(f"actors/characters/{cid}.tres", ext, b, "res://actors/characters/character_def.gd", "CharacterDef")
 
 
+# --- Habilidades extra del catálogo (cada personaje equipa 4 de 10) -----------------------------------
+# Atajos con valores por defecto razonables; cualquier campo se puede sobrescribir con **kw.
+
+def x_proj(file, name, col, action, dmg, heat, cd, hit=None, **kw):
+    h = dict(damage=dmg, poise_damage=dmg * 1.4, guard_stamina_damage=dmg * 1.1, knockback=3)
+    h.update(hit or {})
+    d = dict(anim_speed=1.7, heat_cost=heat, cooldown=cd, duration=0.8, cancel_start=0.62, tracking=6, track_until=0.3,
+             spawn_time=0.3, spawn_offset=(0, 1.3, -1.0), speed=20, radius=0.4, lifetime=2.0, homing=1.0,
+             explode_radius=1.6, visual_scale=1.0)
+    d.update(kw)
+    return lambda cid: make_ability(cid, file, "projectile", name, col, action, hit=h, **d)
+
+
+def x_channel(file, name, col, action, dmg, heat, cd, hit=None, **kw):
+    h = dict(damage=dmg, poise_damage=dmg * 1.6, guard_stamina_damage=dmg * 2, stagger_time=0.3, knockback=0.8)
+    h.update(hit or {})
+    d = dict(heat_cost=heat, cooldown=cd, duration=1.5, cancel_start=1.3, tracking=2.0, track_until=1.25,
+             channel_start=0.3, channel_end=1.25, tick_interval=0.15, cone_range=5.0, cone_angle_deg=25,
+             origin_offset=(0, 1.2, -0.6))
+    d.update(kw)
+    return lambda cid: make_ability(cid, file, "channel", name, col, action, hit=h, **d)
+
+
+def x_area(file, name, col, action, dmg, heat, cd, radius, hit=None, **kw):
+    h = dict(damage=dmg, poise_damage=55, guard_stamina_damage=35, stagger_time=0.8, knockback=6, hitstop=0.1)
+    h.update(hit or {})
+    d = dict(heat_cost=heat, cooldown=cd, duration=1.2, cancel_start=0.95, tracking=4, track_until=0.35,
+             trigger_time=0.45, radius=radius, caster_shake=0.4)
+    d.update(kw)
+    return lambda cid: make_ability(cid, file, "area", name, col, action, hit=h, **d)
+
+
+def x_buff(file, name, col, action, heat, cd, time, dmg=1.0, speed=1.0, rate=1.0, heal=0.0, **kw):
+    d = dict(heat_cost=heat, cooldown=cd, duration=1.2, cancel_start=0.95, tracking=0, track_until=0,
+             buff_id=f'&"{file}"', trigger_time=0.45, buff_duration=time, damage_multiplier=dmg,
+             speed_multiplier=speed, action_speed_multiplier=rate, heal=heal)
+    d.update(kw)
+    return lambda cid: make_ability(cid, file, "buff", name, col, action, **d)
+
+
+def x_dash(file, name, col, dmg, heat, cd, meters, hit=None, action="attack_running", **kw):
+    h = dict(damage=dmg, poise_damage=dmg * 2, guard_stamina_damage=dmg * 1.5, stagger_time=0.6, knockback=5, hitstop=0.09)
+    h.update(hit or {})
+    d = dict(heat_cost=heat, cooldown=cd, duration=0.85, cancel_start=0.7, tracking=7, track_until=0.2,
+             dash_start=0.2, dash_end=0.5, radius=1.3, offset=(0, 1.0, -0.8))
+    d.update(kw)
+    d["dash_speed"] = round(meters / (d["dash_end"] - d["dash_start"]), 1)
+    return lambda cid: make_ability(cid, file, "dash", name, col, action, hit=h, **d)
+
+
+_FIRE = (1.0, 0.55, 0.2)
+_G = (0.55, 1.0, 0.4)
+_P = (0.62, 0.3, 1.0)
+_N = (1.0, 0.92, 0.65)
+_E = (0.75, 0.55, 0.3)
+_Y = (0.85, 1.0, 0.25)
+_T = (0.7, 0.3, 1.0)
+_W = (0.3, 0.62, 1.0)
+_ICE = (0.7, 0.95, 1.0)
+_NI = dict(interruptible=False)  # Snorlax no se corta
+
+EXTRA_KITS = {
+    "charizard": [
+        x_proj("ember", "Ascuas", _FIRE, "skill_fireball", 7, 15, 3, hit=dict(stagger_time=0.25, knockback=1, burn_time=1.5),
+               spawn_time=0.22, duration=0.9, cancel_start=0.72, track_until=0.6, speed=28, radius=0.28, lifetime=1.2,
+               homing=1.6, explode_radius=0.0, visual_scale=0.5, count=3, interval=0.13, spawn_offset=(0, 1.6, -1.1)),
+        x_dash("flare_blitz", "Envite ígneo", _FIRE, 24, 30, 9, 8.0, hit=dict(burn_time=3.0)),
+        x_area("heat_wave", "Onda ígnea", (1.0, 0.4, 0.15), "skill_roar", 20, 35, 11, 4.5, hit=dict(burn_time=3.0)),
+        x_channel("fire_spin", "Giro fuego", _FIRE, "skill_flamethrower", 3.0, 25, 6, hit=dict(burn_time=1.0),
+                  duration=1.3, cancel_start=1.1, tracking=5, track_until=1.05, move_factor=0.6, channel_start=0.2,
+                  channel_end=1.05, tick_interval=0.13, cone_range=3.4, cone_angle_deg=60, origin_offset=(0, 1.7, -0.7)),
+        x_buff("roost", "Respiro", (1.0, 0.9, 0.7), "skill_dragon_dance", 50, 24, 5, heal=0.25, speed=0.8),
+        x_proj("fire_blast", "Llamarada", (1.0, 0.35, 0.1), "skill_fireball", 34, 45, 10,
+               hit=dict(stagger_time=0.8, knockback=7, hitstop=0.12, burn_time=4.0), anim_speed=1.1, duration=1.2,
+               cancel_start=1.0, spawn_time=0.55, speed=13, radius=0.7, lifetime=2.6, homing=0.6, explode_radius=3.2,
+               visual_scale=1.9, spawn_offset=(0, 1.6, -1.1)),
+    ],
+    "scyther": [
+        x_proj("razor_leaf", "Viento cortante", _G, "skill_air_slash", 6, 20, 4, hit=dict(stagger_time=0.25, knockback=1),
+               anim_speed=2.0, spawn_time=0.2, duration=0.85, cancel_start=0.7, track_until=0.6, speed=32, radius=0.25,
+               lifetime=1.0, homing=1.2, explode_radius=0.0, visual_scale=0.45, count=4, interval=0.1),
+        x_dash("quick_attack", "Ataque rápido", _G, 13, 15, 3.5, 6.5, dash_start=0.12, dash_end=0.34, duration=0.6,
+               cancel_start=0.48, track_until=0.12),
+        x_dash("night_slash", "Tajo umbrío", (0.35, 0.8, 0.5), 26, 35, 10, 10.0, hit=dict(stagger_time=0.8, knockback=6),
+               dash_start=0.3, dash_end=0.6, duration=1.0, cancel_start=0.85, track_until=0.3, radius=1.5,
+               action="attack_heavy_1"),
+        x_area("blade_cyclone", "Ciclón de cuchillas", _G, "skill_x_scissor", 13, 20, 5, 2.8,
+               hit=dict(poise_damage=35, stagger_time=0.5, knockback=4, hitstop=0.07), duration=0.75, cancel_start=0.6,
+               trigger_time=0.2, caster_shake=0.2),
+        x_channel("razor_wind", "Vendaval", (0.75, 1.0, 0.8), "skill_air_slash", 3.4, 35, 9, anim_speed=0.8,
+                  cone_range=6.5, cone_angle_deg=16, origin_offset=(0, 1.3, -0.6), fx_socket='&"hand_r"'),
+        x_buff("focus_energy", "Foco energía", (1.0, 1.0, 0.6), "skill_swords_dance", 40, 18, 10, rate=1.25, speed=1.15),
+    ],
+    "gengar": [
+        x_channel("lick", "Lengüetazo", (0.9, 0.4, 0.7), "skill_dark_pulse", 3.6, 25, 6, hit=dict(poise_damage=9),
+                  duration=1.2, cancel_start=1.0, tracking=5, track_until=0.95, move_factor=0.5, channel_start=0.2,
+                  channel_end=0.95, tick_interval=0.13, cone_range=3.2, cone_angle_deg=50, origin_offset=(0, 1.0, -0.5)),
+        x_proj("sludge_bomb", "Bomba lodo", (0.6, 0.25, 0.75), "skill_shadow_ball", 16, 35, 8,
+               hit=dict(stagger_time=0.6, knockback=4, burn_time=6.0), anim_speed=1.3, duration=1.0, cancel_start=0.8,
+               spawn_time=0.4, speed=12, radius=0.55, lifetime=2.6, homing=0.8, explode_radius=3.4, visual_scale=1.5,
+               spawn_offset=(0, 1.2, -1.0)),
+        x_proj("night_shade", "Tinieblas", (0.45, 0.2, 0.8), "skill_shadow_ball", 7, 30, 7,
+               hit=dict(stagger_time=0.3, knockback=1.5), duration=1.0, cancel_start=0.85, track_until=0.7, spawn_time=0.25,
+               speed=11, radius=0.32, lifetime=3.0, homing=3.5, explode_radius=0.0, visual_scale=0.7, count=3,
+               interval=0.2, spawn_offset=(0, 1.2, -1.0)),
+        x_dash("phantom_force", "Golpe fantasma", _P, 22, 30, 9, 9.0, dash_start=0.28, dash_end=0.55, duration=0.95,
+               cancel_start=0.8, track_until=0.28),
+        x_area("curse", "Maldición", (0.5, 0.15, 0.6), "skill_hypnosis", 8, 40, 14, 6.0,
+               hit=dict(poise_damage=30, stagger_time=0.5, knockback=2, burn_time=7.0), trigger_time=0.5, duration=1.3,
+               cancel_start=1.0),
+        x_buff("dream_eater", "Comesueños", (0.85, 0.5, 1.0), "skill_nasty_plot", 55, 26, 6, heal=0.22, dmg=1.1),
+    ],
+    "snorlax": [
+        x_proj("rock_throw", "Lanzarrocas", _E, "skill_hyper_beam", 28, 30, 7,
+               hit=dict(poise_damage=60, stagger_time=0.8, knockback=7, hitstop=0.12), anim_speed=1.0, duration=1.2,
+               cancel_start=1.0, spawn_time=0.55, speed=16, radius=0.65, lifetime=2.2, homing=0.4, explode_radius=2.4,
+               visual_scale=1.7, spawn_offset=(0, 2.0, -1.2), **_NI),
+        x_dash("rollout", "Rodada", _E, 30, 35, 10, 9.0, hit=dict(poise_damage=80, stagger_time=0.9, knockback=9, hitstop=0.14),
+               dash_start=0.4, dash_end=0.8, duration=1.25, cancel_start=1.1, track_until=0.4, tracking=4, radius=1.9,
+               offset=(0, 1.3, -1.0), action="attack_heavy_1", **_NI),
+        x_area("yawn", "Bostezo", (0.8, 0.85, 1.0), "skill_rest", 0, 40, 16, 4.5,
+               hit=dict(poise_damage=100, guard_stamina_damage=0, stagger_time=1.7, knockback=1, unblockable=True),
+               trigger_time=0.6, duration=1.4, cancel_start=1.1, caster_shake=0.0),
+        x_buff("belly_drum", "Tambor", (1.0, 0.6, 0.4), "skill_rest", 55, 26, 10, dmg=1.5, speed=0.9, duration=1.5,
+               cancel_start=1.3, trigger_time=0.6, **_NI),
+        x_channel("hyper_voice", "Vozarrón", _N, "skill_earthquake", 3.6, 30, 8, hit=dict(knockback=2.0, poise_damage=8),
+                  cone_range=5.0, cone_angle_deg=42, origin_offset=(0, 2.0, -0.8), duration=1.6, cancel_start=1.4,
+                  channel_start=0.4, channel_end=1.35, track_until=1.35, **_NI),
+        x_buff("stockpile", "Reserva", (0.7, 1.0, 0.7), "skill_rest", 40, 20, 8, heal=0.18, dmg=1.15, duration=1.4,
+               cancel_start=1.2, trigger_time=0.55, **_NI),
+    ],
+    "beedrill": [
+        x_proj("poison_sting", "Picotazo veneno", _T, "skill_pin_missile", 12, 20, 4, hit=dict(burn_time=8.0), anim_speed=1.8,
+               spawn_time=0.22, speed=26, radius=0.3, lifetime=1.5, homing=1.4, explode_radius=0.0, visual_scale=0.6,
+               spawn_offset=(0, 1.4, -1.0)),
+        x_dash("pursuit", "Persecución", _Y, 18, 25, 6, 8.5, hit=dict(burn_time=2.0), dash_start=0.16, dash_end=0.42,
+               duration=0.7, cancel_start=0.58, track_until=0.16),
+        x_area("bug_buzz", "Zumbido", _Y, "skill_toxic_burst", 16, 30, 9, 4.0, trigger_time=0.35, duration=1.0,
+               cancel_start=0.8),
+        x_channel("acid", "Ácido", _T, "skill_pin_missile", 2.8, 35, 9, hit=dict(burn_time=2.5), anim_speed=0.9,
+                  cone_range=6.0, cone_angle_deg=18, origin_offset=(0, 1.3, -0.6), fx_socket='&"hand_r"'),
+        x_buff("hone_claws", "Afilagarras", (1.0, 0.8, 0.3), "skill_agility", 45, 20, 9, dmg=1.35),
+        x_area("toxic", "Tóxico", _T, "skill_toxic_burst", 4, 45, 16, 3.6,
+               hit=dict(poise_damage=20, guard_stamina_damage=0, stagger_time=0.4, knockback=2, burn_time=9.0, unblockable=True),
+               trigger_time=0.4),
+    ],
+    "vaporeon": [
+        x_proj("bubble", "Burbujas", (0.55, 0.8, 1.0), "skill_water_pulse", 6, 20, 4, hit=dict(stagger_time=0.25, knockback=2),
+               duration=1.0, cancel_start=0.85, track_until=0.75, spawn_time=0.25, speed=15, radius=0.35, lifetime=2.2,
+               homing=2.4, explode_radius=0.0, visual_scale=0.6, count=4, interval=0.14, spawn_offset=(0, 1.0, -1.2)),
+        x_dash("aqua_jet", "Acua jet", _W, 17, 25, 6, 9.0, hit=dict(knockback=7)),
+        x_channel("ice_beam", "Rayo hielo", _ICE, "skill_hydro_pump", 3.6, 40, 10, cone_range=9.0, cone_angle_deg=10,
+                  origin_offset=(0, 1.0, -0.9), tracking=1.4),
+        x_area("whirlpool", "Torbellino", _W, "skill_surf", 15, 25, 7, 3.6, hit=dict(knockback=10), trigger_time=0.3,
+               duration=0.95, cancel_start=0.75),
+        x_buff("rain_dance", "Danza lluvia", (0.45, 0.7, 1.0), "skill_aqua_ring", 40, 20, 10, speed=1.25, rate=1.12),
+        x_proj("scald", "Escaldar", (0.75, 0.85, 1.0), "skill_water_pulse", 18, 30, 6, hit=dict(burn_time=4.0, knockback=4),
+               speed=22, explode_radius=1.8, spawn_offset=(0, 1.0, -1.2)),
+    ],
+}
+
+
 def v2(x, y):
     return f"Vector2({x}, {y})"
 
@@ -155,6 +321,9 @@ def main():
     make_def("charizard", "Charizard", "Equilibrado",
              "Dragón de fuego versátil. Quema a distancia y aguanta bien el cuerpo a cuerpo.",
              (1.0, 0.55, 0.2), {}, (0.55, 2.0, 1.3), (3, 3, 3, 4))
+    # Su moveset reutiliza los ataques y las 4 habilidades hechas a mano; solo se añaden las extra del catálogo.
+    make_moveset("charizard", {}, [f"res://combat/abilities/charizard/{n}.tres"
+                                   for n in ["fireball", "flamethrower", "roar", "dragon_dance"]])
 
     # Scyther: rápido, frágil, combos cortos.
     G = (0.55, 1.0, 0.4)

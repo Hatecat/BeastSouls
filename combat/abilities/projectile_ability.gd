@@ -20,6 +20,21 @@ extends AbilityData
 @export var interval := 0.1
 
 
+func kind() -> StringName:
+	return &"projectile"
+
+
+func summary() -> String:
+	var n := "%d proyectiles" % count if count > 1 else "Proyectil"
+	var guided := (" teledirigidos" if count > 1 else " teledirigido") if homing >= 1.5 else ""
+	return "%s%s · %d de daño%s" % [n, guided, hit.damage if hit else 0,
+			" · explota" if explode_radius >= 1.5 else ""]
+
+
+func reach() -> float:
+	return minf(speed * lifetime, 16.0)
+
+
 func tick(beast: Beast, _cast: Dictionary, t: float, delta: float) -> void:
 	for i in count:
 		if crossed(t, delta, spawn_time + i * interval):

@@ -147,17 +147,35 @@ func _aggressive(frame: PlayerInput, delta: float) -> void:
 		frame.move = Vector2(side.x, side.z)
 
 
-## Ranura de habilidad a usar ahora (-1 = ninguna). Supone el kit de Charizard:
-## 0 bola de fuego, 1 lanzallamas, 2 rugido, 3 danza dragón.
+## Ranura de habilidad a usar ahora (-1 = ninguna). Decide por el tipo de cada habilidad equipada, así vale
+## para cualquier selección: mejoras cuando no tiene ninguna, proyectiles de lejos, embestidas a media
+## distancia, chorros y ondas cuando el objetivo está a su alcance.
 func _pick_ability(dist: float) -> int:
-	var r := _rng.randf()
-	if beast.can_use_ability(3) and beast.buffs.is_empty() and r < 0.3:
-		return 3
-	if dist > 5.0 and dist < 16.0 and beast.can_use_ability(0) and r < 0.5:
-		return 0
-	if dist <= 4.5:
-		if beast.can_use_ability(2) and r < 0.15:
-			return 2
-		if beast.can_use_ability(1) and r < 0.3:
-			return 1
-	return -1
+	var options: Array[int] = []
+	for slot in beast.abilities.size():
+		if not beast.can_use_ability(slot):
+			continue
+		var ab := beast.abilities[slot]
+		var chance := 0.0
+		match ab.kind():
+			&"buff":
+				var heals: bool = ab.get("heal") != null and ab.heal > 0.0
+				if heals:
+					chance = 0.5 if beast.health < beast.max_health * 0.6 else 0.0
+				elif beast.buffs.is_empty():
+					chance = 0.3
+			&"projectile":
+				if dist > 5.0 and dist < ab.reach():
+					chance = 0.5
+			&"dash":
+				if dist > 3.5 and dist < ab.reach() + 1.5:
+					chance = 0.4
+			&"area":
+				if dist <= ab.reach():
+					chance = 0.15
+			_:
+				if dist <= ab.reach():
+					chance = 0.3
+		if _rng.randf() < chance:
+			options.append(slot)
+	return options.pick_random() if not options.is_empty() else -1

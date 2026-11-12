@@ -130,8 +130,8 @@ func _apply(a: Array, b: Array, alpha: float, extra: float, rt: float, _delta: f
 		# Acción nueva: reiniciar animación y golpeados; arrancar la habilidad (efectos).
 		beast._hit_targets.clear()
 		beast._anim = &""
-		if new_state == Beast.State.ABILITY and moveset and beast.ability_slot >= 0 and beast.ability_slot < moveset.abilities.size():
-			beast.ability = moveset.abilities[beast.ability_slot]
+		if new_state == Beast.State.ABILITY and beast.ability_slot >= 0 and beast.ability_slot < beast.abilities.size():
+			beast.ability = beast.abilities[beast.ability_slot]
 			beast._cast = {}
 			beast.ability.start(beast, beast._cast)
 			_last_st = 0.0

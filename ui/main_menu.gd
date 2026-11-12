@@ -78,7 +78,7 @@ func _build_scene() -> void:
 	t.autostart = true
 	t.timeout.connect(func() -> void:
 		if def.moveset and not def.moveset.abilities.is_empty():
-			_hero.play(def.moveset.abilities[-1].action, 0.2))
+			_hero.play(def.moveset.abilities[mini(3, def.moveset.abilities.size() - 1)].action, 0.2))
 	add_child(t)
 	# Viñeta y grano, como en partida.
 	var post := ColorRect.new()

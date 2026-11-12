@@ -63,6 +63,14 @@ resto por orden alfabético; para fijar la posición de uno nuevo, añádelo a `
 Para una habilidad con comportamiento propio, crea una subclase de `AbilityData`
 (`combat/abilities/`) con `start/tick/finish`; el estado de cada lanzamiento va en el diccionario `cast`.
 
+### Catálogo de habilidades (elegir 4 de 10)
+
+El personaje nuevo sale con 4 habilidades. `Moveset.abilities` (en `combat/attacks/<id>/moveset.tres`) es el
+catálogo: añade ahí más `.tres` (hasta 10) y el selector dejará elegir 4 antes del combate; las 4 primeras son
+la selección por defecto. Tipos disponibles: `ProjectileAbility`, `ChannelAbility`, `AreaAbility`,
+`BuffAbility` y `DashAbility` (embestida). En una subclase propia define también `kind()`, `summary()` (el texto
+que muestra el selector) y `reach()` (la IA lo usa para decidir cuándo lanzarla).
+
 ## 4. Retirar los provisionales
 
 Cuando haya personajes propios: borrar su `.tres` de `actors/characters/` y quitarlo de `Roster.PATHS`,

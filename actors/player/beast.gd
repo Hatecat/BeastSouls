@@ -31,6 +31,8 @@ const ABILITY_SLOTS := 4
 static var debug_hitboxes := false
 
 @export var moveset: Moveset
+## Habilidades equipadas (ranuras 1-4), elegidas del catálogo `moveset.abilities`.
+var abilities: Array[AbilityData] = []
 ## Personaje aplicado (apply_character). Null = lo que trae la escena.
 var character: CharacterDef
 ## Sin control (cuenta atrás, fin de ronda): ignora el input y no recibe golpes.
@@ -282,11 +284,12 @@ static func yaw_of(dir: Vector3) -> float:
 
 
 ## Cambia de personaje: modelo, moveset, estadísticas y tamaño del cuerpo. Deja al Beast como recién revivido.
-func apply_character(def: CharacterDef) -> void:
+func apply_character(def: CharacterDef, loadout: Array = []) -> void:
 	if def == null:
 		return
 	character = def
 	moveset = def.moveset
+	abilities = moveset.loadout_abilities(loadout)
 	# Restaurar lo que cambió el personaje anterior y aplicar lo del nuevo.
 	for k: StringName in _stat_defaults:
 		set(k, _stat_defaults[k])
@@ -763,9 +766,9 @@ func beasts_in_cone(origin: Vector3, dir: Vector3, reach: float, angle_deg: floa
 # --- Habilidades --------------------------------------------------------------------
 
 func can_use_ability(slot: int) -> bool:
-	if moveset == null or slot < 0 or slot >= moveset.abilities.size():
+	if slot < 0 or slot >= abilities.size():
 		return false
-	var ab := moveset.abilities[slot]
+	var ab := abilities[slot]
 	return ab != null and cooldowns[slot] <= 0.0 and heat >= ab.heat_cost
 
 
@@ -783,7 +786,7 @@ func _try_ability(inp: PlayerInput) -> bool:
 
 
 func _start_ability(slot: int, inp: PlayerInput) -> void:
-	var ab := moveset.abilities[slot]
+	var ab := abilities[slot]
 	if locked_on:
 		var to := inp.lock_target.global_position - global_position
 		to.y = 0.0

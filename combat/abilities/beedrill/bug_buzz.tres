@@ -1,0 +1,32 @@
+[gd_resource type="Resource" script_class="AreaAbility" format=3]
+
+[ext_resource type="Script" path="res://combat/abilities/area_ability.gd" id="1_script"]
+[ext_resource type="Script" path="res://combat/attack_data.gd" id="2_attack"]
+
+[sub_resource type="Resource" id="hit"]
+script = ExtResource("2_attack")
+display_name = "Zumbido"
+damage = 16
+poise_damage = 55
+guard_stamina_damage = 35
+stamina_cost = 0
+stagger_time = 0.8
+knockback = 6
+hitstop = 0.1
+heat_gain = 0
+
+[resource]
+script = ExtResource("1_script")
+hit = SubResource("hit")
+display_name = "Zumbido"
+color = Color(0.85, 1, 0.25, 1)
+action = &"skill_toxic_burst"
+heat_cost = 30
+cooldown = 9
+duration = 1
+cancel_start = 0.8
+tracking = 4
+track_until = 0.35
+trigger_time = 0.35
+radius = 4
+caster_shake = 0.4

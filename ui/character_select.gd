@@ -18,7 +18,14 @@ var _name: Label
 var _role: Label
 var _desc: Label
 var _ratings: VBoxContainer
-var _abilities: VBoxContainer
+var _abilities: GridContainer
+var _ab_title: Label
+var _ab_detail: Label
+var _ab_buttons: Array[Button] = []
+## Habilidades elegidas para el personaje en pantalla (índices de su catálogo, en orden de ranura).
+var _loadout: Array = []
+## Práctica: lo elegido para la IA con cada personaje mientras dure esta pantalla (no se guarda en disco).
+var _ai_loadouts := {}
 var _status: Label
 var _back: Button
 var _next: Button
@@ -102,7 +109,9 @@ func _build() -> void:
 		for st in ["normal", "hover", "pressed", "focus", "hover_pressed", "disabled"]:
 			b.add_theme_stylebox_override(st, _card_style(def.color, st))
 		b.pressed.connect(_on_pick.bind(def))
-		b.pressed.connect(func() -> void: _next.grab_focus())  # con mando: A elige y salta a «Siguiente»
+		b.pressed.connect(func() -> void:  # con mando: A elige y salta a sus habilidades
+			if not _ab_buttons.is_empty():
+				_ab_buttons[0].grab_focus())
 		b.focus_entered.connect(func() -> void:
 			if _selected != def and not b.disabled:
 				_on_pick(def))
@@ -135,7 +144,7 @@ func _build() -> void:
 
 	# Detalles.
 	var right := VBoxContainer.new()
-	right.custom_minimum_size.x = 360
+	right.custom_minimum_size.x = 500
 	right.add_theme_constant_override("separation", 10)
 	main.add_child(right)
 	_desc = Label.new()
@@ -146,13 +155,21 @@ func _build() -> void:
 	_ratings = VBoxContainer.new()
 	right.add_child(_ratings)
 	right.add_child(HSeparator.new())
-	var ab_title := Label.new()
-	ab_title.text = "Habilidades (coste de Calor)"
-	ab_title.add_theme_color_override("font_color", Color(0.8, 0.8, 0.8))
-	right.add_child(ab_title)
-	_abilities = VBoxContainer.new()
-	_abilities.add_theme_constant_override("separation", 6)
+	_ab_title = Label.new()
+	_ab_title.add_theme_color_override("font_color", Color(0.8, 0.8, 0.8))
+	right.add_child(_ab_title)
+	_abilities = GridContainer.new()
+	_abilities.columns = 2
+	_abilities.add_theme_constant_override("h_separation", 6)
+	_abilities.add_theme_constant_override("v_separation", 6)
 	right.add_child(_abilities)
+	_ab_detail = Label.new()
+	_ab_detail.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_ab_detail.custom_minimum_size.y = 50
+	_ab_detail.add_theme_font_size_override("font_size", 15)
+	_ab_detail.add_theme_color_override("font_color", Color(0.85, 0.82, 0.75))
+	right.add_child(_ab_detail)
+	Settings.device_changed.connect(func(_pad: bool) -> void: _refresh_abilities())
 
 	# Barra inferior.
 	var bottom := HBoxContainer.new()
@@ -255,23 +272,109 @@ func _select(def: CharacterDef) -> void:
 	_rating_row("Velocidad", def.rating_speed, def.color)
 	_rating_row("Poder", def.rating_power, def.color)
 	_rating_row("Alcance", def.rating_range, def.color)
-	for c in _abilities.get_children():
-		c.queue_free()
-	var i := 1
-	for ab in def.moveset.abilities:
-		var row := HBoxContainer.new()
-		row.add_theme_constant_override("separation", 10)
-		var swatch := ColorRect.new()
-		swatch.color = ab.color
-		swatch.custom_minimum_size = Vector2(18, 18)
-		swatch.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-		row.add_child(swatch)
-		var l := Label.new()
-		l.text = "%d · %s  (%d)" % [i, ab.display_name, ab.heat_cost]
-		row.add_child(l)
-		_abilities.add_child(row)
-		i += 1
+	_build_abilities(def)
 	_show_preview(def)
+
+
+# --- Habilidades: se equipan 4 de las del catálogo ------------------------------------
+
+func _for_ai() -> bool:
+	return not _online and _step == 1
+
+
+func _build_abilities(def: CharacterDef) -> void:
+	for c in _abilities.get_children():
+		_abilities.remove_child(c)
+		c.queue_free()
+	_ab_buttons.clear()
+	if _for_ai() and _ai_loadouts.has(def.id):
+		_loadout = (_ai_loadouts[def.id] as Array).duplicate()
+	else:
+		_loadout = Array(Session.saved_loadout(def.id))
+	for i in def.moveset.abilities.size():
+		var ab := def.moveset.abilities[i]
+		var b := Button.new()
+		b.toggle_mode = true
+		b.alignment = HORIZONTAL_ALIGNMENT_LEFT
+		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		b.custom_minimum_size.y = 50
+		b.add_theme_font_size_override("font_size", 15)
+		for st in ["normal", "hover", "pressed", "focus", "hover_pressed", "disabled"]:
+			b.add_theme_stylebox_override(st, _card_style(ab.color, st))
+		b.pressed.connect(_on_ability.bind(i))
+		b.focus_entered.connect(_describe.bind(i))
+		b.mouse_entered.connect(_describe.bind(i))
+		_abilities.add_child(b)
+		_ab_buttons.append(b)
+	_ab_detail.text = ""
+	_store_loadout(false)
+	_refresh_abilities()
+
+
+func _on_ability(i: int) -> void:
+	if i in _loadout:
+		_loadout.erase(i)
+	elif _loadout.size() < Moveset.LOADOUT_SIZE:
+		_loadout.append(i)
+		var v: CharacterVisual = _previews.get(_selected.id)
+		if v:
+			v.play(_selected.moveset.abilities[i].action, 0.15)
+	else:
+		Audio.play_ui("ui_error")
+	_describe(i)
+	_store_loadout(true)
+	_refresh_abilities()
+
+
+func _loadout_complete() -> bool:
+	return _selected != null and _loadout.size() >= mini(Moveset.LOADOUT_SIZE, _selected.moveset.abilities.size())
+
+
+## Pasa lo elegido a Session (y al rival online). Una selección incompleta no se guarda: Session conserva la
+## última válida y «Siguiente» queda bloqueado hasta completarla.
+func _store_loadout(save: bool) -> void:
+	if not _loadout_complete():
+		return
+	if _for_ai():
+		Session.rival_loadout = _loadout.duplicate()
+		_ai_loadouts[_selected.id] = _loadout.duplicate()
+		return
+	Session.my_loadout = _loadout.duplicate()
+	if save:
+		Session.save_loadout(_selected.id, _loadout)
+		if _online:
+			Session.send_pick(false)
+
+
+func _refresh_abilities() -> void:
+	if _selected == null:
+		return
+	var locked := _online and _is_ready
+	var full := _loadout.size() >= Moveset.LOADOUT_SIZE
+	for i in _ab_buttons.size():
+		var ab := _selected.moveset.abilities[i]
+		var slot := _loadout.find(i)
+		var b := _ab_buttons[i]
+		b.set_pressed_no_signal(slot >= 0)
+		b.disabled = locked
+		var tag := "[%s] " % ControlsHelp.slot_key(slot, Settings.using_pad) if slot >= 0 else ""
+		b.text = "%s%s\n%s · %d calor · %d s" % [tag, ab.display_name, AbilityData.kind_label(ab.kind()),
+				ab.heat_cost, ab.cooldown]
+		b.modulate = Color(1, 1, 1, 0.55) if full and slot < 0 else Color.WHITE
+	_ab_title.text = "Habilidades: elige %d  (%d/%d)" % [Moveset.LOADOUT_SIZE, _loadout.size(), Moveset.LOADOUT_SIZE]
+	_ab_title.add_theme_color_override("font_color", Color(0.8, 0.8, 0.8) if _loadout_complete() else UiTheme.AMBER)
+	if _next:
+		_next.disabled = not _loadout_complete()
+
+
+func _describe(i: int) -> void:
+	if _selected == null or i >= _selected.moveset.abilities.size():
+		return
+	var ab := _selected.moveset.abilities[i]
+	var note := ""
+	if _loadout.size() >= Moveset.LOADOUT_SIZE and i not in _loadout:
+		note = "\nYa llevas %d: quita una para cambiarla." % Moveset.LOADOUT_SIZE
+	_ab_detail.text = "%s — %s%s" % [ab.display_name, ab.summary(), note]
 
 
 func _rating_row(label: String, value: int, color: Color) -> void:
@@ -314,7 +417,7 @@ func _show_preview(def: CharacterDef) -> void:
 func _play_flourish() -> void:
 	var v: CharacterVisual = _previews.get(_selected.id)
 	if v and not _selected.moveset.abilities.is_empty():
-		v.play(_selected.moveset.abilities[-1].action, 0.15)
+		v.play(_selected.moveset.abilities[mini(3, _selected.moveset.abilities.size() - 1)].action, 0.15)
 
 
 # --- Flujo ----------------------------------------------------------------------------
@@ -339,6 +442,7 @@ func _update_step() -> void:
 		_next.text = "¡LUCHAR!"
 		_status.text = "Tú: %s" % Roster.find(Session.my_character).display_name
 		_select(Roster.find(Session.rival_character))
+	_refresh_abilities()
 
 
 func _refresh_status() -> void:
@@ -360,6 +464,8 @@ func _try_start() -> void:
 
 
 func _on_next() -> void:
+	if not _loadout_complete():
+		return
 	if _online:
 		_is_ready = not _is_ready
 		Session.send_pick(_is_ready)

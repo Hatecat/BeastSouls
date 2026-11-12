@@ -13,6 +13,20 @@ func _init() -> void:
 	interruptible = false  # los golpes de área son compromisos lentos: aguantan los golpes flojos
 
 
+func kind() -> StringName:
+	return &"area"
+
+
+func summary() -> String:
+	return "Onda de %d m · %d de daño%s%s" % [roundi(radius), hit.damage if hit else 0,
+			" · aturde %.1f s" % hit.stagger_time if hit and hit.stagger_time >= 1.0 else "",
+			" · no se puede bloquear" if hit and hit.unblockable else ""]
+
+
+func reach() -> float:
+	return radius * 0.85
+
+
 func tick(beast: Beast, _cast: Dictionary, t: float, delta: float) -> void:
 	if not crossed(t, delta, trigger_time):
 		return

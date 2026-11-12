@@ -39,10 +39,10 @@ func _ready() -> void:
 	Audio.music("", 2.0)
 	var mine := Roster.find(Session.my_character)
 	var theirs := Roster.find(Session.rival_character)
-	player.apply_character(mine)
-	rival.apply_character(theirs)
+	player.apply_character(mine, Session.my_loadout)
+	rival.apply_character(theirs, Session.rival_loadout)
 	camera.fit_to_size(clampf(mine.body_height / 2.0, 0.85, 1.35))
-	Fx.prewarm(self, _effect_colors([mine, theirs]))
+	Fx.prewarm(self, _effect_colors([player, rival]))
 	var online := Net.is_online()
 	if online:
 		dummy_brain.queue_free()
@@ -69,10 +69,10 @@ func _ready() -> void:
 	add_child(pause)
 
 
-func _effect_colors(defs: Array[CharacterDef]) -> Array[Color]:
+func _effect_colors(beasts: Array[Beast]) -> Array[Color]:
 	var out: Array[Color] = []
-	for d in defs:
-		for a in d.moveset.abilities:
+	for b in beasts:
+		for a in b.abilities:
 			if a.color not in out:
 				out.append(a.color)
 	return out

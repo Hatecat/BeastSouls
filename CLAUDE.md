@@ -67,7 +67,12 @@ usar `root.get_node("Net")`. Red: lanzar dos instancias (`-- --host` / `-- --joi
   exports del Beast, tamaño de cápsula, altura de fijado, valoraciones del selector) y `Roster` (lista ordenada).
   `Beast.apply_character(def)` cambia todo en tiempo de ejecución (restaura las estadísticas del anterior). Los kits
   provisionales los genera `tools/gen_characters.py` (ataques = plantillas de Charizard escaladas; habilidades
-  con las 4 clases genéricas; ranuras: 1 distancia, 2 cerca, 3 área, 4 mejora → lo que espera `DummyBrain`).
+  con las clases genéricas). Cada personaje tiene un CATÁLOGO de 10 habilidades (`Moveset.abilities`: las 4
+  primeras son la selección por defecto; las 6 extra salen de `EXTRA_KITS` en el generador, también las de
+  Charizard) y se equipan 4 antes del combate: `Beast.abilities` (ranuras 1-4) lo rellena
+  `apply_character(def, loadout)` con índices del catálogo (`Moveset.valid_loadout` corrige los inválidos).
+  `Session.my_loadout` / `rival_loadout`; la última selección de cada personaje se guarda en
+  user://settings.cfg (sección "loadouts"). Online viaja en los eventos "pick" y "start".
   Los efectos (`Fx`) toman el color de la habilidad (`AbilityData.color`).
   `Roster` carga los de `PATHS` y después cualquier otro `.tres` de la carpeta. `tools/new_character.py` crea un
   personaje desde un .glb: lo importa, lee clips y huesos (`tools/inspect_model.gd`), adivina `action_map` y
@@ -115,7 +120,9 @@ usar `root.get_node("Net")`. Red: lanzar dos instancias (`-- --host` / `-- --joi
   no dependen de los huesos. `HitFx`: chispas y destello (solo presentación).
 - `combat/abilities/` — `AbilityData` (base: coste de Calor, recarga, tiempos, seguimiento) con `start/tick/finish`;
   el estado de cada lanzamiento va en el diccionario `cast`, NUNCA en el Resource (se comparte). Subclases:
-  `ChannelAbility` (cono por ticks), `ProjectileAbility` (→ `combat/projectile.gd`), `AreaAbility`, `BuffAbility`.
+  `ChannelAbility` (cono por ticks), `ProjectileAbility` (→ `combat/projectile.gd`), `AreaAbility`, `BuffAbility`,
+  `DashAbility` (embestida: fija la velocidad del lanzador y golpea una vez). Cada una define `kind()`,
+  `summary()` (texto del selector) y `reach()`; `DummyBrain` decide por `kind()`, no por ranura.
   Kit de Charizard en `combat/abilities/charizard/` (ranuras 1-4 en `moveset.tres`: bola de fuego, lanzallamas,
   rugido, danza dragón). AttackData tiene además `unblockable`, `burn_time` y `heat_gain`.
 - `combat/fx.gd` — constructores de efectos (chorro de fuego, ascuas, bola, onda, explosión). REGLA: cachear
@@ -133,7 +140,8 @@ usar `root.get_node("Net")`. Red: lanzar dos instancias (`-- --host` / `-- --joi
 - `ui/main_menu` — escena inicial: coliseo en 3D de fondo (cámara orbitando, personaje al azar), práctica, jugar
   online (subpanel alojar/unirse), opciones, salir; acepta argumentos tras `--` solo la primera vez (ver main_menu.gd).
   Después va a `ui/character_select` (vista previa 3D en SubViewport; práctica: tú y luego la IA; online: cada uno
-  elige, "Listo", y el anfitrión arranca).
+  elige, "Listo", y el anfitrión arranca). Ahí se eligen también las 4 habilidades (rejilla de 10 botones; el
+  orden en que se marcan es la ranura; no deja continuar con menos de 4).
 - `levels/` — `arena_test/arena_test.tscn` es la escena de COMBATE (jugadores, cámara, HUD, IA; F1 hitboxes,
   F2 modo de la IA, F3 calidad gráfica) y carga como hijo el escenario de `Session.stage` (`Session.STAGES`):
   `colosseum/` (por defecto) o `arena_test/test_stage.tscn` (cajas grises). Añade también la viñeta/grano

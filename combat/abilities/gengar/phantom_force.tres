@@ -1,0 +1,34 @@
+[gd_resource type="Resource" script_class="DashAbility" format=3]
+
+[ext_resource type="Script" path="res://combat/abilities/dash_ability.gd" id="1_script"]
+[ext_resource type="Script" path="res://combat/attack_data.gd" id="2_attack"]
+
+[sub_resource type="Resource" id="hit"]
+script = ExtResource("2_attack")
+display_name = "Golpe fantasma"
+damage = 22
+poise_damage = 44
+guard_stamina_damage = 33
+stamina_cost = 0
+stagger_time = 0.6
+knockback = 5
+hitstop = 0.09
+heat_gain = 0
+
+[resource]
+script = ExtResource("1_script")
+hit = SubResource("hit")
+display_name = "Golpe fantasma"
+color = Color(0.62, 0.3, 1, 1)
+action = &"attack_running"
+heat_cost = 30
+cooldown = 9
+duration = 0.95
+cancel_start = 0.8
+tracking = 7
+track_until = 0.28
+dash_start = 0.28
+dash_end = 0.55
+radius = 1.3
+offset = Vector3(0, 1, -0.8)
+dash_speed = 33.3
