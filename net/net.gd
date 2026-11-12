@@ -246,7 +246,7 @@ func _welcome(ok: bool, their_nick: String) -> void:
 func _rx_snapshot(data: Array) -> void:
 	if mode == Mode.SERVER:
 		var to: int = _partner.get(multiplayer.get_remote_sender_id(), 0)
-		if to != 0:
+		if to != 0 and to in multiplayer.get_peers():  # puede haberse ido en este mismo sondeo
 			_rx_snapshot.rpc_id(to, data)
 		return
 	if _accepted and multiplayer.get_remote_sender_id() == _remote_id:
@@ -257,7 +257,7 @@ func _rx_snapshot(data: Array) -> void:
 func _rx_event(data: Dictionary) -> void:
 	if mode == Mode.SERVER:
 		var to: int = _partner.get(multiplayer.get_remote_sender_id(), 0)
-		if to != 0:
+		if to != 0 and to in multiplayer.get_peers():  # puede haberse ido en este mismo sondeo
 			_rx_event.rpc_id(to, data)
 		return
 	if _accepted and multiplayer.get_remote_sender_id() == _remote_id:

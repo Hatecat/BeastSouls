@@ -42,7 +42,8 @@ var _bindings := {}
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
-	UiTheme.apply()
+	if not OS.has_feature("dedicated_server"):  # el servidor no tiene interfaz (ni fuentes del sistema)
+		UiTheme.apply()
 	_ensure_buses()
 	_add_pad_ui_events()
 	for pair in REBINDABLE:

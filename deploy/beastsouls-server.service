@@ -12,6 +12,8 @@ WorkingDirectory=/opt/beastsouls
 ExecStart=/opt/beastsouls/BeastSoulsServer.x86_64 --headless
 Restart=always
 RestartSec=3
+# Tope de memoria para no molestar a otros servicios de la VPS (en reposo usa ~95 MB).
+MemoryMax=250M
 # Sin privilegios: solo necesita abrir un puerto UDP alto.
 NoNewPrivileges=true
 ProtectSystem=strict
