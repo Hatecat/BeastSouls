@@ -1,0 +1,24 @@
+# Servicio systemd del servidor de retransmisión de BeastSouls (docs/SERVIDOR.md).
+# Copiar a /etc/systemd/system/ y: systemctl daemon-reload && systemctl enable --now beastsouls-server
+[Unit]
+Description=BeastSouls - servidor de retransmisión
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=beastsouls
+WorkingDirectory=/opt/beastsouls
+# Para otro puerto: añade al final  -- --port=24700
+ExecStart=/opt/beastsouls/BeastSoulsServer.x86_64 --headless
+Restart=always
+RestartSec=3
+# Sin privilegios: solo necesita abrir un puerto UDP alto.
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ReadWritePaths=/opt/beastsouls
+Environment=HOME=/opt/beastsouls
+
+[Install]
+WantedBy=multi-user.target

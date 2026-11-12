@@ -21,6 +21,8 @@ $G --path . -- --practice --stage=test --quality=2   # escenario de pruebas; cal
 $G -e --path .                                    # editor
 $G --headless --path . --import                   # registrar clases nuevas (class_name) e importar assets
 $G --headless --path . --script tools/setup_input.gd   # regenerar el InputMap por defecto
+$G --headless --path . -- --server                # servidor de retransmisión (clientes: -- --relay=IP --room=X)
+$G --headless --path . --export-release "Servidor" builds/server/BeastSoulsServer.x86_64   # también "Linux", "Windows"
 ```
 
 Probar en partida: script `extends SceneTree` fuera del proyecto pasado con `--script`, que cambia de escena y guarda
@@ -141,6 +143,11 @@ usar `root.get_node("Net")`. Red: lanzar dos instancias (`-- --host` / `-- --joi
   --loss=`). Al cambiar de modelo, el visual viejo se esconde y se libera 0.5 s después (liberarlo en el mismo fotograma deja
   materiales colgando en el renderizador). Las señales de desconexión de `multiplayer` se conectan DIFERIDAS (cerrar el peer dentro de su poll
   cuelga Godot). `NetMatch.setup()` va antes de `add_child`.
+  Servidor de retransmisión (docs/SERVIDOR.md, `deploy/`): `Net.serve()` empareja por código de sala y reenvía
+  instantáneas y eventos; los clientes entran con `Net.join_server(dirección, sala)` y el servidor les asigna
+  papel (`mode` HOST el primero, JOIN el segundo; `Net.relay = true`), así el resto del juego no distingue. La
+  compilación «Servidor» (dedicated_server, sin modelos ni audio) arranca en `net/relay_server.tscn`; `Session`
+  no hace nada ahí. `builds/` lleva `.gdignore` (sin él la importación se cuelga con los ejecutables).
 - `ui/main_menu` — escena inicial: coliseo en 3D de fondo (cámara orbitando, personaje al azar), práctica, jugar
   online (subpanel alojar/unirse), opciones, salir; acepta argumentos tras `--` solo la primera vez (ver main_menu.gd).
   Después va a `ui/character_select` (vista previa 3D en SubViewport; práctica: tú y luego la IA; online: cada uno

@@ -43,6 +43,9 @@ var auto_ready := false
 
 
 func _ready() -> void:
+	# El servidor de retransmisión no lleva personajes ni juega: no hay nada que preparar.
+	if OS.has_feature("dedicated_server") or OS.get_cmdline_user_args().has("--server"):
+		return
 	for a in OS.get_cmdline_user_args():
 		if a.begins_with("--char="):
 			my_character = StringName(a.trim_prefix("--char="))

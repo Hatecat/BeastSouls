@@ -7,15 +7,20 @@ extends Control
 ##   --autoready                el selector elige solo (--char) y se marca listo: para pruebas automáticas
 ##   --host                     aloja y espera rival
 ##   --join=IP                  se une a IP
+##   --relay=IP [--room=CÓDIGO]  entra por un servidor de retransmisión, en esa sala
+##   --server [--port=N]        arranca como servidor de retransmisión (con --headless; net/relay_server.gd)
 ##   --port=N  --nick=NOMBRE
 ##   --latency=MS --jitter=MS --loss=0.05   simulación de red (lo que envía este lado)
 
 const ARENA := "res://levels/arena_test/arena_test.tscn"
 const SELECT := "res://ui/character_select.tscn"
 const STAGE := "res://levels/colosseum/colosseum.tscn"
+const SERVER := "res://net/relay_server.tscn"
+const SETTINGS := "user://settings.cfg"
 
 var _nick: LineEdit
 var _address: LineEdit
+var _room: LineEdit
 var _port: SpinBox
 var _latency: SpinBox
 var _status: Label
@@ -35,6 +40,10 @@ static var _args_done := false
 
 
 func _ready() -> void:
+	if OS.get_cmdline_user_args().has("--server") and not _args_done:
+		_args_done = true
+		get_tree().change_scene_to_file.call_deferred(SERVER)
+		return
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	get_tree().paused = false
 	var direct := OS.get_cmdline_user_args().has("--practice") and not _args_done
@@ -43,14 +52,16 @@ func _ready() -> void:
 	_build()
 	Net.connected.connect(_on_connected)
 	Net.failed.connect(_on_failed)
+	Net.waiting.connect(_on_waiting)
 	Audio.music("menu")
 	Audio.ambience("wind", -10.0)
 	_apply_args()
 
 
 func _exit_tree() -> void:
-	Net.connected.disconnect(_on_connected)
-	Net.failed.disconnect(_on_failed)
+	for pair in [[Net.connected, _on_connected], [Net.failed, _on_failed], [Net.waiting, _on_waiting]]:
+		if (pair[0] as Signal).is_connected(pair[1]):
+			(pair[0] as Signal).disconnect(pair[1])
 
 
 # --- Fondo 3D -------------------------------------------------------------------------------
@@ -191,7 +202,7 @@ func _build_online(parent: Control) -> void:
 	head.add_theme_color_override("font_color", UiTheme.AMBER)
 	_online_box.add_child(head)
 	_nick = _field(_online_box, "Nombre", "Jugador")
-	_address = _field(_online_box, "IP del anfitrión", "127.0.0.1")
+	_address = _field(_online_box, "IP o servidor", "127.0.0.1")
 	_port = SpinBox.new()
 	_port.min_value = 1024
 	_port.max_value = 65535
@@ -212,6 +223,21 @@ func _build_online(parent: Control) -> void:
 		b.pressed.connect(pair[1])
 		row.add_child(b)
 		_online_buttons.append(b)
+	# Por servidor: los dos escriben la dirección del servidor y la misma sala; nadie abre puertos.
+	_room = _field(_online_box, "Sala (servidor)", "")
+	_room.placeholder_text = "vacío = pública"
+	_room.max_length = 16
+	var via := Button.new()
+	via.text = "Jugar por servidor"
+	via.custom_minimum_size.y = 42
+	via.pressed.connect(_on_relay)
+	_online_box.add_child(via)
+	_online_buttons.append(via)
+	var cfg := ConfigFile.new()
+	if cfg.load(SETTINGS) == OK:
+		_nick.text = cfg.get_value("net", "nick", _nick.text)
+		_address.text = cfg.get_value("net", "address", _address.text)
+		_room.text = cfg.get_value("net", "room", "")
 	_status = Label.new()
 	_status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_status.add_theme_color_override("font_color", Color(0.85, 0.82, 0.78))
@@ -292,6 +318,12 @@ func _set_waiting(waiting: bool) -> void:
 func _prepare() -> void:
 	Net.nick = _nick.text.strip_edges().substr(0, 16) if not _nick.text.strip_edges().is_empty() else "Jugador"
 	Net.sim_latency_ms = int(_latency.value)
+	var cfg := ConfigFile.new()
+	cfg.load(SETTINGS)
+	cfg.set_value("net", "nick", _nick.text.strip_edges())
+	cfg.set_value("net", "address", _address.text.strip_edges())
+	cfg.set_value("net", "room", _room.text.strip_edges())
+	cfg.save(SETTINGS)
 
 
 func _on_practice() -> void:
@@ -326,6 +358,22 @@ func _on_join() -> void:
 	_set_waiting(true)
 
 
+func _on_relay() -> void:
+	_prepare()
+	var err := Net.join_server(_address.text.strip_edges(), _room.text, int(_port.value))
+	if err != OK:
+		_status.text = "Dirección no válida."
+		Audio.play_ui("ui_error")
+		return
+	_status.text = "Conectando con el servidor %s:%d…" % [_address.text.strip_edges(), int(_port.value)]
+	_set_waiting(true)
+
+
+func _on_waiting() -> void:
+	var code := _room.text.strip_edges().to_upper()
+	_status.text = "En la sala %s. Esperando rival…" % ("«%s»" % code if code != "" else "pública")
+
+
 func _on_cancel() -> void:
 	Net.close()
 	_status.text = ""
@@ -344,6 +392,8 @@ func _on_failed(reason: String) -> void:
 		"timeout": "El anfitrión no respondió a tiempo.",
 		"version": "Versiones del juego distintas.",
 		"host_left": "El anfitrión cerró la partida.",
+		"server_left": "Se perdió la conexión con el servidor.",
+		"left": "El rival se fue.",
 	}
 	_status.text = texts.get(reason, "Error de red (%s)." % reason)
 	Audio.play_ui("ui_error")
@@ -372,6 +422,12 @@ func _apply_args() -> void:
 	elif args.has("host"):
 		_show_online(true)
 		_on_host.call_deferred()
+	elif args.has("relay"):
+		if args.relay != "":
+			_address.text = args.relay
+		_room.text = args.get("room", "")
+		_show_online(true)
+		_on_relay.call_deferred()
 	elif args.has("join"):
 		if args.join != "":
 			_address.text = args.join
