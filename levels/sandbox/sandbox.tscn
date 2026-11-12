@@ -1,0 +1,108 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://levels/sandbox/sandbox.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://actors/visuals/charizard_visual.tscn" id="2_visual"]
+[ext_resource type="Environment" path="res://levels/common/world_env.tres" id="3_env"]
+
+[sub_resource type="CameraAttributesPractical" id="cam_attr"]
+
+[sub_resource type="StandardMaterial3D" id="floor_mat"]
+albedo_color = Color(0.32, 0.3, 0.28, 1)
+roughness = 0.9
+uv1_scale = Vector3(20, 20, 20)
+
+[sub_resource type="PlaneMesh" id="floor_mesh"]
+material = SubResource("floor_mat")
+size = Vector2(80, 80)
+
+[sub_resource type="BoxShape3D" id="floor_shape"]
+size = Vector3(80, 1, 80)
+
+[sub_resource type="StandardMaterial3D" id="stone_mat"]
+albedo_color = Color(0.45, 0.42, 0.4, 1)
+roughness = 0.85
+
+[sub_resource type="BoxMesh" id="pillar_mesh"]
+material = SubResource("stone_mat")
+size = Vector3(1.2, 8, 1.2)
+
+[sub_resource type="BoxShape3D" id="pillar_shape"]
+size = Vector3(1.2, 8, 1.2)
+
+[node name="Sandbox" type="Node3D"]
+script = ExtResource("1_script")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = ExtResource("3_env")
+camera_attributes = SubResource("cam_attr")
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.866, -0.354, 0.354, 0, 0.707, 0.707, -0.5, -0.612, 0.612, 0, 10, 0)
+light_color = Color(1, 0.92, 0.82, 1)
+light_energy = 1.4
+light_volumetric_fog_energy = 1.5
+shadow_enabled = true
+directional_shadow_max_distance = 60.0
+
+[node name="Floor" type="StaticBody3D" parent="."]
+
+[node name="Mesh" type="MeshInstance3D" parent="Floor"]
+mesh = SubResource("floor_mesh")
+
+[node name="Shape" type="CollisionShape3D" parent="Floor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
+shape = SubResource("floor_shape")
+
+[node name="Pillars" type="Node3D" parent="."]
+
+[node name="Pillar1" type="StaticBody3D" parent="Pillars"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 4, -6)
+
+[node name="Mesh" type="MeshInstance3D" parent="Pillars/Pillar1"]
+mesh = SubResource("pillar_mesh")
+
+[node name="Shape" type="CollisionShape3D" parent="Pillars/Pillar1"]
+shape = SubResource("pillar_shape")
+
+[node name="Pillar2" type="StaticBody3D" parent="Pillars"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 4, -6)
+
+[node name="Mesh" type="MeshInstance3D" parent="Pillars/Pillar2"]
+mesh = SubResource("pillar_mesh")
+
+[node name="Shape" type="CollisionShape3D" parent="Pillars/Pillar2"]
+shape = SubResource("pillar_shape")
+
+[node name="Pillar3" type="StaticBody3D" parent="Pillars"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 4, 6)
+
+[node name="Mesh" type="MeshInstance3D" parent="Pillars/Pillar3"]
+mesh = SubResource("pillar_mesh")
+
+[node name="Shape" type="CollisionShape3D" parent="Pillars/Pillar3"]
+shape = SubResource("pillar_shape")
+
+[node name="Pillar4" type="StaticBody3D" parent="Pillars"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 4, 6)
+
+[node name="Mesh" type="MeshInstance3D" parent="Pillars/Pillar4"]
+mesh = SubResource("pillar_mesh")
+
+[node name="Shape" type="CollisionShape3D" parent="Pillars/Pillar4"]
+shape = SubResource("pillar_shape")
+
+[node name="CharizardVisual" parent="." instance=ExtResource("2_visual")]
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.4, 6.5)
+fov = 60.0
+
+[node name="UI" type="CanvasLayer" parent="."]
+
+[node name="Info" type="Label" parent="UI"]
+offset_left = 24.0
+offset_top = 24.0
+offset_right = 600.0
+offset_bottom = 90.0
+theme_override_font_sizes/font_size = 22
+text = "..."

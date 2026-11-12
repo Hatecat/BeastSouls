@@ -1,0 +1,22 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://camera/third_person_camera.gd" id="1_script"]
+
+[sub_resource type="SphereShape3D" id="probe"]
+radius = 0.25
+
+[node name="ThirdPersonCamera" type="Node3D"]
+script = ExtResource("1_script")
+
+[node name="Pitch" type="Node3D" parent="."]
+
+[node name="SpringArm3D" type="SpringArm3D" parent="Pitch"]
+shape = SubResource("probe")
+spring_length = 4.6
+margin = 0.1
+
+[node name="Camera3D" type="Camera3D" parent="Pitch/SpringArm3D"]
+current = true
+fov = 65.0
+near = 0.1
+far = 400.0

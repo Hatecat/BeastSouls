@@ -1,0 +1,41 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://actors/visuals/character_visual.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://assets/models/placeholder/charizard.glb" id="2_model"]
+
+[node name="CharizardVisual" type="Node3D"]
+script = ExtResource("1_script")
+model_scene = ExtResource("2_model")
+target_height = 2.2
+action_map = Dictionary[StringName, StringName]({
+&"attack_heavy_1": &"fight_b_body",
+&"attack_heavy_2": &"fight_b_bite",
+&"attack_light_1": &"fight_b_claw",
+&"attack_light_2": &"fight_b_punch",
+&"attack_light_3": &"fight_b_tail",
+&"block": &"fight_b",
+&"death": &"ko",
+&"dodge": &"fight_b_kick",
+&"hit": &"hit",
+&"idle": &"idle",
+&"run": &"walk",
+&"skill_dragon_dance": &"fight_d_boost",
+&"skill_fireball": &"fight_d_breath",
+&"skill_flamethrower": &"fight_d_breath",
+&"skill_roar": &"fight_d_sound",
+&"walk": &"walk"
+})
+action_speed = Dictionary[StringName, float]({
+&"dodge": 1.6,
+&"run": 1.7
+})
+sockets = Dictionary[StringName, StringName]({
+&"chest": &"Spine2_39",
+&"foot_l": &"LFoot_59",
+&"foot_r": &"RFoot_42",
+&"hand_l": &"LHand_18",
+&"hand_r": &"RHand_35",
+&"head": &"Head_25",
+&"mouth": &"Jaw_24",
+&"tail_tip": &"EndTail7_45"
+})

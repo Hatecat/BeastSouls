@@ -1,0 +1,265 @@
+[gd_scene format=3]
+
+[ext_resource type="Environment" path="res://levels/common/world_env.tres" id="1_env"]
+[ext_resource type="PackedScene" path="res://actors/player/beast.tscn" id="2_beast"]
+[ext_resource type="PackedScene" path="res://camera/third_person_camera.tscn" id="3_cam"]
+[ext_resource type="Script" path="res://actors/player/player_controller.gd" id="4_ctrl"]
+[ext_resource type="Script" path="res://actors/dummy/dummy_brain.gd" id="5_brain"]
+[ext_resource type="Script" path="res://ui/hud.gd" id="6_hud"]
+
+[sub_resource type="CameraAttributesPractical" id="cam_attr"]
+
+[sub_resource type="StandardMaterial3D" id="floor_mat"]
+albedo_color = Color(0.3, 0.28, 0.26, 1)
+roughness = 0.92
+
+[sub_resource type="StandardMaterial3D" id="stone_mat"]
+albedo_color = Color(0.46, 0.43, 0.4, 1)
+roughness = 0.85
+
+[sub_resource type="BoxMesh" id="Floor_mesh"]
+material = SubResource("floor_mat")
+size = Vector3(80, 1, 80)
+
+[sub_resource type="BoxShape3D" id="Floor_shape"]
+size = Vector3(80, 1, 80)
+
+[sub_resource type="BoxMesh" id="Pillar1_mesh"]
+material = SubResource("stone_mat")
+size = Vector3(1.4, 9, 1.4)
+
+[sub_resource type="BoxShape3D" id="Pillar1_shape"]
+size = Vector3(1.4, 9, 1.4)
+
+[sub_resource type="BoxMesh" id="Pillar2_mesh"]
+material = SubResource("stone_mat")
+size = Vector3(1.4, 9, 1.4)
+
+[sub_resource type="BoxShape3D" id="Pillar2_shape"]
+size = Vector3(1.4, 9, 1.4)
+
+[sub_resource type="BoxMesh" id="Pillar3_mesh"]
+material = SubResource("stone_mat")
+size = Vector3(1.4, 9, 1.4)
+
+[sub_resource type="BoxShape3D" id="Pillar3_shape"]
+size = Vector3(1.4, 9, 1.4)
+
+[sub_resource type="BoxMesh" id="Pillar4_mesh"]
+material = SubResource("stone_mat")
+size = Vector3(1.4, 9, 1.4)
+
+[sub_resource type="BoxShape3D" id="Pillar4_shape"]
+size = Vector3(1.4, 9, 1.4)
+
+[sub_resource type="BoxMesh" id="Pillar5_mesh"]
+material = SubResource("stone_mat")
+size = Vector3(1.4, 9, 1.4)
+
+[sub_resource type="BoxShape3D" id="Pillar5_shape"]
+size = Vector3(1.4, 9, 1.4)
+
+[sub_resource type="BoxMesh" id="Pillar6_mesh"]
+material = SubResource("stone_mat")
+size = Vector3(1.4, 9, 1.4)
+
+[sub_resource type="BoxShape3D" id="Pillar6_shape"]
+size = Vector3(1.4, 9, 1.4)
+
+[sub_resource type="BoxMesh" id="Pillar7_mesh"]
+material = SubResource("stone_mat")
+size = Vector3(1.4, 9, 1.4)
+
+[sub_resource type="BoxShape3D" id="Pillar7_shape"]
+size = Vector3(1.4, 9, 1.4)
+
+[sub_resource type="BoxMesh" id="Pillar8_mesh"]
+material = SubResource("stone_mat")
+size = Vector3(1.4, 9, 1.4)
+
+[sub_resource type="BoxShape3D" id="Pillar8_shape"]
+size = Vector3(1.4, 9, 1.4)
+
+[sub_resource type="BoxMesh" id="Ramp_mesh"]
+material = SubResource("stone_mat")
+size = Vector3(4, 0.3, 9.341)
+
+[sub_resource type="BoxShape3D" id="Ramp_shape"]
+size = Vector3(4, 0.3, 9.341)
+
+[sub_resource type="BoxMesh" id="Platform_mesh"]
+material = SubResource("stone_mat")
+size = Vector3(10, 2.5, 8)
+
+[sub_resource type="BoxShape3D" id="Platform_shape"]
+size = Vector3(10, 2.5, 8)
+
+[sub_resource type="BoxMesh" id="WallA_mesh"]
+material = SubResource("stone_mat")
+size = Vector3(6, 1.2, 0.6)
+
+[sub_resource type="BoxShape3D" id="WallA_shape"]
+size = Vector3(6, 1.2, 0.6)
+
+[sub_resource type="BoxMesh" id="WallB_mesh"]
+material = SubResource("stone_mat")
+size = Vector3(0.6, 1.2, 6)
+
+[sub_resource type="BoxShape3D" id="WallB_shape"]
+size = Vector3(0.6, 1.2, 6)
+
+[node name="ArenaTest" type="Node3D"]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = ExtResource("1_env")
+camera_attributes = SubResource("cam_attr")
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.866, -0.354, 0.354, 0, 0.707, 0.707, -0.5, -0.612, 0.612, 0, 10, 0)
+light_color = Color(1, 0.92, 0.82, 1)
+light_energy = 1.4
+light_volumetric_fog_energy = 1.5
+shadow_enabled = true
+directional_shadow_max_distance = 60.0
+
+[node name="Geometry" type="Node3D" parent="."]
+
+[node name="Floor" type="StaticBody3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 1.00000, -0.00000, 0, 0.00000, 1.00000, 0.000, -0.500, 0.000)
+
+[node name="Mesh" type="MeshInstance3D" parent="Geometry/Floor"]
+mesh = SubResource("Floor_mesh")
+
+[node name="Shape" type="CollisionShape3D" parent="Geometry/Floor"]
+shape = SubResource("Floor_shape")
+
+[node name="Pillar1" type="StaticBody3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 1.00000, -0.00000, 0, 0.00000, 1.00000, 5.358, 4.500, 12.934)
+
+[node name="Mesh" type="MeshInstance3D" parent="Geometry/Pillar1"]
+mesh = SubResource("Pillar1_mesh")
+
+[node name="Shape" type="CollisionShape3D" parent="Geometry/Pillar1"]
+shape = SubResource("Pillar1_shape")
+
+[node name="Pillar2" type="StaticBody3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 1.00000, -0.00000, 0, 0.00000, 1.00000, 12.934, 4.500, 5.358)
+
+[node name="Mesh" type="MeshInstance3D" parent="Geometry/Pillar2"]
+mesh = SubResource("Pillar2_mesh")
+
+[node name="Shape" type="CollisionShape3D" parent="Geometry/Pillar2"]
+shape = SubResource("Pillar2_shape")
+
+[node name="Pillar3" type="StaticBody3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 1.00000, -0.00000, 0, 0.00000, 1.00000, 12.934, 4.500, -5.358)
+
+[node name="Mesh" type="MeshInstance3D" parent="Geometry/Pillar3"]
+mesh = SubResource("Pillar3_mesh")
+
+[node name="Shape" type="CollisionShape3D" parent="Geometry/Pillar3"]
+shape = SubResource("Pillar3_shape")
+
+[node name="Pillar4" type="StaticBody3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 1.00000, -0.00000, 0, 0.00000, 1.00000, 5.358, 4.500, -12.934)
+
+[node name="Mesh" type="MeshInstance3D" parent="Geometry/Pillar4"]
+mesh = SubResource("Pillar4_mesh")
+
+[node name="Shape" type="CollisionShape3D" parent="Geometry/Pillar4"]
+shape = SubResource("Pillar4_shape")
+
+[node name="Pillar5" type="StaticBody3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 1.00000, -0.00000, 0, 0.00000, 1.00000, -5.358, 4.500, -12.934)
+
+[node name="Mesh" type="MeshInstance3D" parent="Geometry/Pillar5"]
+mesh = SubResource("Pillar5_mesh")
+
+[node name="Shape" type="CollisionShape3D" parent="Geometry/Pillar5"]
+shape = SubResource("Pillar5_shape")
+
+[node name="Pillar6" type="StaticBody3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 1.00000, -0.00000, 0, 0.00000, 1.00000, -12.934, 4.500, -5.358)
+
+[node name="Mesh" type="MeshInstance3D" parent="Geometry/Pillar6"]
+mesh = SubResource("Pillar6_mesh")
+
+[node name="Shape" type="CollisionShape3D" parent="Geometry/Pillar6"]
+shape = SubResource("Pillar6_shape")
+
+[node name="Pillar7" type="StaticBody3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 1.00000, -0.00000, 0, 0.00000, 1.00000, -12.934, 4.500, 5.358)
+
+[node name="Mesh" type="MeshInstance3D" parent="Geometry/Pillar7"]
+mesh = SubResource("Pillar7_mesh")
+
+[node name="Shape" type="CollisionShape3D" parent="Geometry/Pillar7"]
+shape = SubResource("Pillar7_shape")
+
+[node name="Pillar8" type="StaticBody3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 1.00000, -0.00000, 0, 0.00000, 1.00000, -5.358, 4.500, 12.934)
+
+[node name="Mesh" type="MeshInstance3D" parent="Geometry/Pillar8"]
+mesh = SubResource("Pillar8_mesh")
+
+[node name="Shape" type="CollisionShape3D" parent="Geometry/Pillar8"]
+shape = SubResource("Pillar8_shape")
+
+[node name="Ramp" type="StaticBody3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 0.96352, -0.26764, 0, 0.26764, 0.96352, 0.000, 1.100, -15.500)
+
+[node name="Mesh" type="MeshInstance3D" parent="Geometry/Ramp"]
+mesh = SubResource("Ramp_mesh")
+
+[node name="Shape" type="CollisionShape3D" parent="Geometry/Ramp"]
+shape = SubResource("Ramp_shape")
+
+[node name="Platform" type="StaticBody3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 1.00000, -0.00000, 0, 0.00000, 1.00000, 0.000, 1.250, -24.000)
+
+[node name="Mesh" type="MeshInstance3D" parent="Geometry/Platform"]
+mesh = SubResource("Platform_mesh")
+
+[node name="Shape" type="CollisionShape3D" parent="Geometry/Platform"]
+shape = SubResource("Platform_shape")
+
+[node name="WallA" type="StaticBody3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 1.00000, -0.00000, 0, 0.00000, 1.00000, 8.000, 0.600, 5.000)
+
+[node name="Mesh" type="MeshInstance3D" parent="Geometry/WallA"]
+mesh = SubResource("WallA_mesh")
+
+[node name="Shape" type="CollisionShape3D" parent="Geometry/WallA"]
+shape = SubResource("WallA_shape")
+
+[node name="WallB" type="StaticBody3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 1.00000, -0.00000, 0, 0.00000, 1.00000, -8.000, 0.600, -3.000)
+
+[node name="Mesh" type="MeshInstance3D" parent="Geometry/WallB"]
+mesh = SubResource("WallB_mesh")
+
+[node name="Shape" type="CollisionShape3D" parent="Geometry/WallB"]
+shape = SubResource("WallB_shape")
+
+[node name="Player" parent="." instance=ExtResource("2_beast")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 6)
+
+[node name="Dummy" parent="." instance=ExtResource("2_beast")]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, -4)
+
+[node name="Camera" parent="." instance=ExtResource("3_cam")]
+
+[node name="PlayerController" type="Node" parent="." node_paths=PackedStringArray("beast", "camera")]
+script = ExtResource("4_ctrl")
+beast = NodePath("../Player")
+camera = NodePath("../Camera")
+
+[node name="DummyBrain" type="Node" parent="." node_paths=PackedStringArray("beast", "target")]
+script = ExtResource("5_brain")
+beast = NodePath("../Dummy")
+target = NodePath("../Player")
+
+[node name="HUD" type="CanvasLayer" parent="." node_paths=PackedStringArray("beast", "camera")]
+script = ExtResource("6_hud")
+beast = NodePath("../Player")
+camera = NodePath("../Camera")
