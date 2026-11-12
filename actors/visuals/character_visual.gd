@@ -180,6 +180,10 @@ func _fix_materials() -> void:
 				var body := mat.duplicate() as BaseMaterial3D
 				body.roughness = 0.7
 				body.metallic = 0.0
+				# Un poco de luz de contorno para que el personaje se lea sobre el escenario.
+				body.rim_enabled = true
+				body.rim = 0.35
+				body.rim_tint = 0.6
 				m.set_surface_override_material(i, body)
 
 

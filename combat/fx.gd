@@ -53,6 +53,27 @@ static func _flame_ppm(direction: Vector3, spread: float, v_min: float, v_max: f
 	return m
 
 
+## Fuego continuo que sube (braseros, antorchas). `size` escala la llama.
+static func fire(color := FIRE, size := 1.0) -> GPUParticles3D:
+	var p := GPUParticles3D.new()
+	p.amount = 48
+	p.lifetime = 0.7
+	p.local_coords = false
+	p.emitting = true
+	p.visibility_aabb = AABB(Vector3(-2, -1, -2), Vector3(4, 5, 4))
+	p.process_material = _cached("fire_ppm_%s_%.2f" % [color.to_html(), size], func():
+		var m := _flame_ppm(Vector3(0, 1, 0), 12.0, 0.6 * size, 1.4 * size, color)
+		m.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_SPHERE
+		m.emission_sphere_radius = 0.25 * size
+		m.gravity = Vector3(0, 2.5 * size, 0)
+		m.damping_min = 0.5
+		m.damping_max = 1.0
+		m.scale_curve = _curve_tex([Vector2(0, 0.6), Vector2(0.35, 1.0), Vector2(1, 0.15)])
+		return m)
+	p.draw_pass_1 = _cached("quad_fire_%.2f" % size, _billboard_quad.bind(0.75 * size, true))
+	return p
+
+
 ## Ascuas que suben (quemadura, aura de mejora). `radius` = anchura del emisor.
 static func embers(color: Color, radius: float, amount := 24, burst := false) -> GPUParticles3D:
 	var p := GPUParticles3D.new()

@@ -11,6 +11,11 @@ signal to_select
 
 const SELECT := "res://ui/character_select.tscn"
 const ARENA := "res://levels/arena_test/arena_test.tscn"
+## Escenarios disponibles (id → escena). La arena carga `stage`.
+const STAGES := {
+	&"colosseum": "res://levels/colosseum/colosseum.tscn",
+	&"test": "res://levels/arena_test/test_stage.tscn",
+}
 
 var my_character: StringName = &"charizard"
 ## Online: el personaje del rival. Práctica: el de la IA.
@@ -22,7 +27,9 @@ var rival_ready := false
 ## El rival ha cargado la arena (el anfitrión espera a esto para empezar la primera ronda).
 var rival_in_arena := false
 
-## Argumentos de línea de comandos para pruebas: --char=ID --rival=ID --autoready.
+var stage: StringName = &"colosseum"
+
+## Argumentos de línea de comandos para pruebas: --char=ID --rival=ID --stage=ID --autoready.
 var auto_ready := false
 
 
@@ -32,6 +39,8 @@ func _ready() -> void:
 			my_character = StringName(a.trim_prefix("--char="))
 		elif a.begins_with("--rival="):
 			rival_character = StringName(a.trim_prefix("--rival="))
+		elif a.begins_with("--stage="):
+			stage = StringName(a.trim_prefix("--stage="))
 		elif a == "--autoready":
 			auto_ready = true
 	Net.event_received.connect(_on_event)

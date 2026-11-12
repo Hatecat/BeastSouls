@@ -3,6 +3,7 @@ extends Node3D
 ## Los personajes salen de Session; las rondas (al mejor de 3) las lleva MatchFlow.
 ##   F1: mostrar/ocultar hitboxes activas.
 ##   F2: cambiar el modo de la IA del rival (solo en práctica).
+##   F3: cambiar la calidad gráfica.
 
 const MENU := "res://ui/main_menu.tscn"
 ## Puntos de aparición [posición, orientación]: 0 = anfitrión / jugador, 1 = invitado / rival.
@@ -19,6 +20,20 @@ var match_flow: MatchFlow
 
 
 func _ready() -> void:
+	var stage: Node = load(Session.STAGES.get(Session.stage, Session.STAGES[&"colosseum"])).instantiate()
+	stage.name = &"Stage"
+	add_child(stage)
+	move_child(stage, 0)
+	var post := CanvasLayer.new()
+	post.layer = 0
+	var rect := ColorRect.new()
+	rect.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var mat := ShaderMaterial.new()
+	mat.shader = load("res://ui/post_fx.gdshader")
+	rect.material = mat
+	post.add_child(rect)
+	add_child(post)
 	var mine := Roster.find(Session.my_character)
 	var theirs := Roster.find(Session.rival_character)
 	player.apply_character(mine)
@@ -60,6 +75,9 @@ func _unhandled_input(event: InputEvent) -> void:
 		Beast.debug_hitboxes = not Beast.debug_hitboxes
 	elif event.is_action_pressed("debug_ai") and dummy_brain:
 		dummy_brain.next_mode()
+	elif event.is_action_pressed("debug_quality"):
+		Graphics.cycle()
+		hud.show_banner("Calidad: " + Graphics.quality_name(), Color(0.9, 0.9, 0.9), 0.8, 0.1)
 
 
 func _on_net_ended(reason: String) -> void:

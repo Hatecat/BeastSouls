@@ -67,6 +67,7 @@ func _initialize() -> void:
 		"debug_next": [0.5, [_key(KEY_RIGHT)]],
 		"debug_hitboxes": [0.5, [_key(KEY_F1)]],
 		"debug_ai": [0.5, [_key(KEY_F2)]],
+		"debug_quality": [0.5, [_key(KEY_F3)]],
 	}
 	for action: String in actions:
 		var def: Array = actions[action]

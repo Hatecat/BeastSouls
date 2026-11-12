@@ -13,6 +13,8 @@ $G --path . -- --practice --char=gengar --rival=snorlax   # directo a la arena c
 $G --path . -- --host --nick=A --latency=60       # alojar (otra ventana: -- --join=127.0.0.1 --nick=B)
                                                   # --char=ID --autoready: el selector elige y se marca listo solo
 python3 tools/gen_characters.py                   # regenerar kits de los personajes provisionales
+python3 tools/gen_textures.py                     # regenerar texturas procedurales del coliseo (numpy + Pillow)
+$G --path . -- --practice --stage=test --quality=2   # escenario de pruebas; calidad 0..3
 $G -e --path .                                    # editor
 $G --headless --path . --import                   # registrar clases nuevas (class_name) e importar assets
 $G --headless --path . --script tools/setup_input.gd   # regenerar el InputMap por defecto
@@ -45,6 +47,10 @@ usar `root.get_node("Net")`. Red: lanzar dos instancias (`-- --host` / `-- --joi
   provisionales los genera `tools/gen_characters.py` (ataques = plantillas de Charizard escaladas; habilidades
   con las 4 clases genéricas; ranuras: 1 distancia, 2 cerca, 3 área, 4 mejora → lo que espera `DummyBrain`).
   Los efectos (`Fx`) toman el color de la habilidad (`AbilityData.color`).
+- `game/graphics.gd` — autoload `Graphics`: calidad Bajo/Medio/Alto/Ultra (user://settings.cfg, menú principal, F3,
+  `--quality=N`). Ajusta escala FSR2, SDFGI, SSIL, SSAO, niebla volumétrica y sombras; se aplica sola a cada
+  WorldEnvironment que entra en el árbol y a los grupos "brazier_lights" (sombras de luces puntuales) y
+  "optional_fx" (polvo). Medido en la RTX 3050 a 1080p en combate: Bajo ~240, Medio ~145, Alto ~88, Ultra ~54 fps.
 - `game/` — `Session` (autoload: personajes elegidos y estado del rival en el lobby; escucha la red siempre para
   no perder eventos entre escenas) y `MatchFlow` (al mejor de 3: cuenta atrás con `Beast.frozen`, K.O., marcador,
   panel de fin, revancha, volver al selector). Online manda el anfitrión (eventos "round", "round_over"); cada
@@ -81,9 +87,17 @@ usar `root.get_node("Net")`. Red: lanzar dos instancias (`-- --host` / `-- --joi
 - `ui/main_menu` — escena inicial: práctica, alojar, unirse; acepta argumentos tras `--` (ver main_menu.gd).
   Después va a `ui/character_select` (vista previa 3D en SubViewport; práctica: tú y luego la IA; online: cada uno
   elige, "Listo", y el anfitrión arranca).
-- `levels/` — `arena_test/` (escena principal: arena con pilares, rampa, muros y un rival de práctica; reaparición
-  a los 3 s; F1 hitboxes, F2 modo de la IA),
-  `sandbox/` (visor de modelo, ←/→ cambian de clip), `common/world_env.tres` (Environment compartido).
+- `levels/` — `arena_test/arena_test.tscn` es la escena de COMBATE (jugadores, cámara, HUD, IA; F1 hitboxes,
+  F2 modo de la IA, F3 calidad gráfica) y carga como hijo el escenario de `Session.stage` (`Session.STAGES`):
+  `colosseum/` (por defecto) o `arena_test/test_stage.tscn` (cajas grises). Añade también la viñeta/grano
+  (`ui/post_fx.gdshader`, CanvasLayer 0, por debajo del HUD).
+  `colosseum/colosseum.gd` (@tool) construye TODO por código al cargar: entorno (cielo de atardecer, SDFGI,
+  niebla volumétrica, AgX), suelo, muro con pilastras y portones, columnata y gradas con un tramo derrumbado hacia
+  el sol, columnas rotas, escombros (MultiMesh), braseros (`FlickerLight`, `Fx.fire`), estandartes, polvo y
+  cordilleras. Shaders en `colosseum/shaders/`: `floor` (losas en XZ de mundo + arena + emblema), `stone`
+  (triplanar de mundo, sin UVs, suciedad abajo y polvo encima), `banner` (tela con viento). Texturas en
+  `colosseum/textures/` (generadas; ORM empaquetado: R rugosidad, G altura, B oclusión).
+  `sandbox/` (visor de modelo, ←/→ cambian de clip), `common/world_env.tres` (Environment del selector/sandbox).
 - `art/` — fuentes (.blend); tiene `.gdignore`, Godot no lo importa.
 - `tools/` — scripts de utilidad.
 

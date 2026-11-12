@@ -163,7 +163,7 @@ func _ready() -> void:
 	_build_match_over()
 
 	var help := Label.new()
-	help.text = "WASD mover · Ratón cámara · Espacio: toque esquivar / mantener correr\nClic izq.: ligero · Clic der.: fuerte (mantener = cargar) · Shift: bloquear · Clic de rueda o Tab: fijar objetivo\n1-4: habilidades (gastan Calor, que se gana golpeando) · F1: ver hitboxes · F2: cambiar IA del rival · Esc: soltar ratón"
+	help.text = "WASD mover · Ratón cámara · Espacio: toque esquivar / mantener correr\nClic izq.: ligero · Clic der.: fuerte (mantener = cargar) · Shift: bloquear · Clic de rueda o Tab: fijar objetivo\n1-4: habilidades (gastan Calor, que se gana golpeando) · F1: ver hitboxes · F2: IA del rival · F3: calidad · Esc: soltar ratón"
 	help.add_theme_font_size_override("font_size", 15)
 	help.add_theme_color_override("font_color", Color(1, 1, 1, 0.7))
 	help.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.8))
@@ -301,13 +301,13 @@ func _process(_delta: float) -> void:
 			atk = "  %s%s" % [beast.attack.display_name, "  carga x%.2f" % beast.charge_multiplier() if beast.charge > 0.0 else ""]
 		elif beast.ability:
 			atk = "  " + beast.ability.display_name
-		_debug.text = "Estado: %s%s%s%s\nVelocidad: %.1f m/s\nVida: %d · Estamina: %d · Postura: %d · Calor: %d\nObjetivo: %s\n%s\nFPS: %d" % [
+		_debug.text = "Estado: %s%s%s%s\nVelocidad: %.1f m/s\nVida: %d · Estamina: %d · Postura: %d · Calor: %d\nObjetivo: %s\n%s\nFPS: %d · Calidad: %s (F3)" % [
 			Beast.State.keys()[beast.state], atk,
 			"  [correr]" if beast.sprinting else "",
 			"  [invulnerable]" if beast.is_invulnerable() else "",
 			beast.horizontal_speed(), beast.health, beast.stamina, beast.poise, beast.heat, target,
 			_net_or_ai_text(),
-			Engine.get_frames_per_second()]
+			Engine.get_frames_per_second(), Graphics.quality_name()]
 
 
 func _net_or_ai_text() -> String:

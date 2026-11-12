@@ -77,6 +77,13 @@ func _build() -> void:
 	join.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	join.pressed.connect(_on_join)
 
+	var quality := OptionButton.new()
+	for n in Graphics.NAMES:
+		quality.add_item(n)
+	quality.selected = Graphics.quality
+	quality.item_selected.connect(Graphics.set_quality)
+	_row(box, "Calidad gráfica", quality)
+
 	_latency = SpinBox.new()
 	_latency.max_value = 500
 	_latency.suffix = "ms"
