@@ -104,6 +104,10 @@ usar `root.get_node("Net")`. Red: lanzar dos instancias (`-- --host` / `-- --joi
   Al fijar, la cámara sube y se desplaza al hombro derecho. `add_shake()` para vibración.
 - `ui/` — `Hud`: barras de vida/estamina (con rastro de pérdida), daño acumulado sobre la barra del objetivo
   (estilo Souls, se borra tras 2.5 s sin golpear), ayuda y panel de depuración (según Settings).
+  `ActionDiamond` (action_diamond.gd): rombo abajo a la derecha con lo que hace cada botón ahora mismo. Mando: X / Y
+  habilidades (con LT pasan a la 3 y la 4; la otra pareja va en un círculo pequeño), B esquivar, A saltar. Teclado:
+  las 4 habilidades con su tecla. Recarga en sector, coste de Calor, apagado si no se puede usar; encima, el
+  resto de acciones en dos líneas.
   `UiTheme` (ui_theme.gd): tema común (fuente serif del sistema, piedra oscura y ámbar) fusionado con el tema por
   defecto, así lo heredan también los controles de los CanvasLayer. `OptionsMenu` (pestañas Gráficos/Sonido/
   Controles/Interfaz, se aplica y guarda al momento; se usa en el menú y en la pausa). `PauseMenu` (Esc/Start):

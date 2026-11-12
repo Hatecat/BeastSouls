@@ -14,7 +14,7 @@ extends CanvasLayer
 var _health: Bar
 var _stamina: Bar
 var _heat: Bar
-var _slots: Array[AbilitySlot] = []
+var _diamond: ActionDiamond
 var _status: Label
 var _debug: Label
 var _target_box: VBoxContainer
@@ -35,35 +35,6 @@ var _over_title: Label
 var _over_sub: Label
 var _over_note: Label
 var _over_buttons: HBoxContainer
-
-
-## Ranura de habilidad: tecla, nombre, coste y recarga (sector que se vacía).
-class AbilitySlot extends Control:
-	var key := "1"
-	var ability: AbilityData
-	var cooldown_frac := 0.0
-	var usable := true
-	var active := false
-
-	func _draw() -> void:
-		var r := Rect2(Vector2.ZERO, size)
-		var c := ability.color if ability else Color(0.3, 0.3, 0.3)
-		draw_rect(r.grow(2.0), Color(0, 0, 0, 0.7))
-		draw_rect(r, Color(c.r * 0.25, c.g * 0.25, c.b * 0.25, 0.9))
-		if ability:
-			var inner := r.grow(-6.0)
-			draw_rect(inner, Color(c.r, c.g, c.b, 0.85 if usable else 0.25))
-			if cooldown_frac > 0.0:
-				var h := inner.size.y * cooldown_frac
-				draw_rect(Rect2(inner.position, Vector2(inner.size.x, h)), Color(0, 0, 0, 0.65))
-			if active:
-				draw_rect(r.grow(3.0), Color(1, 1, 1, 0.9), false, 3.0)
-		var font := get_theme_default_font()
-		draw_string(font, Vector2(6, 18), key, HORIZONTAL_ALIGNMENT_LEFT, -1, 16, Color(1, 1, 1, 0.9))
-		if ability:
-			var w := font.get_string_size(ability.display_name, HORIZONTAL_ALIGNMENT_LEFT, -1, 13).x
-			draw_string(font, Vector2((size.x - w) * 0.5, size.y + 18), ability.display_name, HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Color(1, 1, 1, 0.85))
-			draw_string(font, Vector2(0, size.y - 8), "%d" % ability.heat_cost, HORIZONTAL_ALIGNMENT_RIGHT, size.x - 6, 13, Color(1, 0.8, 0.5) if usable else Color(0.7, 0.4, 0.4))
 
 
 class Bar extends Control:
@@ -98,22 +69,15 @@ func _ready() -> void:
 	root.add_child(_stamina)
 	root.add_child(_heat)
 
-	# Ranuras de habilidad (abajo a la derecha).
-	var slots := HBoxContainer.new()
-	slots.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
-	slots.grow_horizontal = Control.GROW_DIRECTION_BEGIN
-	slots.grow_vertical = Control.GROW_DIRECTION_BEGIN
-	slots.offset_right = -40.0
-	slots.offset_bottom = -60.0
-	slots.add_theme_constant_override("separation", 30)
-	add_child(slots)
-	for i in Beast.ABILITY_SLOTS:
-		var slot := AbilitySlot.new()
-		slot.key = str(i + 1)
-		slot.custom_minimum_size = Vector2(64, 64)
-		slot.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-		slots.add_child(slot)
-		_slots.append(slot)
+	# Rombo de acciones y habilidades (abajo a la derecha).
+	_diamond = ActionDiamond.new()
+	_diamond.beast = beast
+	_diamond.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
+	_diamond.grow_horizontal = Control.GROW_DIRECTION_BEGIN
+	_diamond.grow_vertical = Control.GROW_DIRECTION_BEGIN
+	_diamond.offset_right = -24.0
+	_diamond.offset_bottom = -16.0
+	add_child(_diamond)
 
 	# Estados (quemadura, mejoras) bajo las barras.
 	_status = Label.new()
@@ -203,9 +167,6 @@ func _apply_settings() -> void:
 	_debug.visible = Settings.show_debug
 	_help.visible = Settings.show_help
 	_help.text = _help_text()
-	for i in _slots.size():
-		_slots[i].key = ControlsHelp.slot_key(i, Settings.using_pad)
-		_slots[i].queue_redraw()
 
 
 func set_score(text: String) -> void:
@@ -330,21 +291,7 @@ func _process(_delta: float) -> void:
 	_stamina.value = beast.stamina / beast.max_stamina
 	_heat.custom_minimum_size.x = beast.max_heat * px_per_point * 0.6
 	_heat.value = beast.heat / beast.max_heat
-	var abilities: Array = beast.abilities
-	for i in _slots.size():
-		var slot := _slots[i]
-		slot.ability = abilities[i] if i < abilities.size() else null
-		if slot.ability:
-			slot.cooldown_frac = beast.cooldowns[i] / maxf(slot.ability.cooldown, 0.001)
-			slot.usable = beast.can_use_ability(i)
-			slot.active = beast.ability_slot == i
-		slot.queue_redraw()
-	# Mando: con LT mantenido se resalta la barra secundaria (X / Y lanzan la 3 y la 4).
-	var pad := Settings.using_pad
-	var secondary := pad and PlayerController.secondary_held()
-	for i in _slots.size():
-		var lit := not pad or (i >= 2) == secondary
-		_slots[i].modulate = Color(1, 1, 1, 1.0 if lit else 0.4)
+	_diamond.beast = beast
 	var status := PackedStringArray()
 	if beast.burn_time > 0.0:
 		status.append("Quemado %.0f s" % beast.burn_time)

@@ -37,12 +37,11 @@ static func rows() -> Array:
 	]
 
 
-## Ayuda corta del HUD para el dispositivo en uso.
+## Ayuda corta del HUD (las acciones de cada botón las enseña el rombo, `ActionDiamond`).
 static func hud_text(pad: bool) -> String:
 	if pad:
-		return "RB ligero (combo) · RT fuerte (mantener: cargar) · LB bloquear · B esquivar · L3 correr · A saltar · R3 fijar\nX / Y habilidades · LT + X / Y habilidades secundarias (gastan Calor) · Start: pausa y guía de controles"
-	return "%s ligero (combo) · %s fuerte (mantener: cargar) · %s bloquear · %s: toque esquivar, mantener correr · %s saltar · %s fijar\n%s-%s: habilidades (gastan Calor) · Esc: pausa y guía de controles · F1 hitboxes · F2 IA · F3 calidad" % [
-		_k("attack_light"), _k("attack_heavy"), _k("block"), _k("dodge"), _k("jump"), _k("lock_on"), _k("ability_1"), _k("ability_4")]
+		return "Start: pausa y guía de controles"
+	return "Esc: pausa y guía de controles  ·  F1 hitboxes  ·  F2 IA  ·  F3 calidad"
 
 
 ## Etiqueta de la ranura de habilidad `i` en el HUD.
