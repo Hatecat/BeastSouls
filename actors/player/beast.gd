@@ -13,12 +13,18 @@ signal hit_landed(target: Beast, result: HitResult)
 ## Este Beast ha recibido un golpe de `attacker`.
 signal hit_received(attacker: Beast, result: HitResult, damage: float)
 signal died
+## Ha empezado una habilidad de la ranura `slot`.
+signal ability_used(slot: int)
+## Petición de vibración de cámara para quien controle a este Beast (rugido, mejoras...).
+signal shake_requested(amount: float)
 
-enum State { LOCOMOTION, DODGE, ATTACK, BLOCK, STAGGER, DEAD }
+enum State { LOCOMOTION, DODGE, ATTACK, ABILITY, BLOCK, STAGGER, DEAD }
 enum HitResult { IGNORED, HIT, STAGGERED, BLOCKED, GUARD_BREAK, KILLED }
 
 ## Capa de físicas de las hurtboxes (capa 4 → bit 8).
 const HURTBOX_MASK := 8
+
+const ABILITY_SLOTS := 4
 
 ## Dibuja las hitboxes activas (F1 en la arena de pruebas).
 static var debug_hitboxes := false
@@ -75,6 +81,14 @@ static var debug_hitboxes := false
 ## Tiempo que se recuerda una pulsación que aún no se pudo ejecutar (input buffer).
 @export var input_buffer_time := 0.3
 
+@export_group("Calor")
+## Recurso de las habilidades: se gana golpeando (AttackData.heat_gain) y recibiendo golpes.
+@export var max_heat := 100.0
+@export var start_heat := 30.0
+@export var heat_on_hit_taken := 5.0
+## Daño por segundo de la quemadura.
+@export var burn_dps := 3.0
+
 @export_group("Presentación")
 ## Velocidad (m/s) a la que el clip de caminar se ve natural con speed_scale 1.
 @export var walk_anim_speed := 2.6
@@ -102,6 +116,17 @@ var locked_on := false
 var attack: AttackData
 ## Carga acumulada del ataque en curso (segundos).
 var charge := 0.0
+var heat := 0.0
+## Habilidad en curso (estado ABILITY) y su ranura.
+var ability: AbilityData
+var ability_slot := -1
+## Recarga restante de cada ranura de habilidad.
+var cooldowns := PackedFloat32Array([0.0, 0.0, 0.0, 0.0])
+## Mejoras activas: {id, time, damage, speed, action, color}.
+var buffs: Array[Dictionary] = []
+var burn_time := 0.0
+## Objetivo fijado en este tick (lo usan las habilidades teledirigidas).
+var lock_target: Node3D
 
 var _exhausted := false
 var _regen_wait := 0.0
@@ -122,6 +147,9 @@ var _recoil := 0.0
 var _knockback := Vector3.ZERO
 var _anim := &""
 var _debug_sphere: MeshInstance3D
+var _cast := {}
+var _burn_fx: GPUParticles3D
+var _aura_fx: GPUParticles3D
 
 
 func _ready() -> void:
@@ -148,8 +176,11 @@ func simulate(inp: PlayerInput, delta: float) -> void:
 		_hitstop -= delta
 		_update_presentation()
 		return
-	state_time += delta
+	var acting := state == State.ATTACK or state == State.ABILITY
+	var sim_delta := delta * (action_speed_multiplier() if acting else 1.0)
+	state_time += sim_delta
 	locked_on = is_instance_valid(inp.lock_target) and inp.lock_target != self
+	lock_target = inp.lock_target if locked_on else null
 	match state:
 		State.LOCOMOTION:
 			_tick_locomotion(inp, delta)
@@ -158,7 +189,9 @@ func simulate(inp: PlayerInput, delta: float) -> void:
 		State.DODGE:
 			_tick_dodge(inp, delta)
 		State.ATTACK:
-			_tick_attack(inp, delta)
+			_tick_attack(inp, sim_delta)
+		State.ABILITY:
+			_tick_ability(inp, sim_delta, delta)
 		State.STAGGER:
 			_tick_stagger(inp, delta)
 		State.DEAD:
@@ -207,6 +240,11 @@ func revive() -> void:
 	health = max_health
 	stamina = max_stamina
 	poise = max_poise
+	heat = start_heat
+	for i in ABILITY_SLOTS:
+		cooldowns[i] = 0.0
+	buffs.clear()
+	burn_time = 0.0
 	_hitstop = 0.0
 	_buffered = 0
 	velocity = Vector3.ZERO
@@ -220,17 +258,21 @@ func revive() -> void:
 # --- Recibir golpes -------------------------------------------------------------------
 
 ## Aplica un golpe de `attacker`. En red lo llamará solo el host (autoridad).
-func receive_hit(attacker: Beast, atk: AttackData, multiplier := 1.0) -> HitResult:
+## `source` es de dónde viene el golpe (para el bloqueo y el empuje): el atacante, o el
+## proyectil/explosión. Vector3.INF = la posición del atacante.
+func receive_hit(attacker: Beast, atk: AttackData, multiplier := 1.0, source := Vector3.INF) -> HitResult:
 	if is_dead() or is_invulnerable():
 		return HitResult.IGNORED
-	var to_attacker := attacker.global_position - global_position
+	if source == Vector3.INF:
+		source = attacker.global_position
+	var to_attacker := source - global_position
 	to_attacker.y = 0.0
 	var push_dir := -to_attacker.normalized() if to_attacker.length_squared() > 0.001 else -forward()
 	var damage := atk.damage * multiplier
 	var result: HitResult
 	var front := forward().angle_to(to_attacker) <= deg_to_rad(block_angle)
 
-	if state == State.BLOCK and front:
+	if state == State.BLOCK and front and not atk.unblockable:
 		damage *= 1.0 - block_absorb
 		_spend_stamina(atk.guard_stamina_damage * multiplier)
 		health -= damage
@@ -259,6 +301,10 @@ func receive_hit(attacker: Beast, atk: AttackData, multiplier := 1.0) -> HitResu
 	if result == HitResult.KILLED:
 		health = 0.0
 		_die()
+	else:
+		heat = minf(max_heat, heat + heat_on_hit_taken)
+		if atk.burn_time > 0.0 and result != HitResult.BLOCKED:
+			burn_time = maxf(burn_time, atk.burn_time)
 	_hitstop = atk.hitstop
 	hit_received.emit(attacker, result, damage)
 	_fx_hit_received(attacker, result)
@@ -288,6 +334,11 @@ func _die() -> void:
 
 func _set_state(new_state: State) -> void:
 	var old := state
+	if old == State.ABILITY and ability:
+		# Interrumpida o terminada: que limpie sus efectos.
+		ability.finish(self, _cast)
+		ability = null
+		ability_slot = -1
 	state = new_state
 	state_time = 0.0
 	if new_state != State.ATTACK:
@@ -307,7 +358,7 @@ func _tick_locomotion(inp: PlayerInput, delta: float) -> void:
 		_tick_block(inp, delta)
 		return
 	var speed := sprint_speed if sprinting else (strafe_speed if locked_on else jog_speed)
-	_steer(dir, amount, speed, delta)
+	_steer(dir, amount, speed * speed_multiplier(), delta)
 	if locked_on and not sprinting:
 		_face_towards(inp.lock_target.global_position - global_position, delta)
 	elif amount > 0.05:
@@ -330,7 +381,7 @@ func _tick_block(inp: PlayerInput, delta: float) -> void:
 	if _try_actions(inp):
 		return
 	var dir := inp.move_3d()
-	_steer(dir, minf(dir.length(), 1.0), block_speed, delta)
+	_steer(dir, minf(dir.length(), 1.0), block_speed * speed_multiplier(), delta)
 	if locked_on:
 		_face_towards(inp.lock_target.global_position - global_position, delta)
 	elif dir.length() > 0.05:
@@ -339,7 +390,7 @@ func _tick_block(inp: PlayerInput, delta: float) -> void:
 
 ## Intenta empezar una acción con lo que hay en el buffer: ataque o esquiva.
 func _try_actions(inp: PlayerInput) -> bool:
-	return _try_attack(inp) or _try_dodge(inp)
+	return _try_attack(inp) or _try_ability(inp) or _try_dodge(inp)
 
 
 func _try_dodge(inp: PlayerInput) -> bool:
@@ -463,7 +514,7 @@ func _tick_attack(inp: PlayerInput, delta: float) -> void:
 	# Salidas.
 	if state_time >= a.combo_start and _try_attack(inp):
 		return
-	if state_time >= a.cancel_start and _try_dodge(inp):
+	if state_time >= a.cancel_start and (_try_dodge(inp) or _try_ability(inp)):
 		return
 	if state_time >= a.duration:
 		_set_state(State.LOCOMOTION)
@@ -495,12 +546,160 @@ func _check_hits(a: AttackData) -> void:
 		var victim := (r.collider as Node).get_parent() as Beast
 		if victim == null or victim == self or victim in _hit_targets:
 			continue
-		var result := victim.receive_hit(self, a, charge_multiplier())
+		var result := deal_hit(victim, a, Vector3.INF, charge_multiplier())
 		if result == HitResult.IGNORED:
 			continue  # esquivado: si sigue dentro tras las i-frames, puede alcanzarle
 		_hit_targets.append(victim)
 		_hitstop = a.hitstop
+
+
+## Aplica un golpe de este Beast a `victim` (ataques, habilidades, proyectiles).
+## Aplica las mejoras de daño, da Calor y emite `hit_landed`.
+func deal_hit(victim: Beast, atk: AttackData, source := Vector3.INF, multiplier := 1.0) -> HitResult:
+	var result := victim.receive_hit(self, atk, multiplier * damage_multiplier(), source)
+	if result != HitResult.IGNORED:
+		var gain := atk.heat_gain * (0.5 if result == HitResult.BLOCKED else 1.0)
+		heat = minf(max_heat, heat + gain)
 		hit_landed.emit(victim, result)
+	return result
+
+
+## Bestias vivas (menos esta) cuya hurtbox toca la esfera.
+func beasts_in_sphere(center: Vector3, radius: float) -> Array[Beast]:
+	var shape := SphereShape3D.new()
+	shape.radius = radius
+	var q := PhysicsShapeQueryParameters3D.new()
+	q.shape = shape
+	q.transform = Transform3D(Basis.IDENTITY, center)
+	q.collision_mask = HURTBOX_MASK
+	q.collide_with_areas = true
+	q.collide_with_bodies = false
+	var out: Array[Beast] = []
+	for r in get_world_3d().direct_space_state.intersect_shape(q, 16):
+		var b := (r.collider as Node).get_parent() as Beast
+		if b and b != self and not b.is_dead() and b not in out:
+			out.append(b)
+	return out
+
+
+## Bestias dentro de un cono (`angle_deg` = medio ángulo) y con línea de visión desde `origin`.
+func beasts_in_cone(origin: Vector3, dir: Vector3, reach: float, angle_deg: float) -> Array[Beast]:
+	var out: Array[Beast] = []
+	for b in beasts_in_sphere(origin, reach):
+		var to := b.get_lock_position() - origin
+		var flat := Vector3(to.x, 0.0, to.z)
+		# Margen por el tamaño del cuerpo: a poca distancia el cono se "ensancha".
+		var margin := atan2(0.6, maxf(flat.length(), 0.1))
+		if flat.length() > 0.01 and dir.angle_to(flat) > deg_to_rad(angle_deg) + margin:
+			continue
+		var ray := PhysicsRayQueryParameters3D.create(origin, b.get_lock_position(), 1)
+		if not get_world_3d().direct_space_state.intersect_ray(ray).is_empty():
+			continue
+		out.append(b)
+	return out
+
+
+# --- Habilidades --------------------------------------------------------------------
+
+func can_use_ability(slot: int) -> bool:
+	if moveset == null or slot < 0 or slot >= moveset.abilities.size():
+		return false
+	var ab := moveset.abilities[slot]
+	return ab != null and cooldowns[slot] <= 0.0 and heat >= ab.heat_cost
+
+
+func _try_ability(inp: PlayerInput) -> bool:
+	for slot in ABILITY_SLOTS:
+		var bit := PlayerInput.ABILITY_1 << slot
+		if _buffered & bit == 0:
+			continue
+		if not can_use_ability(slot):
+			continue  # se queda en el buffer por si se libera a tiempo
+		_buffered &= ~bit
+		_start_ability(slot, inp)
+		return true
+	return false
+
+
+func _start_ability(slot: int, inp: PlayerInput) -> void:
+	var ab := moveset.abilities[slot]
+	if locked_on:
+		var to := inp.lock_target.global_position - global_position
+		to.y = 0.0
+		if to.length_squared() > 0.01:
+			facing = yaw_of(to)
+	elif inp.move.length() > 0.2:
+		facing = yaw_of(inp.move_3d())
+	sprinting = false
+	heat -= ab.heat_cost
+	cooldowns[slot] = ab.cooldown
+	_set_state(State.ABILITY)
+	ability = ab
+	ability_slot = slot
+	_cast = {}
+	_anim = &""
+	ab.start(self, _cast)
+	ability_used.emit(slot)
+
+
+func _tick_ability(inp: PlayerInput, delta: float, real_delta: float) -> void:
+	var ab := ability
+	if state_time <= ab.track_until and ab.tracking > 0.0:
+		var want := Vector3.ZERO
+		if locked_on:
+			want = inp.lock_target.global_position - global_position
+		elif inp.move.length() > 0.2:
+			want = inp.move_3d()
+		want.y = 0.0
+		if want.length_squared() > 0.001:
+			facing = rotate_toward(facing, yaw_of(want), ab.tracking * real_delta)
+	if ab.move_factor > 0.0:
+		var dir := inp.move_3d()
+		_steer(dir, minf(dir.length(), 1.0), jog_speed * ab.move_factor * speed_multiplier(), real_delta)
+	else:
+		_brake(real_delta)
+	ab.tick(self, _cast, state_time, delta)
+	if state != State.ABILITY:
+		return  # la propia habilidad pudo cambiar el estado
+	if state_time >= ab.cancel_start and _try_dodge(inp):
+		return
+	if state_time >= ab.duration:
+		_set_state(State.LOCOMOTION)
+
+
+# --- Mejoras ------------------------------------------------------------------------
+
+func add_buff(id: StringName, duration: float, damage := 1.0, speed := 1.0, action := 1.0, color := Color.WHITE) -> void:
+	for b in buffs:
+		if b.id == id:
+			b.time = duration
+			return
+	buffs.append({id = id, time = duration, damage = damage, speed = speed, action = action, color = color})
+
+
+func has_buff(id: StringName) -> bool:
+	return buffs.any(func(b): return b.id == id)
+
+
+func damage_multiplier() -> float:
+	var m := 1.0
+	for b in buffs:
+		m *= b.damage
+	return m
+
+
+func speed_multiplier() -> float:
+	var m := 1.0
+	for b in buffs:
+		m *= b.speed
+	return m
+
+
+func action_speed_multiplier() -> float:
+	var m := 1.0
+	for b in buffs:
+		m *= b.action
+	return m
 
 
 func _tick_stagger(_inp: PlayerInput, delta: float) -> void:
@@ -547,7 +746,7 @@ func _tick_resources(delta: float) -> void:
 		stamina = maxf(0.0, stamina - sprint_cost * delta)
 		_regen_wait = stamina_regen_delay * 0.5
 	_regen_wait -= delta
-	if _regen_wait <= 0.0 and state != State.DODGE and state != State.ATTACK and state != State.DEAD:
+	if _regen_wait <= 0.0 and state != State.DODGE and state != State.ATTACK and state != State.ABILITY and state != State.DEAD:
 		var regen := stamina_regen * (block_regen_factor if state == State.BLOCK else 1.0)
 		stamina = minf(max_stamina, stamina + regen * delta)
 	if stamina <= 0.0:
@@ -557,6 +756,18 @@ func _tick_resources(delta: float) -> void:
 	_poise_wait -= delta
 	if _poise_wait <= 0.0:
 		poise = minf(max_poise, poise + poise_regen * delta)
+	for i in ABILITY_SLOTS:
+		cooldowns[i] = maxf(0.0, cooldowns[i] - delta)
+	for i in range(buffs.size() - 1, -1, -1):
+		buffs[i].time -= delta
+		if buffs[i].time <= 0.0:
+			buffs.remove_at(i)
+	if burn_time > 0.0 and not is_dead():
+		burn_time -= delta
+		health -= burn_dps * delta
+		if health <= 0.0:
+			health = 0.0
+			_die()
 
 
 func _update_buffer(inp: PlayerInput, delta: float) -> void:
@@ -583,7 +794,11 @@ func _update_presentation() -> void:
 		State.ATTACK:
 			if _anim != attack.action:
 				_play_anim(attack.action, 0.06, attack.anim_speed)
-			visual.set_playback_speed(0.04 if is_charging() else 1.0)
+			visual.set_playback_speed(0.04 if is_charging() else action_speed_multiplier())
+		State.ABILITY:
+			if _anim != ability.action:
+				_play_anim(ability.action, 0.08, ability.anim_speed)
+			visual.set_playback_speed(action_speed_multiplier())
 		State.BLOCK:
 			if _anim != &"block":
 				_anim = &"block"
@@ -608,6 +823,7 @@ func _update_presentation() -> void:
 				visual.set_playback_speed(h / walk_anim_speed)
 	if _hitstop > 0.0:
 		visual.set_playback_speed(0.0)
+	_update_status_fx()
 	_update_debug_hitbox()
 
 
@@ -634,6 +850,24 @@ func _fx_hit_received(attacker: Beast, result: HitResult) -> void:
 		_:
 			visual.flash(Color(1.0, 0.35, 0.2, 0.6), 0.15)
 	HitFx.spawn(get_parent(), pos, toward_attacker.normalized(), kind, 1.0 if result != HitResult.BLOCKED else 0.6)
+
+
+## Quemadura (ascuas en el cuerpo) y aura de las mejoras.
+func _update_status_fx() -> void:
+	var burning := burn_time > 0.0 and not is_dead()
+	if burning and _burn_fx == null:
+		_burn_fx = Fx.embers(Color(1.0, 0.4, 0.1), 0.5, 40)
+		add_child(_burn_fx)
+		_burn_fx.position = Vector3(0, 1.0, 0)
+	if _burn_fx:
+		_burn_fx.emitting = burning
+	var buffed := not buffs.is_empty() and not is_dead()
+	if buffed and _aura_fx == null:
+		_aura_fx = Fx.embers(buffs[0].color, 0.9, 30)
+		add_child(_aura_fx)
+		_aura_fx.position = Vector3(0, 0.4, 0)
+	if _aura_fx:
+		_aura_fx.emitting = buffed
 
 
 func _update_debug_hitbox() -> void:

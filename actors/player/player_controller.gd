@@ -22,6 +22,7 @@ func _ready() -> void:
 		camera.snap_behind()
 		beast.hit_landed.connect(_on_hit_landed)
 		beast.hit_received.connect(_on_hit_received)
+		beast.shake_requested.connect(camera.add_shake)
 	_capture_mouse(true)
 
 

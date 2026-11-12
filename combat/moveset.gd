@@ -8,3 +8,5 @@ extends Resource
 @export var heavy_combo: Array[AttackData] = []
 ## Ataque ligero mientras se corre.
 @export var running_attack: AttackData
+## Kit de habilidades (teclas 1-4 / cruceta), en orden de ranura.
+@export var abilities: Array[AbilityData] = []

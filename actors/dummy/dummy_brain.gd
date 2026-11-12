@@ -115,6 +115,14 @@ func _aggressive(frame: PlayerInput, delta: float) -> void:
 		frame.held |= PlayerInput.BLOCK
 		return
 
+	# Habilidades: a distancia, bola de fuego; cerca, lanzallamas o rugido; y mejorarse si puede.
+	if _cooldown <= 0.0 and _queue.is_empty():
+		var slot := _pick_ability(dist)
+		if slot >= 0:
+			frame.buttons |= PlayerInput.ABILITY_1 << slot
+			_cooldown = _rng.randf_range(1.2, 2.0)
+			return
+
 	if dist > attack_range:
 		# Acercarse (corriendo si está lejos).
 		frame.move = Vector2(fwd.x, fwd.z)
@@ -137,3 +145,19 @@ func _aggressive(frame: PlayerInput, delta: float) -> void:
 		# Entre ataques, rodea despacio.
 		var side := Vector3(-fwd.z, 0.0, fwd.x) * _strafe_dir * 0.5
 		frame.move = Vector2(side.x, side.z)
+
+
+## Ranura de habilidad a usar ahora (-1 = ninguna). Supone el kit de Charizard:
+## 0 bola de fuego, 1 lanzallamas, 2 rugido, 3 danza dragón.
+func _pick_ability(dist: float) -> int:
+	var r := _rng.randf()
+	if beast.can_use_ability(3) and beast.buffs.is_empty() and r < 0.3:
+		return 3
+	if dist > 5.0 and dist < 16.0 and beast.can_use_ability(0) and r < 0.5:
+		return 0
+	if dist <= 4.5:
+		if beast.can_use_ability(2) and r < 0.15:
+			return 2
+		if beast.can_use_ability(1) and r < 0.3:
+			return 1
+	return -1

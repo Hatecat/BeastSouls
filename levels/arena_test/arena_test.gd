@@ -12,6 +12,7 @@ var _spawns := {}
 
 
 func _ready() -> void:
+	Fx.prewarm(self)
 	for b: Beast in get_tree().get_nodes_in_group(&"beasts"):
 		_spawns[b] = [b.global_position, b.facing]
 		b.died.connect(_on_died.bind(b))

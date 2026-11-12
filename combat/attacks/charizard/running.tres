@@ -27,3 +27,4 @@ lunge_start = 0.0
 lunge_end = 0.35
 tracking = 2.0
 hyper_armor = 20.0
+heat_gain = 12.0

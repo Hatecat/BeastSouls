@@ -25,8 +25,9 @@ inyecta input al rival, desactivar también su `DummyBrain` (si no, lo sobrescri
   `death`, `skill_*`) y de socket (`mouth`, `head`, `hand_l/r`, `foot_l/r`, `chest`, `tail_tip`). Cada modelo es una
   escena (p. ej. `charizard_visual.tscn`) con `action_map`, `action_speed` y `sockets`. Cambiar de modelo = otra escena.
 - `actors/player/` — `Beast` (beast.gd/.tscn): CharacterBody3D con la simulación (estados LOCOMOTION, BLOCK, DODGE,
-  ATTACK, STAGGER, DEAD; estamina, postura, esquiva con i-frames, input buffer, hitstop).
-  `simulate(PlayerInput, delta)` es la única entrada de la lógica; `receive_hit()` aplica golpes (en red: solo el host).
+  ATTACK, ABILITY, STAGGER, DEAD; estamina, postura, Calor, recargas, mejoras, quemadura, esquiva con i-frames,
+  input buffer, hitstop). `simulate(PlayerInput, delta)` es la única entrada de la lógica. Todo daño pasa por
+  `deal_hit()` → `receive_hit()` (en red: solo el host). Consultas: `beasts_in_sphere()`, `beasts_in_cone()`.
   `PlayerInput`: fotograma de input serializable (move en mundo, bits `buttons` de un tick y `held`).
   `PlayerController`: lee Input + yaw de cámara → PlayerInput (Espacio: toque = esquivar al soltar, mantener = correr).
   Corre con `process_physics_priority = -10` para ir antes que el Beast. El Beast reinicia su input cada tick.
@@ -41,7 +42,15 @@ inyecta input al rival, desactivar también su `DummyBrain` (si no, lo sobrescri
   end, embestida, seguimiento, hiper armadura, carga) y `Moveset` (combo ligero, combo fuerte, ataque corriendo).
   Los de Charizard están en `combat/attacks/charizard/*.tres` (se editan en el inspector; F1 en la arena muestra
   las hitboxes). Hitboxes = consulta de esfera en el tick contra las `Hurtbox` (Area3D, capa 4): deterministas,
-  no dependen de los huesos. `HitFx`: chispas y destello (solo presentación). `combat/abilities/` (Fase 3).
+  no dependen de los huesos. `HitFx`: chispas y destello (solo presentación).
+- `combat/abilities/` — `AbilityData` (base: coste de Calor, recarga, tiempos, seguimiento) con `start/tick/finish`;
+  el estado de cada lanzamiento va en el diccionario `cast`, NUNCA en el Resource (se comparte). Subclases:
+  `ChannelAbility` (cono por ticks), `ProjectileAbility` (→ `combat/projectile.gd`), `AreaAbility`, `BuffAbility`.
+  Kit de Charizard en `combat/abilities/charizard/` (ranuras 1-4 en `moveset.tres`: bola de fuego, lanzallamas,
+  rugido, danza dragón). AttackData tiene además `unblockable`, `burn_time` y `heat_gain`.
+- `combat/fx.gd` — constructores de efectos (chorro de fuego, ascuas, bola, onda, explosión). REGLA: cachear
+  materiales/mallas con `Fx._cached()`; crear recursos nuevos por efecto costaba ~40 ms por fotograma en partida.
+  `Fx.prewarm()` (en el `_ready` del nivel) compila los shaders al cargar.
 - `net/` — multijugador ENet host-autoritativo (Fase 5).
 - `levels/` — `arena_test/` (escena principal: arena con pilares, rampa, muros y un rival de práctica; reaparición
   a los 3 s; F1 hitboxes, F2 modo de la IA),

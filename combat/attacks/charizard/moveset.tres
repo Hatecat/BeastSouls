@@ -2,6 +2,11 @@
 
 [ext_resource type="Script" path="res://combat/moveset.gd" id="1_script"]
 [ext_resource type="Script" path="res://combat/attack_data.gd" id="2_attack"]
+[ext_resource type="Script" path="res://combat/abilities/ability_data.gd" id="3_ability"]
+[ext_resource type="Resource" path="res://combat/abilities/charizard/fireball.tres" id="ab0"]
+[ext_resource type="Resource" path="res://combat/abilities/charizard/flamethrower.tres" id="ab1"]
+[ext_resource type="Resource" path="res://combat/abilities/charizard/roar.tres" id="ab2"]
+[ext_resource type="Resource" path="res://combat/abilities/charizard/dragon_dance.tres" id="ab3"]
 [ext_resource type="Resource" path="res://combat/attacks/charizard/light_1.tres" id="a0"]
 [ext_resource type="Resource" path="res://combat/attacks/charizard/light_2.tres" id="a1"]
 [ext_resource type="Resource" path="res://combat/attacks/charizard/light_3.tres" id="a2"]
@@ -14,3 +19,4 @@ script = ExtResource("1_script")
 light_combo = Array[ExtResource("2_attack")]([ExtResource("a0"), ExtResource("a1"), ExtResource("a2")])
 heavy_combo = Array[ExtResource("2_attack")]([ExtResource("a3"), ExtResource("a4")])
 running_attack = ExtResource("a5")
+abilities = Array[ExtResource("3_ability")]([ExtResource("ab0"), ExtResource("ab1"), ExtResource("ab2"), ExtResource("ab3")])

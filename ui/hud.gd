@@ -13,12 +13,44 @@ extends CanvasLayer
 
 var _health: Bar
 var _stamina: Bar
+var _heat: Bar
+var _slots: Array[AbilitySlot] = []
+var _status: Label
 var _debug: Label
 var _target_box: VBoxContainer
 var _target_name: Label
 var _target_bar: Bar
 var _banner: Label
 var _banner_tween: Tween
+
+
+## Ranura de habilidad: tecla, nombre, coste y recarga (sector que se vacía).
+class AbilitySlot extends Control:
+	var key := "1"
+	var ability: AbilityData
+	var cooldown_frac := 0.0
+	var usable := true
+	var active := false
+
+	func _draw() -> void:
+		var r := Rect2(Vector2.ZERO, size)
+		var c := ability.color if ability else Color(0.3, 0.3, 0.3)
+		draw_rect(r.grow(2.0), Color(0, 0, 0, 0.7))
+		draw_rect(r, Color(c.r * 0.25, c.g * 0.25, c.b * 0.25, 0.9))
+		if ability:
+			var inner := r.grow(-6.0)
+			draw_rect(inner, Color(c.r, c.g, c.b, 0.85 if usable else 0.25))
+			if cooldown_frac > 0.0:
+				var h := inner.size.y * cooldown_frac
+				draw_rect(Rect2(inner.position, Vector2(inner.size.x, h)), Color(0, 0, 0, 0.65))
+			if active:
+				draw_rect(r.grow(3.0), Color(1, 1, 1, 0.9), false, 3.0)
+		var font := get_theme_default_font()
+		draw_string(font, Vector2(6, 18), key, HORIZONTAL_ALIGNMENT_LEFT, -1, 16, Color(1, 1, 1, 0.9))
+		if ability:
+			var w := font.get_string_size(ability.display_name, HORIZONTAL_ALIGNMENT_LEFT, -1, 13).x
+			draw_string(font, Vector2((size.x - w) * 0.5, size.y + 18), ability.display_name, HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Color(1, 1, 1, 0.85))
+			draw_string(font, Vector2(0, size.y - 8), "%d" % ability.heat_cost, HORIZONTAL_ALIGNMENT_RIGHT, size.x - 6, 13, Color(1, 0.8, 0.5) if usable else Color(0.7, 0.4, 0.4))
 
 
 class Bar extends Control:
@@ -47,11 +79,38 @@ func _ready() -> void:
 	add_child(root)
 	_health = _make_bar(Color(0.62, 0.08, 0.06), 14.0)
 	_stamina = _make_bar(Color(0.18, 0.52, 0.22), 9.0)
+	_heat = _make_bar(Color(0.95, 0.45, 0.08), 7.0)
+	_heat.trail_color = Color(1.0, 0.9, 0.6)
 	root.add_child(_health)
 	root.add_child(_stamina)
+	root.add_child(_heat)
+
+	# Ranuras de habilidad (abajo a la derecha).
+	var slots := HBoxContainer.new()
+	slots.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
+	slots.grow_horizontal = Control.GROW_DIRECTION_BEGIN
+	slots.grow_vertical = Control.GROW_DIRECTION_BEGIN
+	slots.offset_right = -40.0
+	slots.offset_bottom = -60.0
+	slots.add_theme_constant_override("separation", 30)
+	add_child(slots)
+	for i in Beast.ABILITY_SLOTS:
+		var slot := AbilitySlot.new()
+		slot.key = str(i + 1)
+		slot.custom_minimum_size = Vector2(64, 64)
+		slot.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+		slots.add_child(slot)
+		_slots.append(slot)
+
+	# Estados (quemadura, mejoras) bajo las barras.
+	_status = Label.new()
+	_status.position = Vector2(40, 92)
+	_status.add_theme_font_size_override("font_size", 15)
+	_status.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.9))
+	add_child(_status)
 
 	_debug = Label.new()
-	_debug.position = Vector2(40, 110)
+	_debug.position = Vector2(40, 122)
 	_debug.add_theme_font_size_override("font_size", 16)
 	_debug.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.8))
 	_debug.visible = show_debug
@@ -89,7 +148,7 @@ func _ready() -> void:
 		beast.died.connect(show_banner.bind("HAS CAÍDO", Color(0.75, 0.1, 0.08)))
 
 	var help := Label.new()
-	help.text = "WASD mover · Ratón cámara · Espacio: toque esquivar / mantener correr\nClic izq.: ligero · Clic der.: fuerte (mantener = cargar) · Shift: bloquear · Clic de rueda o Tab: fijar objetivo\nF1: ver hitboxes · F2: cambiar IA del rival · Esc: soltar ratón"
+	help.text = "WASD mover · Ratón cámara · Espacio: toque esquivar / mantener correr\nClic izq.: ligero · Clic der.: fuerte (mantener = cargar) · Shift: bloquear · Clic de rueda o Tab: fijar objetivo\n1-4: habilidades (gastan Calor, que se gana golpeando) · F1: ver hitboxes · F2: cambiar IA del rival · Esc: soltar ratón"
 	help.add_theme_font_size_override("font_size", 15)
 	help.add_theme_color_override("font_color", Color(1, 1, 1, 0.7))
 	help.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.8))
@@ -125,6 +184,23 @@ func _process(_delta: float) -> void:
 	_stamina.custom_minimum_size.x = beast.max_stamina * px_per_point
 	_health.value = beast.health / beast.max_health
 	_stamina.value = beast.stamina / beast.max_stamina
+	_heat.custom_minimum_size.x = beast.max_heat * px_per_point * 0.6
+	_heat.value = beast.heat / beast.max_heat
+	var abilities: Array = beast.moveset.abilities if beast.moveset else []
+	for i in _slots.size():
+		var slot := _slots[i]
+		slot.ability = abilities[i] if i < abilities.size() else null
+		if slot.ability:
+			slot.cooldown_frac = beast.cooldowns[i] / maxf(slot.ability.cooldown, 0.001)
+			slot.usable = beast.can_use_ability(i)
+			slot.active = beast.ability_slot == i
+		slot.queue_redraw()
+	var status := PackedStringArray()
+	if beast.burn_time > 0.0:
+		status.append("Quemado %.0f s" % beast.burn_time)
+	for b in beast.buffs:
+		status.append("%s %.0f s" % [String(b.id).capitalize(), b.time])
+	_status.text = "  ·  ".join(status)
 	var t := camera.lock_target as Beast if camera else null
 	_target_box.visible = t != null
 	if t:
@@ -137,10 +213,12 @@ func _process(_delta: float) -> void:
 		var atk := ""
 		if beast.attack:
 			atk = "  %s%s" % [beast.attack.display_name, "  carga x%.2f" % beast.charge_multiplier() if beast.charge > 0.0 else ""]
-		_debug.text = "Estado: %s%s%s%s\nVelocidad: %.1f m/s\nVida: %d · Estamina: %d · Postura: %d\nObjetivo: %s\nIA rival: %s\nFPS: %d" % [
+		elif beast.ability:
+			atk = "  " + beast.ability.display_name
+		_debug.text = "Estado: %s%s%s%s\nVelocidad: %.1f m/s\nVida: %d · Estamina: %d · Postura: %d · Calor: %d\nObjetivo: %s\nIA rival: %s\nFPS: %d" % [
 			Beast.State.keys()[beast.state], atk,
 			"  [correr]" if beast.sprinting else "",
 			"  [invulnerable]" if beast.is_invulnerable() else "",
-			beast.horizontal_speed(), beast.health, beast.stamina, beast.poise, target,
+			beast.horizontal_speed(), beast.health, beast.stamina, beast.poise, beast.heat, target,
 			DummyBrain.Mode.keys()[dummy_brain.mode] if dummy_brain else "—",
 			Engine.get_frames_per_second()]

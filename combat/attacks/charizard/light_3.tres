@@ -26,3 +26,4 @@ lunge_speed = 2.0
 lunge_start = 0.1
 lunge_end = 0.3
 tracking = 5.0
+heat_gain = 10.0
