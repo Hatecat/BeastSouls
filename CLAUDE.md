@@ -13,6 +13,7 @@ $G --path . -- --practice --char=gengar --rival=snorlax   # directo a la arena c
 $G --path . -- --host --nick=A --latency=60       # alojar (otra ventana: -- --join=127.0.0.1 --nick=B)
                                                   # --char=ID --autoready: el selector elige y se marca listo solo
 python3 tools/gen_characters.py                   # regenerar kits de los personajes provisionales
+python3 tools/new_character.py --id=ID --model=X.glb   # personaje nuevo desde un modelo (docs/NUEVO_PERSONAJE.md)
 python3 tools/gen_textures.py                     # regenerar texturas procedurales del coliseo (numpy + Pillow)
 python3 tools/gen_character_textures.py            # regenerar el microdetalle de piel de los personajes
 python3 tools/gen_music.py                        # regenerar música y ambiente (numpy + ffmpeg/libvorbis)
@@ -63,6 +64,9 @@ usar `root.get_node("Net")`. Red: lanzar dos instancias (`-- --host` / `-- --joi
   provisionales los genera `tools/gen_characters.py` (ataques = plantillas de Charizard escaladas; habilidades
   con las 4 clases genéricas; ranuras: 1 distancia, 2 cerca, 3 área, 4 mejora → lo que espera `DummyBrain`).
   Los efectos (`Fx`) toman el color de la habilidad (`AbilityData.color`).
+  `Roster` carga los de `PATHS` y después cualquier otro `.tres` de la carpeta. `tools/new_character.py` crea un
+  personaje desde un .glb: lo importa, lee clips y huesos (`tools/inspect_model.gd`), adivina `action_map` y
+  sockets, y genera visual, kit por arquetipo (acciones `skill_1..4`) y CharacterDef. Guía: docs/NUEVO_PERSONAJE.md.
 - `game/graphics.gd` — autoload `Graphics`: calidad Bajo/Medio/Alto/Ultra (user://settings.cfg, menú principal, F3,
   `--quality=N`). Ajusta escala FSR2, SDFGI, SSIL, SSAO, niebla volumétrica y sombras; se aplica sola a cada
   WorldEnvironment que entra en el árbol y a los grupos "brazier_lights" (sombras de luces puntuales) y

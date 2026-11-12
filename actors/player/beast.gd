@@ -957,7 +957,10 @@ func _update_presentation() -> void:
 			if air:
 				if _anim != &"air":
 					_anim = &"air"
-					visual.hold_pose(&"run", 0.3, 0.12)
+					if visual.has_action(&"jump"):
+						visual.play(&"jump", 0.1)
+					else:
+						visual.hold_pose(&"run", 0.3, 0.12)  # sin clip de salto: pose fija de carrera
 			elif _was_airborne:
 				_anim = &""
 				Sfx.play("step", global_position, -4.0, 0.8 * _voice_pitch(), 0.05)
