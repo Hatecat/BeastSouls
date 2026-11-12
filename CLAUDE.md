@@ -7,7 +7,9 @@ Charizard (`assets/models/placeholder/`) es un modelo TEMPORAL de uso privado: n
 
 ```bash
 G=~/Godot_v4.7.2-stable_linux.x86_64
-$G --path .                                       # jugar (arena de pruebas)
+$G --path .                                       # jugar (menú principal)
+$G --path . -- --practice                         # directo a la arena contra la IA
+$G --path . -- --host --nick=A --latency=60       # alojar (otra ventana: -- --join=127.0.0.1 --nick=B)
 $G -e --path .                                    # editor
 $G --headless --path . --import                   # registrar clases nuevas (class_name) e importar assets
 $G --headless --path . --script tools/setup_input.gd   # regenerar el InputMap por defecto
@@ -16,7 +18,8 @@ $G --headless --path . --script tools/setup_input.gd   # regenerar el InputMap p
 Probar en partida: script `extends SceneTree` fuera del proyecto pasado con `--script`, que cambia de escena y guarda
 capturas con `root.get_texture().get_image().save_png(...)`. Para no depender del ratón real: poner el ratón en
 `MOUSE_MODE_VISIBLE`, desactivar `PlayerController` y asignar `beast.input` tras cada `await physics_frame`. Si se
-inyecta input al rival, desactivar también su `DummyBrain` (si no, lo sobrescribe).
+inyecta input al rival, desactivar también su `DummyBrain` (si no, lo sobrescribe). En esos scripts los autoload no son identificadores:
+usar `root.get_node("Net")`. Red: lanzar dos instancias (`-- --host` / `-- --join=127.0.0.1`) con el mismo script.
 
 ## Estructura
 
@@ -51,7 +54,15 @@ inyecta input al rival, desactivar también su `DummyBrain` (si no, lo sobrescri
 - `combat/fx.gd` — constructores de efectos (chorro de fuego, ascuas, bola, onda, explosión). REGLA: cachear
   materiales/mallas con `Fx._cached()`; crear recursos nuevos por efecto costaba ~40 ms por fotograma en partida.
   `Fx.prewarm()` (en el `_ready` del nivel) compila los shaders al cargar.
-- `net/` — multijugador ENet host-autoritativo (Fase 5).
+- `net/` — versus online 1v1 por ENet (UDP, puerto 24700). NO es host-autoritativo: cada jugador simula su
+  propio Beast sin retardo y manda instantáneas (`Beast.net_snapshot()`, 30 Hz, canal no fiable ordenado). El rival
+  es un proxy (`Beast.is_remote`, no simula) que `NetProxy` interpola 100 ms en el pasado y que reproduce sus
+  ataques/habilidades contra el Beast LOCAL: la VÍCTIMA decide los golpes y los confirma al atacante con un evento
+  fiable (`NetMatch`: "hit", "died", marcador). `deal_hit()` ignora víctimas remotas. `Net` (autoload): host/join,
+  saludo con versión de protocolo, simulación de latencia/jitter/pérdida en el emisor (`--latency= --jitter=
+  --loss=`). Las señales de desconexión de `multiplayer` se conectan DIFERIDAS (cerrar el peer dentro de su poll
+  cuelga Godot). `NetMatch.setup()` va antes de `add_child`.
+- `ui/main_menu` — escena inicial: práctica, alojar, unirse; acepta argumentos tras `--` (ver main_menu.gd).
 - `levels/` — `arena_test/` (escena principal: arena con pilares, rampa, muros y un rival de práctica; reaparición
   a los 3 s; F1 hitboxes, F2 modo de la IA),
   `sandbox/` (visor de modelo, ←/→ cambian de clip), `common/world_env.tres` (Environment compartido).

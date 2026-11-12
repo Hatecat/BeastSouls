@@ -90,7 +90,7 @@ func _unhandled_input(event: InputEvent) -> void:
 			camera.switch_target(1)
 
 
-func _on_hit_landed(_target: Beast, result: Beast.HitResult) -> void:
+func _on_hit_landed(_target: Beast, result: Beast.HitResult, _atk: AttackData) -> void:
 	camera.add_shake(0.15 if result == Beast.HitResult.BLOCKED else 0.3)
 
 

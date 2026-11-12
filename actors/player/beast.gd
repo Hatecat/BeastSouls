@@ -8,8 +8,9 @@ extends CharacterBody3D
 ## `_fx_*`; nunca decide nada de la partida.
 
 signal state_changed(old_state: State, new_state: State)
-## Este Beast ha golpeado a `target` (también al ser bloqueado).
-signal hit_landed(target: Beast, result: HitResult)
+## Este Beast ha golpeado a `target` (también al ser bloqueado). En red, si el objetivo es remoto, llega
+## cuando su dueño lo confirma (`atk` puede ser null entonces).
+signal hit_landed(target: Beast, result: HitResult, atk: AttackData)
 ## Este Beast ha recibido un golpe de `attacker`.
 signal hit_received(attacker: Beast, result: HitResult, damage: float)
 signal died
@@ -30,6 +31,12 @@ const ABILITY_SLOTS := 4
 static var debug_hitboxes := false
 
 @export var moveset: Moveset
+## Proxy de un jugador remoto: no simula; su estado llega por la red (NetProxy) y solo se presenta.
+## Los golpes A un Beast remoto no se aplican aquí: los decide su dueño (la víctima).
+var is_remote := false
+## Sube cada vez que empieza una acción (ataque, habilidad, esquiva, aturdimiento, reaparición):
+## así el proxy remoto sabe que hay que reiniciar la animación y la lista de golpeados.
+var action_seq := 0
 
 @export_group("Movimiento")
 @export var jog_speed := 4.5
@@ -162,6 +169,8 @@ func _ready() -> void:
 
 
 func _physics_process(delta: float) -> void:
+	if is_remote:
+		return
 	simulate(input, delta)
 	# El input dura un solo tick: si el controlador deja de mandarlo, el personaje se queda quieto.
 	# (En la Fase 5, para el rival remoto, se repetirá el último input recibido como predicción.)
@@ -248,6 +257,7 @@ func revive() -> void:
 	_hitstop = 0.0
 	_buffered = 0
 	velocity = Vector3.ZERO
+	action_seq += 1
 	hurtbox.set_deferred(&"monitorable", true)
 	_anim = &""
 	if state != State.LOCOMOTION:
@@ -320,6 +330,7 @@ func _current_hyper_armor() -> float:
 func _enter_stagger(duration: float, knock: Vector3) -> void:
 	_stagger_duration = duration
 	_knockback = knock
+	action_seq += 1
 	_anim = &""
 	_set_state(State.STAGGER)
 
@@ -412,6 +423,7 @@ func _try_dodge(inp: PlayerInput) -> bool:
 		facing = yaw_of(_dodge_dir)
 	sprinting = false
 	_combo_index = -1
+	action_seq += 1
 	_anim = &""  # para que una esquiva encadenada reinicie el clip
 	_spend_stamina(dodge_cost)
 	_set_state(State.DODGE)
@@ -476,6 +488,7 @@ func _start_attack(atk: AttackData, inp: PlayerInput) -> void:
 	_spend_stamina(atk.stamina_cost)
 	_set_state(State.ATTACK)
 	attack = atk
+	action_seq += 1
 	charge = 0.0
 	_charge_done = not atk.chargeable
 	_hit_targets.clear()
@@ -556,12 +569,24 @@ func _check_hits(a: AttackData) -> void:
 ## Aplica un golpe de este Beast a `victim` (ataques, habilidades, proyectiles).
 ## Aplica las mejoras de daño, da Calor y emite `hit_landed`.
 func deal_hit(victim: Beast, atk: AttackData, source := Vector3.INF, multiplier := 1.0) -> HitResult:
+	if victim.is_remote:
+		# En red decide la víctima, en su máquina; aquí llegará su confirmación (confirm_remote_hit).
+		return HitResult.IGNORED
 	var result := victim.receive_hit(self, atk, multiplier * damage_multiplier(), source)
 	if result != HitResult.IGNORED:
 		var gain := atk.heat_gain * (0.5 if result == HitResult.BLOCKED else 1.0)
 		heat = minf(max_heat, heat + gain)
-		hit_landed.emit(victim, result)
+		hit_landed.emit(victim, result, atk)
 	return result
+
+
+## El dueño de `target` (remoto) confirma que nuestro golpe le alcanzó: Calor, hitstop y efectos.
+func confirm_remote_hit(target: Beast, result: HitResult, heat_gain: float, hitstop: float) -> void:
+	heat = minf(max_heat, heat + heat_gain * (0.5 if result == HitResult.BLOCKED else 1.0))
+	if state == State.ATTACK:
+		_hitstop = maxf(_hitstop, hitstop * 0.5)  # llega tarde: medio hitstop para no frenar de más
+	target._fx_hit_received(self, result)
+	hit_landed.emit(target, result, null)
 
 
 ## Bestias vivas (menos esta) cuya hurtbox toca la esfera.
@@ -636,6 +661,7 @@ func _start_ability(slot: int, inp: PlayerInput) -> void:
 	_set_state(State.ABILITY)
 	ability = ab
 	ability_slot = slot
+	action_seq += 1
 	_cast = {}
 	_anim = &""
 	ab.start(self, _cast)
@@ -665,6 +691,21 @@ func _tick_ability(inp: PlayerInput, delta: float, real_delta: float) -> void:
 		return
 	if state_time >= ab.duration:
 		_set_state(State.LOCOMOTION)
+
+
+# --- Red ----------------------------------------------------------------------------
+
+## Estado completo para enviar al rival (lo aplica NetProxy en el otro lado).
+func net_snapshot() -> Array:
+	var buff_list := []
+	for b in buffs:
+		buff_list.append([String(b.id), b.time, b.damage, b.speed, b.action, b.color])
+	return [
+		Time.get_ticks_usec() / 1_000_000.0, global_position, velocity, facing, state, state_time,
+		action_seq, moveset.attack_index(attack) if moveset else -1, ability_slot, charge, _charge_done,
+		health, stamina, heat, poise, burn_time, buff_list, sprinting, _dodge_duration, _stagger_duration,
+		locked_on, _hitstop,
+	]
 
 
 # --- Mejoras ------------------------------------------------------------------------

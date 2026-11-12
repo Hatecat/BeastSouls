@@ -21,6 +21,7 @@ var _target_box: VBoxContainer
 var _target_name: Label
 var _target_bar: Bar
 var _banner: Label
+var _score: Label
 var _banner_tween: Tween
 
 
@@ -134,6 +135,16 @@ func _ready() -> void:
 	_target_box.add_child(_target_bar)
 	_target_box.visible = false
 
+	# Marcador (online), arriba al centro.
+	_score = Label.new()
+	_score.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP)
+	_score.offset_top = 30.0
+	_score.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	_score.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_score.add_theme_font_size_override("font_size", 24)
+	_score.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.9))
+	add_child(_score)
+
 	# Mensaje central (muerte / victoria).
 	_banner = Label.new()
 	_banner.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -157,6 +168,10 @@ func _ready() -> void:
 	help.offset_left = 40.0
 	help.offset_bottom = -28.0
 	add_child(help)
+
+
+func set_score(text: String) -> void:
+	_score.text = text
 
 
 func show_banner(text: String, color: Color) -> void:
@@ -215,10 +230,20 @@ func _process(_delta: float) -> void:
 			atk = "  %s%s" % [beast.attack.display_name, "  carga x%.2f" % beast.charge_multiplier() if beast.charge > 0.0 else ""]
 		elif beast.ability:
 			atk = "  " + beast.ability.display_name
-		_debug.text = "Estado: %s%s%s%s\nVelocidad: %.1f m/s\nVida: %d · Estamina: %d · Postura: %d · Calor: %d\nObjetivo: %s\nIA rival: %s\nFPS: %d" % [
+		_debug.text = "Estado: %s%s%s%s\nVelocidad: %.1f m/s\nVida: %d · Estamina: %d · Postura: %d · Calor: %d\nObjetivo: %s\n%s\nFPS: %d" % [
 			Beast.State.keys()[beast.state], atk,
 			"  [correr]" if beast.sprinting else "",
 			"  [invulnerable]" if beast.is_invulnerable() else "",
 			beast.horizontal_speed(), beast.health, beast.stamina, beast.poise, beast.heat, target,
-			DummyBrain.Mode.keys()[dummy_brain.mode] if dummy_brain else "—",
+			_net_or_ai_text(),
 			Engine.get_frames_per_second()]
+
+
+func _net_or_ai_text() -> String:
+	if Net.is_online():
+		var sim := Net.sim_latency_ms + Net.sim_jitter_ms / 2
+		return "Red: %s · ping %d ms%s" % ["anfitrión" if Net.mode == Net.Mode.HOST else "invitado", Net.rtt(),
+				" (+%d simulado por lado)" % sim if sim > 0 else ""]
+	if is_instance_valid(dummy_brain):
+		return "IA rival: " + DummyBrain.Mode.keys()[dummy_brain.mode]
+	return ""

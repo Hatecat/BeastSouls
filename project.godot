@@ -11,8 +11,12 @@ config_version=5
 [application]
 
 config/name="BeastSouls"
-run/main_scene="res://levels/arena_test/arena_test.tscn"
+run/main_scene="res://ui/main_menu.tscn"
 config/features=PackedStringArray("4.7", "Forward Plus")
+
+[autoload]
+
+Net="*res://net/net.gd"
 
 [display]
 
