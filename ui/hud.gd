@@ -339,6 +339,12 @@ func _process(_delta: float) -> void:
 			slot.usable = beast.can_use_ability(i)
 			slot.active = beast.ability_slot == i
 		slot.queue_redraw()
+	# Mando: con LT mantenido se resalta la barra secundaria (X / Y lanzan la 3 y la 4).
+	var pad := Settings.using_pad
+	var secondary := pad and PlayerController.secondary_held()
+	for i in _slots.size():
+		var lit := not pad or (i >= 2) == secondary
+		_slots[i].modulate = Color(1, 1, 1, 1.0 if lit else 0.4)
 	var status := PackedStringArray()
 	if beast.burn_time > 0.0:
 		status.append("Quemado %.0f s" % beast.burn_time)

@@ -14,6 +14,8 @@ var _dodge_held := 0.0
 var _suppress_attacks := 0
 ## Con un menú abierto (pausa online) el Beast recibe input vacío.
 var blocked := false
+## Mando: L3 activa correr hasta soltar el stick.
+var _pad_sprint := false
 
 
 func _ready() -> void:
@@ -58,6 +60,19 @@ func _physics_process(delta: float) -> void:
 				frame.buttons |= PlayerInput.DODGE
 			_dodge_down = false
 
+	# Mando: B esquiva al pulsar; L3 corre hasta que sueltes el stick o te quedes sin estamina.
+	if Input.is_action_just_pressed("dodge_pad"):
+		frame.buttons |= PlayerInput.DODGE
+		_pad_sprint = false
+	if Input.is_action_just_pressed("sprint_pad"):
+		_pad_sprint = not _pad_sprint
+	if raw.length() < 0.25 or beast.stamina <= 0.0:
+		_pad_sprint = false
+	if _pad_sprint:
+		frame.held |= PlayerInput.SPRINT
+	if Input.is_action_just_pressed("jump"):
+		frame.buttons |= PlayerInput.JUMP
+
 	if Input.is_action_pressed("block"):
 		frame.held |= PlayerInput.BLOCK
 	if _suppress_attacks > 0 or Input.mouse_mode != Input.MOUSE_MODE_CAPTURED:
@@ -72,6 +87,12 @@ func _physics_process(delta: float) -> void:
 	for i in 4:
 		if Input.is_action_just_pressed("ability_%d" % (i + 1)):
 			frame.buttons |= PlayerInput.ABILITY_1 << i
+	# Mando: X / Y lanzan las ranuras 1 y 2; con LT mantenido, la 3 y la 4.
+	var base := 2 if secondary_held() else 0
+	if Input.is_action_just_pressed("ability_x"):
+		frame.buttons |= PlayerInput.ABILITY_1 << base
+	if Input.is_action_just_pressed("ability_y"):
+		frame.buttons |= PlayerInput.ABILITY_1 << (base + 1)
 
 	if camera:
 		if Input.is_action_just_pressed("lock_on"):
@@ -94,6 +115,11 @@ func _unhandled_input(event: InputEvent) -> void:
 			camera.switch_target(-1)
 		elif event.is_action_pressed("target_next"):
 			camera.switch_target(1)
+
+
+## LT mantenido: X / Y pasan a las habilidades secundarias (el HUD las resalta).
+static func secondary_held() -> bool:
+	return Input.is_action_pressed("ability_shift")
 
 
 func ignore_attacks(ticks: int) -> void:

@@ -87,6 +87,9 @@ var action_seq := 0
 @export var stamina_regen_delay := 0.6
 @export var sprint_cost := 14.0
 @export var dodge_cost := 22.0
+## Salto: velocidad vertical inicial (altura ≈ v²/2g) y coste de estamina.
+@export var jump_velocity := 8.0
+@export var jump_cost := 12.0
 ## Tras vaciar la estamina corriendo, no se puede volver a correr hasta recuperar esto.
 @export var exhausted_threshold := 20.0
 ## Tiempo que se recuerda una pulsación que aún no se pudo ejecutar (input buffer).
@@ -158,6 +161,9 @@ var _recoil := 0.0
 var _knockback := Vector3.ZERO
 var _anim := &""
 var _step_accum := 0.0
+## Este tick se ha saltado: no pegar al suelo (velocity.y = -0.5) antes de despegar.
+var _jumped := false
+var _was_airborne := false
 var _debug_sphere: MeshInstance3D
 var _cast := {}
 ## Valores originales de las estadísticas que ha sobrescrito algún CharacterDef.
@@ -214,7 +220,9 @@ func simulate(inp: PlayerInput, delta: float) -> void:
 			_tick_stagger(inp, delta)
 		State.DEAD:
 			_brake(delta)
-	if is_on_floor():
+	if _jumped:
+		_jumped = false
+	elif is_on_floor():
 		velocity.y = -0.5
 	else:
 		velocity.y -= gravity * delta
@@ -421,6 +429,12 @@ func _tick_locomotion(inp: PlayerInput, delta: float) -> void:
 	var dir := inp.move_3d()
 	var amount := minf(dir.length(), 1.0)
 	sprinting = inp.is_held(PlayerInput.SPRINT) and amount > 0.3 and not _exhausted and stamina > 0.0
+	if not is_on_floor():
+		# En el aire: solo control de dirección; lo pulsado queda en el buffer para el aterrizaje.
+		_steer(dir, amount, (sprint_speed if sprinting else jog_speed) * speed_multiplier(), delta * 0.35)
+		return
+	if _try_jump():
+		return
 	if _try_actions(inp):
 		return
 	if inp.is_held(PlayerInput.BLOCK):
@@ -457,6 +471,23 @@ func _tick_block(inp: PlayerInput, delta: float) -> void:
 		_face_towards(inp.lock_target.global_position - global_position, delta)
 	elif dir.length() > 0.05:
 		_face_towards(dir, delta)
+
+
+func _try_jump() -> bool:
+	if _buffered & PlayerInput.JUMP == 0 or stamina <= 0.0 or _exhausted:
+		return false
+	_buffered &= ~PlayerInput.JUMP
+	velocity.y = jump_velocity
+	_jumped = true
+	_spend_stamina(jump_cost)
+	Sfx.play("dodge", global_position + Vector3.UP, -6.0, 1.25 * _voice_pitch())
+	return true
+
+
+func is_airborne() -> bool:
+	if is_remote:
+		return absf(velocity.y) > 1.0
+	return not is_on_floor() or _jumped
 
 
 ## Intenta empezar una acción con lo que hay en el buffer: ataque o esquiva.
@@ -913,7 +944,18 @@ func _update_presentation() -> void:
 			visual.set_playback_speed(1.0)
 		State.LOCOMOTION:
 			var h := horizontal_speed()
-			if h < 0.3:
+			var air := is_airborne()
+			if air:
+				if _anim != &"air":
+					_anim = &"air"
+					visual.hold_pose(&"run", 0.3, 0.12)
+			elif _was_airborne:
+				_anim = &""
+				Sfx.play("step", global_position, -4.0, 0.8 * _voice_pitch(), 0.05)
+			_was_airborne = air
+			if air:
+				pass
+			elif h < 0.3:
 				_play_anim(&"idle", 0.2)
 				visual.set_playback_speed(1.0)
 			elif sprinting:

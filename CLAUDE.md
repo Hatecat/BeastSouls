@@ -131,6 +131,11 @@ usar `root.get_node("Net")`. Red: lanzar dos instancias (`-- --host` / `-- --joi
 - Capas físicas: 1 world, 2 beasts, 3 hitboxes (reservada), 4 hurtboxes. Interpolación física activada (60 Hz).
 - Yaw: adelante = -Z girado `yaw` → dirección (-sin, 0, -cos); `Beast.yaw_of(dir)` hace la inversa.
 - El modelo glTF mira a +Z; `CharacterVisual.model_yaw_offset = 180` lo gira para que "adelante" sea -Z.
-- Controles por defecto (tools/setup_input.gd): WASD/stick izq., ratón/stick der., LMB/R1 ligero, RMB/R2 fuerte,
-  Shift/L1 bloquear, Espacio/B esquivar (mantener = correr), MMB/Tab/R3 fijar objetivo, 1-4/cruceta habilidades, Esc/Start pausa.
+- Controles por defecto (tools/setup_input.gd). Teclado: WASD, ratón, LMB ligero, RMB fuerte, Shift bloquear,
+  Espacio esquivar (mantener = correr), F saltar, MMB/Tab fijar, 1-4 habilidades, Esc pausa. Mando: stick izq.
+  mover, L3 alterna correr (se corta al soltar el stick), B esquivar (al pulsar), A saltar, RB ligero, RT fuerte,
+  LB bloquear, R3 fijar, X / Y habilidades 1 y 2, LT mantenido + X / Y habilidades 3 y 4 (el HUD resalta la barra
+  secundaria; `PlayerController.secondary_held()`), la cruceta sigue lanzando 1-4, Start pausa. Salto:
+  `PlayerInput.JUMP`, `Beast.jump_velocity`/`jump_cost`; en el aire solo hay control de dirección y lo pulsado
+  queda en el buffer para el aterrizaje (los modelos no tienen clip de salto: pose fija de `run`).
 - Objetivo de rendimiento: 60 fps a 1080p en una RTX 3050 (FSR2 al 80 %).

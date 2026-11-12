@@ -3,7 +3,7 @@ extends RefCounted
 ## Textos de controles para teclado/ratón y mando (las teclas salen del InputMap actual, ya reasignadas).
 
 ## Nombres de la cruceta para cada ranura de habilidad.
-const PAD_SLOTS := ["↑", "→", "↓", "←"]
+const PAD_SLOTS := ["X", "Y", "LT+X", "LT+Y"]
 
 
 static func _k(action: String) -> String:
@@ -22,13 +22,17 @@ static func rows() -> Array:
 		["Ataque en carrera", "%s mientras corres" % _k("attack_light"), "RB mientras corres", "Embestida rápida para cerrar distancia."],
 		["Bloquear", "%s (mantener)" % _k("block"), "LB / L1 (mantener)",
 			"Para los golpes a cambio de estamina. Sin estamina te rompen la guardia y quedas aturdido."],
-		["Esquivar", "%s (toque)" % _k("dodge"), "B / Círculo (toque)",
-			"Rodada con un instante de invulnerabilidad. Gasta estamina."],
-		["Correr", "%s (mantener)" % _k("dodge"), "B / Círculo (mantener)", "Gasta estamina mientras corres."],
+		["Esquivar", "%s (toque)" % _k("dodge"), "B / Círculo",
+			"Rodada con un instante de invulnerabilidad. Gasta estamina. Sin dirección: paso atrás."],
+		["Correr", "%s (mantener)" % _k("dodge"), "L3 (pulsar stick izq.)",
+			"Con mando, corres hasta que sueltes el stick (o vuelves a pulsar L3). Gasta estamina."],
+		["Saltar", _k("jump"), "A / Cruz", "Gasta un poco de estamina. Lo que pulses en el aire se hace al aterrizar."],
 		["Fijar objetivo", _k("lock_on"), "R3 (pulsar stick der.)",
 			"La cámara sigue al rival y te mueves a su alrededor. Cambia de objetivo con la rueda o moviendo el stick derecho."],
-		["Habilidades 1-4", "%s · %s · %s · %s" % [_k("ability_1"), _k("ability_2"), _k("ability_3"), _k("ability_4")], "Cruceta ↑ → ↓ ←",
-			"Gastan Calor (barra naranja), que se gana golpeando. Cada una tiene recarga. 1 distancia · 2 cerca · 3 área · 4 mejora."],
+		["Habilidades 1 y 2", "%s · %s" % [_k("ability_1"), _k("ability_2")], "X / Cuadrado · Y / Triángulo",
+			"Las principales: 1 a distancia, 2 de cerca. Gastan Calor (barra naranja), que se gana golpeando, y tienen recarga."],
+		["Habilidades 3 y 4", "%s · %s" % [_k("ability_3"), _k("ability_4")], "LT / L2 (mantener) + X · Y",
+			"Las secundarias: 3 de área, 4 de mejora. Con mando, mantén LT y el HUD resalta la segunda barra."],
 		["Pausa y opciones", "Esc", "Start", ""],
 	]
 
@@ -36,9 +40,9 @@ static func rows() -> Array:
 ## Ayuda corta del HUD para el dispositivo en uso.
 static func hud_text(pad: bool) -> String:
 	if pad:
-		return "RB ligero (combo) · RT fuerte (mantener: cargar) · LB bloquear · B: toque esquivar, mantener correr · R3 fijar\nCruceta ↑→↓←: habilidades (gastan Calor) · Start: pausa y guía de controles"
-	return "%s ligero (combo) · %s fuerte (mantener: cargar) · %s bloquear · %s: toque esquivar, mantener correr · %s fijar\n%s-%s: habilidades (gastan Calor) · Esc: pausa y guía de controles · F1 hitboxes · F2 IA · F3 calidad" % [
-		_k("attack_light"), _k("attack_heavy"), _k("block"), _k("dodge"), _k("lock_on"), _k("ability_1"), _k("ability_4")]
+		return "RB ligero (combo) · RT fuerte (mantener: cargar) · LB bloquear · B esquivar · L3 correr · A saltar · R3 fijar\nX / Y habilidades · LT + X / Y habilidades secundarias (gastan Calor) · Start: pausa y guía de controles"
+	return "%s ligero (combo) · %s fuerte (mantener: cargar) · %s bloquear · %s: toque esquivar, mantener correr · %s saltar · %s fijar\n%s-%s: habilidades (gastan Calor) · Esc: pausa y guía de controles · F1 hitboxes · F2 IA · F3 calidad" % [
+		_k("attack_light"), _k("attack_heavy"), _k("block"), _k("dodge"), _k("jump"), _k("lock_on"), _k("ability_1"), _k("ability_4")]
 
 
 ## Etiqueta de la ranura de habilidad `i` en el HUD.

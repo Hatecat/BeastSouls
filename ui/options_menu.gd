@@ -167,7 +167,7 @@ func _build_controls() -> void:
 	reset.pressed.connect(Settings.reset_bindings)
 	p.add_child(reset)
 	var pad := Label.new()
-	pad.text = "Mando: stick izq. mover · stick der. cámara · R1 ligero · R2 fuerte · L1 bloquear · B esquivar (mantener: correr) · R3 fijar · cruceta habilidades · Start pausa"
+	pad.text = "Mando: stick izq. mover · L3 correr · stick der. cámara · RB ligero · RT fuerte · LB bloquear · B esquivar · A saltar · R3 fijar · X / Y habilidades · LT + X / Y secundarias · Start pausa (detalles en «Guía de controles»)"
 	pad.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	pad.add_theme_color_override("font_color", UiTheme.DIM)
 	pad.add_theme_font_size_override("font_size", 14)

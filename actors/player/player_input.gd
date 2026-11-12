@@ -13,6 +13,7 @@ const ABILITY_1 := 8
 const ABILITY_2 := 16
 const ABILITY_3 := 32
 const ABILITY_4 := 64
+const JUMP := 128
 ## Bits de `held` (botones mantenidos).
 const SPRINT := 1
 const BLOCK := 2

@@ -11,7 +11,7 @@ const PATH := "user://settings.cfg"
 const REBINDABLE := [
 	["move_forward", "Avanzar"], ["move_back", "Retroceder"], ["move_left", "Izquierda"], ["move_right", "Derecha"],
 	["attack_light", "Ataque ligero"], ["attack_heavy", "Ataque fuerte"], ["block", "Bloquear"],
-	["dodge", "Esquivar / correr"], ["lock_on", "Fijar objetivo"],
+	["dodge", "Esquivar / correr"], ["jump", "Saltar"], ["lock_on", "Fijar objetivo"],
 	["ability_1", "Habilidad 1"], ["ability_2", "Habilidad 2"], ["ability_3", "Habilidad 3"], ["ability_4", "Habilidad 4"],
 ]
 const KEY_NAMES := {"Space": "Espacio", "Shift": "Mayús", "Ctrl": "Ctrl", "Alt": "Alt", "Tab": "Tab",

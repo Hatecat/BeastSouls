@@ -50,7 +50,10 @@ func _initialize() -> void:
 		"attack_light": [0.5, [_mouse(MOUSE_BUTTON_LEFT), _joy(JOY_BUTTON_RIGHT_SHOULDER)]],
 		"attack_heavy": [0.5, [_mouse(MOUSE_BUTTON_RIGHT), _axis(JOY_AXIS_TRIGGER_RIGHT, 1.0)]],
 		"block": [0.5, [_key(KEY_SHIFT), _joy(JOY_BUTTON_LEFT_SHOULDER)]],
-		"dodge": [0.5, [_key(KEY_SPACE), _joy(JOY_BUTTON_B)]],  # toque = esquivar, mantener = correr
+		"dodge": [0.5, [_key(KEY_SPACE)]],  # teclado: toque = esquivar, mantener = correr
+		"dodge_pad": [0.5, [_joy(JOY_BUTTON_B)]],  # mando: esquiva al pulsar
+		"sprint_pad": [0.5, [_joy(JOY_BUTTON_LEFT_STICK)]],  # mando: L3 alterna correr
+		"jump": [0.5, [_key(KEY_F), _joy(JOY_BUTTON_A)]],
 		"lock_on": [0.5, [_mouse(MOUSE_BUTTON_MIDDLE), _key(KEY_TAB), _joy(JOY_BUTTON_RIGHT_STICK)]],
 		"target_prev": [0.5, [_mouse(MOUSE_BUTTON_WHEEL_UP)]],
 		"target_next": [0.5, [_mouse(MOUSE_BUTTON_WHEEL_DOWN)]],
@@ -59,8 +62,12 @@ func _initialize() -> void:
 		"ability_2": [0.5, [_key(KEY_2), _joy(JOY_BUTTON_DPAD_RIGHT)]],
 		"ability_3": [0.5, [_key(KEY_3), _joy(JOY_BUTTON_DPAD_DOWN)]],
 		"ability_4": [0.5, [_key(KEY_4), _joy(JOY_BUTTON_DPAD_LEFT)]],
+		# Mando: X / Y habilidades principales (1 y 2); con LT pulsado, las secundarias (3 y 4).
+		"ability_x": [0.5, [_joy(JOY_BUTTON_X)]],
+		"ability_y": [0.5, [_joy(JOY_BUTTON_Y)]],
+		"ability_shift": [0.4, [_axis(JOY_AXIS_TRIGGER_LEFT, 1.0)]],
 		# Varios
-		"interact": [0.5, [_key(KEY_E), _joy(JOY_BUTTON_A)]],
+		"interact": [0.5, [_key(KEY_E)]],
 		"pause": [0.5, [_key(KEY_ESCAPE), _joy(JOY_BUTTON_START)]],
 		# Depuración (visor de animaciones del sandbox)
 		"debug_prev": [0.5, [_key(KEY_LEFT)]],
