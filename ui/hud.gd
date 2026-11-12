@@ -180,8 +180,10 @@ func _ready() -> void:
 	var help := Label.new()
 	_help = help
 	help.text = _help_text()
-	help.add_theme_font_size_override("font_size", 15)
-	help.add_theme_color_override("font_color", Color(1, 1, 1, 0.7))
+	help.add_theme_font_size_override("font_size", 17)
+	help.add_theme_color_override("font_color", Color(1, 0.95, 0.88, 0.9))
+	help.add_theme_constant_override("outline_size", 4)
+	help.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.6))
 	help.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.8))
 	help.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT)
 	help.grow_vertical = Control.GROW_DIRECTION_BEGIN
@@ -190,19 +192,20 @@ func _ready() -> void:
 	add_child(help)
 	_apply_settings()
 	Settings.changed.connect(_apply_settings)
+	Settings.device_changed.connect(func(_pad: bool) -> void: _apply_settings())
 
 
 func _help_text() -> String:
-	var k := func(action: String) -> String: return Settings.event_text(Settings.primary_event(action))
-	return "%s%s%s%s mover · %s: toque esquivar, mantener correr · %s ligero · %s fuerte (mantener: cargar) · %s bloquear · %s fijar\nHabilidades %s-%s (gastan Calor, que se gana golpeando) · F1 hitboxes · F2 IA · F3 calidad · Esc pausa" % [
-		k.call("move_forward"), k.call("move_left"), k.call("move_back"), k.call("move_right"), k.call("dodge"),
-		k.call("attack_light"), k.call("attack_heavy"), k.call("block"), k.call("lock_on"), k.call("ability_1"), k.call("ability_4")]
+	return ControlsHelp.hud_text(Settings.using_pad)
 
 
 func _apply_settings() -> void:
 	_debug.visible = Settings.show_debug
 	_help.visible = Settings.show_help
 	_help.text = _help_text()
+	for i in _slots.size():
+		_slots[i].key = ControlsHelp.slot_key(i, Settings.using_pad)
+		_slots[i].queue_redraw()
 
 
 func set_score(text: String) -> void:
@@ -264,6 +267,7 @@ func show_match_over(title: String, color: Color, subtitle: String, buttons: Arr
 	_over_sub.text = subtitle
 	_over_note.text = ""
 	for c in _over_buttons.get_children():
+		_over_buttons.remove_child(c)
 		c.queue_free()
 	for b: Array in buttons:
 		var btn := Button.new()

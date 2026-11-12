@@ -50,7 +50,8 @@ func _ready() -> void:
 		box.add_child(note)
 	box.add_child(HSeparator.new())
 	_button(box, "Continuar", close)
-	_button(box, "Opciones", _open_options)
+	_button(box, "Guía de controles", _open_options.bind(OptionsMenu.TAB_GUIDE))
+	_button(box, "Opciones", _open_options.bind(0))
 	_button(box, "Abandonar partida" if online else "Salir al menú", _quit)
 
 
@@ -96,13 +97,15 @@ func close() -> void:
 	Input.mouse_mode = _prev_mouse
 
 
-func _open_options() -> void:
+func _open_options(tab: int) -> void:
 	_panel.visible = false
 	_options = OptionsMenu.new()
+	_options.start_tab = tab
 	_root.add_child(_options)
 	_options.closed.connect(func() -> void:
 		_options = null
-		_panel.visible = true)
+		_panel.visible = true
+		(_panel.find_children("*", "Button", true, false)[0] as Button).grab_focus.call_deferred())
 
 
 func _quit() -> void:

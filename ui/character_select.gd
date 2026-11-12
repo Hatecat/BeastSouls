@@ -42,6 +42,7 @@ func _ready() -> void:
 	_update_step()
 	if _online:
 		Session.send_pick(false)
+	_focus_selected.call_deferred()
 	if Session.auto_ready:
 		_auto.call_deferred()
 
@@ -101,6 +102,10 @@ func _build() -> void:
 		for st in ["normal", "hover", "pressed", "focus", "hover_pressed", "disabled"]:
 			b.add_theme_stylebox_override(st, _card_style(def.color, st))
 		b.pressed.connect(_on_pick.bind(def))
+		b.pressed.connect(func() -> void: _next.grab_focus())  # con mando: A elige y salta a «Siguiente»
+		b.focus_entered.connect(func() -> void:
+			if _selected != def and not b.disabled:
+				_on_pick(def))
 		_list.add_child(b)
 		_buttons[def.id] = b
 
@@ -362,8 +367,26 @@ func _on_next() -> void:
 	elif _step == 0:
 		_step = 1
 		_update_step()
+		_focus_selected()
 	else:
 		get_tree().change_scene_to_file(Session.ARENA)
+
+
+func _focus_selected() -> void:
+	var b: Button = _buttons.get(_selected.id) if _selected else null
+	if b and not b.disabled:
+		b.grab_focus()
+	else:
+		_next.grab_focus()
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed("ui_cancel"):
+		get_viewport().set_input_as_handled()
+		if _online and _is_ready:
+			_on_next()  # B con «Listo» marcado: cancelar el listo
+		else:
+			_on_back()
 
 
 func _on_back() -> void:
@@ -373,6 +396,7 @@ func _on_back() -> void:
 	elif _step == 1:
 		_step = 0
 		_update_step()
+		_focus_selected()
 	else:
 		get_tree().change_scene_to_file(MENU)
 

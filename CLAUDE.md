@@ -80,6 +80,10 @@ usar `root.get_node("Net")`. Red: lanzar dos instancias (`-- --host` / `-- --joi
   Controles/Interfaz, se aplica y guarda al momento; se usa en el menú y en la pausa). `PauseMenu` (Esc/Start):
   en práctica pausa el árbol (los temporizadores de MatchFlow son pausables); online no pausa, solo pone
   `PlayerController.blocked` (input vacío). Vibración del mando en `PlayerController._rumble`.
+  `ControlsHelp` (controls_help.gd): textos de controles para teclado y mando (ayuda del HUD, pestaña «Guía de
+  controles» de Opciones, accesible desde la pausa). `Settings.using_pad` / `device_changed`: la ayuda y las
+  etiquetas de las ranuras cambian según el último dispositivo usado. Settings añade el botón A a `ui_accept` y B a
+  `ui_cancel` (Godot no los trae): todos los menús se manejan con mando (foco inicial con `grab_focus`).
 - `combat/` — `AttackData` (tiempos activo/combo/cancelación, daño, postura, hitbox local que barre de start a
   end, embestida, seguimiento, hiper armadura, carga) y `Moveset` (combo ligero, combo fuerte, ataque corriendo).
   Los de Charizard están en `combat/attacks/charizard/*.tres` (se editan en el inspector; F1 en la arena muestra

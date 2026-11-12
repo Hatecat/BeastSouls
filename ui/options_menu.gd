@@ -5,9 +5,14 @@ extends PanelContainer
 
 signal closed
 
+const TAB_GUIDE := 4
+## Pestaña con la que se abre (p. ej. TAB_GUIDE desde «Controles» en la pausa).
+var start_tab := 0
+
 var _waiting_action := ""
 var _bind_buttons := {}
 var _tabs: TabContainer
+var _guide_box: VBoxContainer
 
 
 func _ready() -> void:
@@ -32,6 +37,8 @@ func _ready() -> void:
 	_build_sound()
 	_build_controls()
 	_build_interface()
+	_build_guide()
+	_tabs.current_tab = start_tab
 	var back := Button.new()
 	back.text = "Volver"
 	back.custom_minimum_size = Vector2(180, 42)
@@ -165,6 +172,24 @@ func _build_controls() -> void:
 	pad.add_theme_color_override("font_color", UiTheme.DIM)
 	pad.add_theme_font_size_override("font_size", 14)
 	p.add_child(pad)
+
+
+func _build_guide() -> void:
+	var p := _page("Guía de controles")
+	_guide_box = p
+	_fill_guide()
+	Settings.device_changed.connect(func(_pad: bool) -> void: _fill_guide())
+
+
+func _fill_guide() -> void:
+	for c in _guide_box.get_children():
+		c.queue_free()
+	var intro := Label.new()
+	intro.text = "Estamina (verde): la gastan ataques, bloqueos, esquivas y correr; se recupera sola. Postura: si la vacías a golpes, el rival queda aturdido. Calor (naranja): se gana golpeando y paga las habilidades."
+	intro.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	intro.add_theme_font_size_override("font_size", 15)
+	_guide_box.add_child(intro)
+	_guide_box.add_child(ControlsHelp.build_table(Settings.using_pad))
 
 
 func _build_interface() -> void:

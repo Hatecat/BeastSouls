@@ -3,6 +3,8 @@ extends Node
 ## Se guardan en user://settings.cfg (la calidad gráfica la guarda Graphics en el mismo archivo).
 
 signal changed
+## Cambió el dispositivo en uso (mando ↔ teclado/ratón): la ayuda se adapta.
+signal device_changed(pad: bool)
 
 const PATH := "user://settings.cfg"
 ## Acciones que se pueden reasignar (teclado/ratón), en el orden del menú.
@@ -30,6 +32,8 @@ var fullscreen := false
 var vsync := true
 var show_debug := false
 var show_help := true
+## El último input fue de mando.
+var using_pad := false
 
 ## Teclas por defecto (las del InputMap al arrancar) y las elegidas por el jugador: acción -> InputEvent.
 var _defaults := {}
@@ -40,10 +44,40 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	UiTheme.apply()
 	_ensure_buses()
+	_add_pad_ui_events()
 	for pair in REBINDABLE:
 		_defaults[pair[0]] = primary_event(pair[0])
 	_load()
 	apply()
+
+
+## Las acciones de interfaz de Godot no traen botones de mando para aceptar/volver: A acepta, B vuelve.
+func _add_pad_ui_events() -> void:
+	for pair in [[&"ui_accept", JOY_BUTTON_A], [&"ui_cancel", JOY_BUTTON_B]]:
+		var has := false
+		for e in InputMap.action_get_events(pair[0]):
+			if e is InputEventJoypadButton and (e as InputEventJoypadButton).button_index == pair[1]:
+				has = true
+		if not has:
+			var j := InputEventJoypadButton.new()
+			j.button_index = pair[1]
+			j.device = -1
+			InputMap.action_add_event(pair[0], j)
+
+
+func _input(event: InputEvent) -> void:
+	var pad := using_pad
+	if event is InputEventJoypadButton:
+		pad = true
+	elif event is InputEventJoypadMotion and absf((event as InputEventJoypadMotion).axis_value) > 0.5:
+		pad = true
+	elif event is InputEventKey or event is InputEventMouseButton:
+		pad = false
+	elif event is InputEventMouseMotion and (event as InputEventMouseMotion).relative.length() > 4.0:
+		pad = false
+	if pad != using_pad:
+		using_pad = pad
+		device_changed.emit(pad)
 
 
 func _ensure_buses() -> void:
