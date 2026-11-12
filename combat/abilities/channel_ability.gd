@@ -27,6 +27,13 @@ func start(beast: Beast, cast: Dictionary) -> void:
 	light.top_level = true
 	beast.add_child(light)
 	cast.light = light
+	Sfx.play("cast_beam", beast.global_position, -4.0)
+	var loop := Sfx.attach_loop("fire_loop", jet, -3.0)
+	if loop:
+		loop.autoplay = false
+		# Agua/sombra/viento: el mismo bucle más grave o agudo según el tono del color.
+		loop.pitch_scale = 1.0 if color.h < 0.12 or color.h > 0.9 else 0.75 + color.h * 0.4
+	cast.sound = loop
 
 
 func tick(beast: Beast, cast: Dictionary, t: float, _delta: float) -> void:
@@ -44,6 +51,9 @@ func finish(_beast: Beast, cast: Dictionary) -> void:
 	if is_instance_valid(jet):
 		jet.emitting = false
 		jet.get_tree().create_timer(jet.lifetime + 0.1).timeout.connect(jet.queue_free)
+	var snd: AudioStreamPlayer3D = cast.get("sound")
+	if is_instance_valid(snd):
+		snd.stop()
 	var light: OmniLight3D = cast.get("light")
 	if is_instance_valid(light):
 		light.queue_free()
@@ -58,3 +68,9 @@ func _update_fx(beast: Beast, cast: Dictionary, on: bool, origin: Vector3) -> vo
 	var light: OmniLight3D = cast.light
 	light.global_position = pos + beast.forward() * 2.0
 	light.light_energy = randf_range(2.5, 3.5) if on else 0.0
+	var snd: AudioStreamPlayer3D = cast.get("sound")
+	if is_instance_valid(snd) and snd.playing != on:
+		if on:
+			snd.play()
+		else:
+			snd.stop()

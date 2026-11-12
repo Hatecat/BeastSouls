@@ -157,6 +157,7 @@ var _stagger_duration := 0.0
 var _recoil := 0.0
 var _knockback := Vector3.ZERO
 var _anim := &""
+var _step_accum := 0.0
 var _debug_sphere: MeshInstance3D
 var _cast := {}
 ## Valores originales de las estadísticas que ha sobrescrito algún CharacterDef.
@@ -923,6 +924,7 @@ func _update_presentation() -> void:
 				visual.set_playback_speed(h / walk_anim_speed)
 	if _hitstop > 0.0:
 		visual.set_playback_speed(0.0)
+	_update_footsteps(get_physics_process_delta_time())
 	_update_status_fx()
 	_update_debug_hitbox()
 
@@ -932,6 +934,48 @@ func _play_anim(action: StringName, blend: float, speed := 1.0) -> void:
 		return
 	_anim = action
 	visual.play(action, blend, speed)
+	_sound_for(action)
+
+
+## Sonidos ligados al inicio de una acción (sirven igual para el Beast local y el proxy remoto).
+func _sound_for(action: StringName) -> void:
+	var pos := global_position + Vector3.UP
+	var size_pitch := _voice_pitch()
+	match state:
+		State.ATTACK:
+			var heavy := String(action).begins_with("attack_heavy") or (attack and attack.chargeable)
+			Sfx.play("swing", pos, -1.0 if heavy else -5.0, (0.8 if heavy else 1.05) * size_pitch)
+		State.DODGE:
+			Sfx.play("dodge", pos, -4.0, size_pitch)
+		State.ABILITY:
+			Sfx.play("cast_special", pos, -8.0, size_pitch)
+		State.DEAD:
+			Sfx.play("death", pos, 0.0, size_pitch, 0.02)
+
+
+## Más grave cuanto más grande es el personaje.
+func _voice_pitch() -> float:
+	return clampf(1.9 / (character.body_height if character else 1.9), 0.7, 1.3)
+
+
+func _update_footsteps(delta: float) -> void:
+	if state != State.LOCOMOTION or not is_on_floor_or_remote():
+		_step_accum = 0.0
+		return
+	var h := horizontal_speed()
+	if h < 0.5:
+		_step_accum = 0.0
+		return
+	_step_accum += delta * h
+	var stride := 1.6 if sprinting else 1.2
+	stride *= character.body_height / 1.9 if character else 1.0
+	if _step_accum >= stride:
+		_step_accum -= stride
+		Sfx.play("step", global_position, -14.0 if not sprinting else -10.0, _voice_pitch(), 0.12)
+
+
+func is_on_floor_or_remote() -> bool:
+	return is_remote or is_on_floor()
 
 
 func _fx_hit_received(attacker: Beast, result: HitResult) -> void:
@@ -940,6 +984,15 @@ func _fx_hit_received(attacker: Beast, result: HitResult) -> void:
 	var toward_attacker := (attacker.get_lock_position() - get_lock_position())
 	var pos := get_lock_position() + toward_attacker.limit_length(0.5)
 	var kind := HitFx.Kind.HIT
+	match result:
+		HitResult.BLOCKED:
+			Sfx.play("block", pos, -2.0)
+		HitResult.GUARD_BREAK:
+			Sfx.play("guard_break", pos, 0.0)
+		HitResult.STAGGERED, HitResult.KILLED:
+			Sfx.play("hit_heavy", pos, 0.0)
+		_:
+			Sfx.play("hit_light", pos, -2.0)
 	match result:
 		HitResult.BLOCKED:
 			kind = HitFx.Kind.BLOCK

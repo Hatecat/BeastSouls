@@ -4,6 +4,7 @@ extends Node3D
 ##   F1: mostrar/ocultar hitboxes activas.
 ##   F2: cambiar el modo de la IA del rival (solo en práctica).
 ##   F3: cambiar la calidad gráfica.
+##   Esc / Start: pausa (online solo bloquea el input local).
 
 const MENU := "res://ui/main_menu.tscn"
 ## Puntos de aparición [posición, orientación]: 0 = anfitrión / jugador, 1 = invitado / rival.
@@ -34,6 +35,8 @@ func _ready() -> void:
 	rect.material = mat
 	post.add_child(rect)
 	add_child(post)
+	Audio.ambience("wind", -6.0)
+	Audio.music("", 2.0)
 	var mine := Roster.find(Session.my_character)
 	var theirs := Roster.find(Session.rival_character)
 	player.apply_character(mine)
@@ -59,6 +62,11 @@ func _ready() -> void:
 	match_flow.setup(player, rival, hud, SPAWNS, online, net_match)
 	match_flow.camera = camera
 	add_child(match_flow)
+	var pause := PauseMenu.new()
+	pause.name = "PauseMenu"
+	pause.online = online
+	pause.controller = $PlayerController
+	add_child(pause)
 
 
 func _effect_colors(defs: Array[CharacterDef]) -> Array[Color]:

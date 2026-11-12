@@ -14,6 +14,7 @@ $G --path . -- --host --nick=A --latency=60       # alojar (otra ventana: -- --j
                                                   # --char=ID --autoready: el selector elige y se marca listo solo
 python3 tools/gen_characters.py                   # regenerar kits de los personajes provisionales
 python3 tools/gen_textures.py                     # regenerar texturas procedurales del coliseo (numpy + Pillow)
+python3 tools/gen_music.py                        # regenerar música y ambiente (numpy + ffmpeg/libvorbis)
 $G --path . -- --practice --stage=test --quality=2   # escenario de pruebas; calidad 0..3
 $G -e --path .                                    # editor
 $G --headless --path . --import                   # registrar clases nuevas (class_name) e importar assets
@@ -51,6 +52,17 @@ usar `root.get_node("Net")`. Red: lanzar dos instancias (`-- --host` / `-- --joi
   `--quality=N`). Ajusta escala FSR2, SDFGI, SSIL, SSAO, niebla volumétrica y sombras; se aplica sola a cada
   WorldEnvironment que entra en el árbol y a los grupos "brazier_lights" (sombras de luces puntuales) y
   "optional_fx" (polvo). Medido en la RTX 3050 a 1080p en combate: Bajo ~240, Medio ~145, Alto ~88, Ultra ~54 fps.
+- `game/settings.gd` — autoload `Settings`: volúmenes (buses Music/SFX/Ambience/UI), sensibilidad (multiplica la
+  base de la cámara), invertir Y, vibración, pantalla completa, VSync, panel de depuración, ayuda y teclas
+  reasignadas (solo el primer evento de teclado/ratón de cada acción; si choca con otra, se intercambian). Guarda
+  en user://settings.cfg (secciones "options" y "bindings"); señal `changed`. Aplica también el tema (`UiTheme`).
+- `game/audio.gd` — autoload `Audio`: efectos de `assets/audio/sfx/` agrupados por nombre base (`hit_light_0..4` →
+  `play("hit_light", pos)` elige variante), reservas de reproductores 2D/3D, `attach_loop` (bucle pegado a un nodo),
+  `music(name)` con fundido cruzado, `stinger`, `ambience`, y clic/hover automático en todos los botones.
+  Las clases de simulación (Beast, habilidades, proyectil, coliseo) usan `Sfx` (game/sfx.gd, estático, busca el
+  autoload en tiempo de ejecución) para no depender del autoload al compilar (los scripts de prueba tipan Beast).
+  Audio en `assets/audio/` (CREDITS.txt: efectos Kenney CC0; música y ambiente generados por tools/gen_music.py,
+  los .import de los bucles llevan loop=true).
 - `game/` — `Session` (autoload: personajes elegidos y estado del rival en el lobby; escucha la red siempre para
   no perder eventos entre escenas) y `MatchFlow` (al mejor de 3: cuenta atrás con `Beast.frozen`, K.O., marcador,
   panel de fin, revancha, volver al selector). Online manda el anfitrión (eventos "round", "round_over"); cada
@@ -61,7 +73,13 @@ usar `root.get_node("Net")`. Red: lanzar dos instancias (`-- --host` / `-- --joi
   cambia con gesto de ratón/stick o rueda; se suelta por distancia, muerte u oclusión > 2 s. Si la pared empuja la
   cámara hasta el personaje, o si este tapa al objetivo fijado, lo desvanece (`CharacterVisual.set_fade`).
   Al fijar, la cámara sube y se desplaza al hombro derecho. `add_shake()` para vibración.
-- `ui/` — `Hud`: barras de vida/estamina (con rastro de pérdida) y panel de depuración.
+- `ui/` — `Hud`: barras de vida/estamina (con rastro de pérdida), daño acumulado sobre la barra del objetivo
+  (estilo Souls, se borra tras 2.5 s sin golpear), ayuda y panel de depuración (según Settings).
+  `UiTheme` (ui_theme.gd): tema común (fuente serif del sistema, piedra oscura y ámbar) fusionado con el tema por
+  defecto, así lo heredan también los controles de los CanvasLayer. `OptionsMenu` (pestañas Gráficos/Sonido/
+  Controles/Interfaz, se aplica y guarda al momento; se usa en el menú y en la pausa). `PauseMenu` (Esc/Start):
+  en práctica pausa el árbol (los temporizadores de MatchFlow son pausables); online no pausa, solo pone
+  `PlayerController.blocked` (input vacío). Vibración del mando en `PlayerController._rumble`.
 - `combat/` — `AttackData` (tiempos activo/combo/cancelación, daño, postura, hitbox local que barre de start a
   end, embestida, seguimiento, hiper armadura, carga) y `Moveset` (combo ligero, combo fuerte, ataque corriendo).
   Los de Charizard están en `combat/attacks/charizard/*.tres` (se editan en el inspector; F1 en la arena muestra
@@ -84,7 +102,8 @@ usar `root.get_node("Net")`. Red: lanzar dos instancias (`-- --host` / `-- --joi
   --loss=`). Al cambiar de modelo, el visual viejo se esconde y se libera 0.5 s después (liberarlo en el mismo fotograma deja
   materiales colgando en el renderizador). Las señales de desconexión de `multiplayer` se conectan DIFERIDAS (cerrar el peer dentro de su poll
   cuelga Godot). `NetMatch.setup()` va antes de `add_child`.
-- `ui/main_menu` — escena inicial: práctica, alojar, unirse; acepta argumentos tras `--` (ver main_menu.gd).
+- `ui/main_menu` — escena inicial: coliseo en 3D de fondo (cámara orbitando, personaje al azar), práctica, jugar
+  online (subpanel alojar/unirse), opciones, salir; acepta argumentos tras `--` solo la primera vez (ver main_menu.gd).
   Después va a `ui/character_select` (vista previa 3D en SubViewport; práctica: tú y luego la IA; online: cada uno
   elige, "Listo", y el anfitrión arranca).
 - `levels/` — `arena_test/arena_test.tscn` es la escena de COMBATE (jugadores, cámara, HUD, IA; F1 hitboxes,
@@ -109,5 +128,5 @@ usar `root.get_node("Net")`. Red: lanzar dos instancias (`-- --host` / `-- --joi
 - Yaw: adelante = -Z girado `yaw` → dirección (-sin, 0, -cos); `Beast.yaw_of(dir)` hace la inversa.
 - El modelo glTF mira a +Z; `CharacterVisual.model_yaw_offset = 180` lo gira para que "adelante" sea -Z.
 - Controles por defecto (tools/setup_input.gd): WASD/stick izq., ratón/stick der., LMB/R1 ligero, RMB/R2 fuerte,
-  Shift/L1 bloquear, Espacio/B esquivar (mantener = correr), MMB/Tab/R3 fijar objetivo, 1-4/cruceta habilidades.
+  Shift/L1 bloquear, Espacio/B esquivar (mantener = correr), MMB/Tab/R3 fijar objetivo, 1-4/cruceta habilidades, Esc/Start pausa.
 - Objetivo de rendimiento: 60 fps a 1080p en una RTX 3050 (FSR2 al 80 %).

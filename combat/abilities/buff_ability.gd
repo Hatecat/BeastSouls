@@ -22,4 +22,5 @@ func tick(beast: Beast, _cast: Dictionary, t: float, delta: float) -> void:
 	beast.add_buff(buff_id, buff_duration, damage_multiplier, speed_multiplier, action_speed_multiplier, color)
 	beast.visual.flash(Color(color.r, color.g, color.b, 0.8), 0.4)
 	Fx.shockwave(beast.get_parent(), beast.global_position, 2.5, color)
+	Sfx.play("heal" if heal > 0.0 else "buff", beast.global_position, -1.0, 1.0, 0.02)
 	beast.shake_requested.emit(0.2)

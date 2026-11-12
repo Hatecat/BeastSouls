@@ -43,3 +43,4 @@ func _spawn(beast: Beast, index: int) -> void:
 	var offset := spawn_offset + Vector3(0.25 * (1 if index % 2 else -1) if count > 1 else 0.0, 0, 0)
 	p.global_transform = Transform3D(Basis(Vector3.UP, beast.facing), beast.global_position + Basis(Vector3.UP, beast.facing) * offset)
 	p.reset_physics_interpolation()
+	Sfx.play("cast_projectile", p.global_position, -2.0)

@@ -32,6 +32,8 @@ func _ready() -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	_online = Net.is_online()
 	_build()
+	Audio.music("menu")
+	Audio.ambience("")
 	if _online:
 		Session.rival_pick_changed.connect(_refresh_status)
 		Session.match_start.connect(_on_match_start)

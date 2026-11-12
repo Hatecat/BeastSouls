@@ -141,8 +141,14 @@ func _unhandled_input(event: InputEvent) -> void:
 		if lock_target:
 			_flick += rel.x
 		else:
-			yaw -= rel.x * mouse_sensitivity
-			pitch -= rel.y * mouse_sensitivity * (-1.0 if invert_y else 1.0)
+			var sens := mouse_sensitivity * Settings.mouse_sensitivity
+			yaw -= rel.x * sens
+			pitch -= rel.y * sens * _y_sign()
+
+
+## Invertir Y: el export de la escena y la opción del jugador se combinan.
+func _y_sign() -> float:
+	return -1.0 if invert_y != Settings.invert_y else 1.0
 
 
 func _process(delta: float) -> void:
@@ -168,8 +174,8 @@ func _process(delta: float) -> void:
 		_flick = move_toward(_flick, 0.0, flick_pixels * 4.0 * delta)
 		_track_target(delta)
 	else:
-		yaw -= look.x * stick_speed.x * delta
-		pitch -= look.y * stick_speed.y * delta * (-1.0 if invert_y else 1.0)
+		yaw -= look.x * stick_speed.x * Settings.stick_sensitivity * delta
+		pitch -= look.y * stick_speed.y * Settings.stick_sensitivity * delta * _y_sign()
 		if _recentering > 0.0:
 			_recentering -= delta
 			var k := 1.0 - exp(-recenter_sharpness * delta)

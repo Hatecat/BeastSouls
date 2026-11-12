@@ -71,4 +71,5 @@ func _explode(pos: Vector3, direct: Beast = null) -> void:
 		for v in victims:
 			owner_beast.deal_hit(v, hit, pos)
 	Fx.explosion(get_parent(), pos, color, clampf(explode_radius / 1.8, 0.4, 1.5))
+	Sfx.play("explosion", pos, 0.0, clampf(1.8 / maxf(explode_radius, 0.5), 0.8, 1.3))
 	queue_free()

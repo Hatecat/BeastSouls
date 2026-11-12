@@ -12,6 +12,8 @@ var _dodge_down := false
 var _dodge_held := 0.0
 ## Ticks en los que se ignoran los ataques (tras el clic que recaptura el ratón).
 var _suppress_attacks := 0
+## Con un menú abierto (pausa online) el Beast recibe input vacío.
+var blocked := false
 
 
 func _ready() -> void:
@@ -30,6 +32,10 @@ func _physics_process(delta: float) -> void:
 	if beast == null:
 		return
 	var frame := PlayerInput.new()
+	if blocked:
+		_dodge_down = false
+		beast.input = frame
+		return
 
 	# Movimiento relativo a la cámara.
 	var raw := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
@@ -76,9 +82,9 @@ func _physics_process(delta: float) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if event.is_action_pressed("pause"):
-		_capture_mouse(false)
-	elif event is InputEventMouseButton and event.pressed and Input.mouse_mode != Input.MOUSE_MODE_CAPTURED:
+	if blocked:
+		return
+	if event is InputEventMouseButton and event.pressed and Input.mouse_mode != Input.MOUSE_MODE_CAPTURED:
 		# El clic que recaptura el ratón no debe contar como ataque.
 		_capture_mouse(true)
 		_suppress_attacks = 2
@@ -90,18 +96,39 @@ func _unhandled_input(event: InputEvent) -> void:
 			camera.switch_target(1)
 
 
+func ignore_attacks(ticks: int) -> void:
+	_suppress_attacks = maxi(_suppress_attacks, ticks)
+
+
 func _on_hit_landed(_target: Beast, result: Beast.HitResult, _atk: AttackData) -> void:
 	camera.add_shake(0.15 if result == Beast.HitResult.BLOCKED else 0.3)
+	if result == Beast.HitResult.BLOCKED:
+		_rumble(0.1, 0.2, 0.06)
+	else:
+		_rumble(0.15, 0.35, 0.08)
 
 
 func _on_hit_received(_attacker: Beast, result: Beast.HitResult, _damage: float) -> void:
 	match result:
 		Beast.HitResult.BLOCKED:
 			camera.add_shake(0.25)
+			_rumble(0.3, 0.2, 0.1)
 		Beast.HitResult.IGNORED:
 			pass
+		Beast.HitResult.GUARD_BREAK, Beast.HitResult.STAGGERED, Beast.HitResult.KILLED:
+			camera.add_shake(0.55)
+			_rumble(0.9, 0.7, 0.3)
 		_:
 			camera.add_shake(0.55)
+			_rumble(0.6, 0.4, 0.18)
+
+
+## Vibración del mando (si está activada en las opciones): motor grave, motor agudo, duración.
+func _rumble(weak: float, strong: float, duration: float) -> void:
+	if not Settings.rumble:
+		return
+	for pad in Input.get_connected_joypads():
+		Input.start_joy_vibration(pad, weak, strong, duration)
 
 
 func _capture_mouse(on: bool) -> void:

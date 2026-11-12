@@ -16,4 +16,5 @@ func tick(beast: Beast, _cast: Dictionary, t: float, delta: float) -> void:
 	for v in beast.beasts_in_sphere(center, radius):
 		beast.deal_hit(v, hit, beast.global_position)
 	Fx.shockwave(beast.get_parent(), beast.global_position, radius, color)
+	Sfx.play("quake", beast.global_position, 2.0, clampf(4.0 / radius, 0.7, 1.2))
 	beast.shake_requested.emit(caster_shake)

@@ -19,6 +19,8 @@ config/features=PackedStringArray("4.7", "Forward Plus")
 Net="*res://net/net.gd"
 Session="*res://game/session.gd"
 Graphics="*res://game/graphics.gd"
+Settings="*res://game/settings.gd"
+Audio="*res://game/audio.gd"
 
 [display]
 

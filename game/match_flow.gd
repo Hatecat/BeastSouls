@@ -107,7 +107,7 @@ func _on_beast_died(side: int) -> void:
 	_round_over(winner, wins, final)
 	if not final:
 		var token := _token
-		await get_tree().create_timer(round_over_delay).timeout
+		await get_tree().create_timer(round_over_delay, false).timeout
 		if token == _token and phase == Phase.ROUND_OVER:
 			_announce_round(round_n + 1)
 
@@ -129,15 +129,18 @@ func _begin_round(n: int, w: Array) -> void:
 		rival.revive()
 	var final_round: bool = wins[0] == rounds_to_win - 1 and wins[1] == rounds_to_win - 1
 	hud.show_banner("RONDA FINAL" if final_round else "RONDA %d" % n, Color(0.95, 0.85, 0.6), 0.6, 0.2)
-	await get_tree().create_timer(1.3).timeout
+	await get_tree().create_timer(1.3, false).timeout
 	for i in range(countdown, 0, -1):
 		if token != _token:
 			return
 		hud.show_banner(str(i), Color(1, 1, 1), 0.45, 0.05)
-		await get_tree().create_timer(0.7).timeout
+		Audio.play_ui("count", -2.0)
+		await get_tree().create_timer(0.7, false).timeout
 	if token != _token:
 		return
 	hud.show_banner("¡LUCHA!", Color(1.0, 0.55, 0.2), 0.5, 0.05)
+	Audio.play_ui("fight", 0.0)
+	Audio.music("combat")
 	phase = Phase.FIGHT
 	_freeze(false)
 
@@ -149,7 +152,8 @@ func _round_over(winner: int, w: Array, final: bool) -> void:
 	phase = Phase.ROUND_OVER
 	_update_score()
 	hud.show_banner("K.O.", Color(0.9, 0.15, 0.1), 1.0, 0.1)
-	await get_tree().create_timer(1.6).timeout
+	Audio.play("guard_break", Vector3.INF, 0.0, 0.7, 0.0)
+	await get_tree().create_timer(1.6, false).timeout
 	if token != _token:
 		return
 	_freeze(true)
@@ -159,9 +163,11 @@ func _round_over(winner: int, w: Array, final: bool) -> void:
 		hud.show_banner(text, Color(0.95, 0.8, 0.35) if won else Color(0.8, 0.8, 0.85), 1.4, 0.3)
 		return
 	phase = Phase.MATCH_OVER
-	await get_tree().create_timer(0.6).timeout
+	await get_tree().create_timer(0.6, false).timeout
 	if token != _token:
 		return
+	Audio.music("", 0.8)
+	Audio.stinger("victory" if won else "defeat")
 	_show_match_over(won)
 	match_finished.emit(won)
 

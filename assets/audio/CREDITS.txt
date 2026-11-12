@@ -1,0 +1,3 @@
+sfx/      Kenney (www.kenney.nl) — CC0 1.0 (ver sfx/LICENSE_kenney_CC0.txt). Renombrados por uso (hit_light_N, swing_N...).
+music/    Generada por tools/gen_music.py (síntesis propia, numpy + ffmpeg). Sin licencias de terceros.
+ambience/ Generado por tools/gen_music.py.

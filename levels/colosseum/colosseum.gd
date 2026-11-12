@@ -431,6 +431,11 @@ func _braziers() -> void:
 			embers.emitting = true
 			body.add_child(embers)
 			embers.position.y = 1.8
+			var crackle := Sfx.attach_loop("fire", body, -6.0, &"Ambience")
+			if crackle:
+				crackle.position.y = 1.6
+				crackle.unit_size = 3.0
+				crackle.max_distance = 18.0
 		var light := FlickerLight.new()
 		light.light_color = Color(1.0, 0.58, 0.28)
 		light.base_energy = 2.2

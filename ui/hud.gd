@@ -20,6 +20,13 @@ var _debug: Label
 var _target_box: VBoxContainer
 var _target_name: Label
 var _target_bar: Bar
+## Daño acumulado al objetivo (como en Souls): se suma mientras sigas golpeando y se borra tras una pausa.
+var _damage_label: Label
+var _damage_total := 0.0
+var _damage_timer := 0.0
+var _damage_target: Beast
+var _damage_last_health := 0.0
+var _help: Label
 var _banner: Label
 var _score: Label
 var _banner_tween: Tween
@@ -134,7 +141,15 @@ func _ready() -> void:
 	_target_name = Label.new()
 	_target_name.add_theme_font_size_override("font_size", 20)
 	_target_name.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.9))
-	_target_box.add_child(_target_name)
+	var name_row := HBoxContainer.new()
+	_target_box.add_child(name_row)
+	_target_name.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	name_row.add_child(_target_name)
+	_damage_label = Label.new()
+	_damage_label.add_theme_font_size_override("font_size", 20)
+	_damage_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.55))
+	_damage_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.9))
+	name_row.add_child(_damage_label)
 	_target_bar = _make_bar(Color(0.62, 0.08, 0.06), 10.0)
 	_target_bar.custom_minimum_size.x = 600.0
 	_target_box.add_child(_target_bar)
@@ -163,7 +178,8 @@ func _ready() -> void:
 	_build_match_over()
 
 	var help := Label.new()
-	help.text = "WASD mover · Ratón cámara · Espacio: toque esquivar / mantener correr\nClic izq.: ligero · Clic der.: fuerte (mantener = cargar) · Shift: bloquear · Clic de rueda o Tab: fijar objetivo\n1-4: habilidades (gastan Calor, que se gana golpeando) · F1: ver hitboxes · F2: IA del rival · F3: calidad · Esc: soltar ratón"
+	_help = help
+	help.text = _help_text()
 	help.add_theme_font_size_override("font_size", 15)
 	help.add_theme_color_override("font_color", Color(1, 1, 1, 0.7))
 	help.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.8))
@@ -172,6 +188,21 @@ func _ready() -> void:
 	help.offset_left = 40.0
 	help.offset_bottom = -28.0
 	add_child(help)
+	_apply_settings()
+	Settings.changed.connect(_apply_settings)
+
+
+func _help_text() -> String:
+	var k := func(action: String) -> String: return Settings.event_text(Settings.primary_event(action))
+	return "%s%s%s%s mover · %s: toque esquivar, mantener correr · %s ligero · %s fuerte (mantener: cargar) · %s bloquear · %s fijar\nHabilidades %s-%s (gastan Calor, que se gana golpeando) · F1 hitboxes · F2 IA · F3 calidad · Esc pausa" % [
+		k.call("move_forward"), k.call("move_left"), k.call("move_back"), k.call("move_right"), k.call("dodge"),
+		k.call("attack_light"), k.call("attack_heavy"), k.call("block"), k.call("lock_on"), k.call("ability_1"), k.call("ability_4")]
+
+
+func _apply_settings() -> void:
+	_debug.visible = Settings.show_debug
+	_help.visible = Settings.show_help
+	_help.text = _help_text()
 
 
 func set_score(text: String) -> void:
@@ -263,6 +294,29 @@ func _make_bar(color: Color, h: float) -> Bar:
 	return b
 
 
+func _update_damage(t: Beast, delta: float) -> void:
+	if t != _damage_target:
+		_damage_target = t
+		_damage_total = 0.0
+		_damage_timer = 0.0
+		_damage_last_health = t.health if t else 0.0
+	if t == null:
+		_damage_label.text = ""
+		return
+	var lost := _damage_last_health - t.health
+	_damage_last_health = t.health
+	if lost > 0.01:
+		_damage_total += lost
+		_damage_timer = 2.5
+	elif lost < -0.01:
+		_damage_total = 0.0  # se curó o empezó otra ronda
+	_damage_timer -= delta
+	if _damage_timer <= 0.0:
+		_damage_total = 0.0
+	_damage_label.text = str(roundi(_damage_total)) if _damage_total >= 0.5 else ""
+	_damage_label.modulate.a = clampf(_damage_timer / 0.4, 0.0, 1.0)
+
+
 func _process(_delta: float) -> void:
 	if beast == null:
 		return
@@ -289,6 +343,7 @@ func _process(_delta: float) -> void:
 	_status.text = "  ·  ".join(status)
 	var t := camera.lock_target as Beast if camera else null
 	_target_box.visible = t != null
+	_update_damage(t, _delta)
 	if t:
 		_target_name.text = "%s · %s" % [t.name, t.character.display_name] if t.character and String(t.name) != t.character.display_name else String(t.name)
 		_target_bar.value = t.health / t.max_health
