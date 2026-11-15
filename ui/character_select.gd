@@ -30,6 +30,8 @@ var _ai_loadouts := {}
 var _status: Label
 var _back: Button
 var _next: Button
+var _steps: Array[Label] = []
+var _hints: HintBar
 
 var _pivot: Node3D
 var _cam: Camera3D
@@ -69,28 +71,45 @@ func _process(delta: float) -> void:
 # --- Construcción ---------------------------------------------------------------------
 
 func _build() -> void:
-	var bg := ColorRect.new()
-	bg.color = Color(0.06, 0.05, 0.05)
-	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	add_child(bg)
+	add_child(UiTheme.backdrop())
 
 	var margin := MarginContainer.new()
 	margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	for side in ["left", "right", "top", "bottom"]:
-		margin.add_theme_constant_override("margin_" + side, 36)
+		margin.add_theme_constant_override("margin_" + side, 40)
+	margin.add_theme_constant_override("margin_top", 28)
+	margin.add_theme_constant_override("margin_bottom", 28)
 	add_child(margin)
 	var root := VBoxContainer.new()
-	root.add_theme_constant_override("separation", 16)
+	root.add_theme_constant_override("separation", 12)
 	margin.add_child(root)
 
+	# Cabecera: título y, en práctica, los dos pasos (tu bestia → rival).
+	var header := HBoxContainer.new()
+	header.add_theme_constant_override("separation", 10)
+	root.add_child(header)
+	var title_box := VBoxContainer.new()
+	title_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	title_box.add_theme_constant_override("separation", 0)
+	header.add_child(title_box)
 	_title = Label.new()
+	_title.add_theme_font_override("font", UiTheme.spaced_font(5))
 	_title.add_theme_font_size_override("font_size", 40)
-	_title.add_theme_color_override("font_color", Color(0.95, 0.6, 0.25))
-	root.add_child(_title)
+	_title.add_theme_color_override("font_color", Color(0.98, 0.66, 0.3))
+	title_box.add_child(_title)
+	title_box.add_child(UiTheme.ornament(520))
+	if not _online:
+		for text in ["1 · Tu bestia", "2 · Rival"]:
+			var chip := Label.new()
+			chip.text = text
+			chip.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+			chip.add_theme_font_size_override("font_size", 16)
+			header.add_child(chip)
+			_steps.append(chip)
 
 	var main := HBoxContainer.new()
 	main.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	main.add_theme_constant_override("separation", 24)
+	main.add_theme_constant_override("separation", 20)
 	root.add_child(main)
 
 	# Lista de personajes.
@@ -99,7 +118,15 @@ func _build() -> void:
 	list_scroll.custom_minimum_size.x = 372
 	list_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	list_scroll.follow_focus = true
-	main.add_child(list_scroll)
+	list_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	var list_panel := PanelContainer.new()
+	list_panel.add_theme_stylebox_override("panel", _panel_style())
+	main.add_child(list_panel)
+	var list_box := VBoxContainer.new()
+	list_box.add_theme_constant_override("separation", 8)
+	list_panel.add_child(list_box)
+	list_box.add_child(UiTheme.caption("Plantel · %d bestias" % Roster.all().size()))
+	list_box.add_child(list_scroll)
 	_list = GridContainer.new()
 	_list.columns = 2
 	_list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -134,10 +161,13 @@ func _build() -> void:
 	center.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	center.add_theme_constant_override("separation", 6)
 	main.add_child(center)
+	var view_frame := PanelContainer.new()
+	view_frame.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	view_frame.add_theme_stylebox_override("panel", _panel_style(Vector2(3, 3)))
+	center.add_child(view_frame)
 	var view := SubViewportContainer.new()
 	view.stretch = true
-	view.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	center.add_child(view)
+	view_frame.add_child(view)
 	var vp := SubViewport.new()
 	vp.own_world_3d = true
 	vp.msaa_3d = Viewport.MSAA_4X
@@ -145,19 +175,26 @@ func _build() -> void:
 	_build_stage(vp)
 	_name = Label.new()
 	_name.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_name.add_theme_font_size_override("font_size", 44)
+	_name.add_theme_font_override("font", UiTheme.spaced_font(3))
+	_name.add_theme_font_size_override("font_size", 46)
+	_name.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.7))
+	_name.add_theme_constant_override("outline_size", 5)
 	center.add_child(_name)
 	_role = Label.new()
 	_role.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_role.add_theme_font_size_override("font_size", 20)
-	_role.add_theme_color_override("font_color", Color(0.8, 0.8, 0.8))
+	_role.add_theme_font_override("font", UiTheme.spaced_font(3, false))
+	_role.add_theme_font_size_override("font_size", 17)
+	_role.add_theme_color_override("font_color", Color(0.8, 0.78, 0.74))
 	center.add_child(_role)
 
 	# Detalles.
+	var right_panel := PanelContainer.new()
+	right_panel.add_theme_stylebox_override("panel", _panel_style(Vector2(20, 16)))
+	main.add_child(right_panel)
 	var right := VBoxContainer.new()
 	right.custom_minimum_size.x = 500
-	right.add_theme_constant_override("separation", 10)
-	main.add_child(right)
+	right.add_theme_constant_override("separation", 8)
+	right_panel.add_child(right)
 	_desc = Label.new()
 	_desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_desc.add_theme_font_size_override("font_size", 17)
@@ -168,11 +205,12 @@ func _build() -> void:
 	_combos.add_theme_color_override("font_color", Color(0.85, 0.82, 0.75))
 	right.add_child(_combos)
 	right.add_child(HSeparator.new())
+	right.add_child(UiTheme.caption("Atributos"))
 	_ratings = VBoxContainer.new()
 	right.add_child(_ratings)
 	right.add_child(HSeparator.new())
-	_ab_title = Label.new()
-	_ab_title.add_theme_color_override("font_color", Color(0.8, 0.8, 0.8))
+	_ab_title = UiTheme.caption("")
+	_ab_title.add_theme_font_size_override("font_size", 14)
 	right.add_child(_ab_title)
 	_abilities = GridContainer.new()
 	_abilities.columns = 2
@@ -191,8 +229,12 @@ func _build() -> void:
 	var bottom := HBoxContainer.new()
 	bottom.add_theme_constant_override("separation", 16)
 	root.add_child(bottom)
+	_hints = HintBar.make([])
+	_hints.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	bottom.add_child(_hints)
 	_status = Label.new()
 	_status.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_status.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	_status.add_theme_font_size_override("font_size", 18)
 	bottom.add_child(_status)
 	_back = Button.new()
@@ -202,26 +244,40 @@ func _build() -> void:
 	_next = Button.new()
 	_next.custom_minimum_size = Vector2(240, 50)
 	_next.add_theme_font_size_override("font_size", 20)
+	UiTheme.primary_button(_next)
 	_next.pressed.connect(_on_next)
 	bottom.add_child(_next)
 
 
+func _panel_style(pad := Vector2(12, 12)) -> StyleBoxFlat:
+	var s := UiTheme.box(Color(0.05, 0.043, 0.04, 0.72), Color(0.42, 0.32, 0.22, 0.7), 1, 6, pad)
+	s.border_width_top = 2
+	return s
+
+
+## Tarjeta de personaje o de habilidad. Elegida (`pressed`): fondo y borde del color propio. El foco NO usa ese
+## color: es un marco claro por fuera, para que el cursor se distinga de lo ya elegido (además del FocusCursor).
 func _card_style(color: Color, state: String) -> StyleBoxFlat:
 	var s := StyleBoxFlat.new()
 	var on := state in ["pressed", "hover_pressed"]
-	s.bg_color = Color(color.r * 0.35, color.g * 0.35, color.b * 0.35, 0.95) if on else Color(0.12, 0.1, 0.1, 0.95)
+	s.bg_color = Color(color.r * 0.38, color.g * 0.38, color.b * 0.38, 0.96) if on else Color(0.11, 0.095, 0.09, 0.95)
 	if state == "hover":
-		s.bg_color = Color(0.18, 0.15, 0.14)
-	s.border_color = color if on or state == "focus" else Color(color.r, color.g, color.b, 0.5)
-	s.border_width_left = 8
-	s.set_border_width(SIDE_TOP, 2 if on or state == "focus" else 0)
-	s.set_border_width(SIDE_BOTTOM, 2 if on or state == "focus" else 0)
-	s.set_border_width(SIDE_RIGHT, 2 if on or state == "focus" else 0)
+		s.bg_color = Color(0.2, 0.17, 0.15)
+	elif state == "hover_pressed":
+		s.bg_color = Color(color.r * 0.48, color.g * 0.48, color.b * 0.48, 0.96)
+	s.border_color = color if on else Color(color.r, color.g, color.b, 0.55)
+	s.border_width_left = 7
+	for side in [SIDE_TOP, SIDE_BOTTOM, SIDE_RIGHT]:
+		s.set_border_width(side, 2 if on else 0)
+	s.set_content_margin_all(9)
+	s.content_margin_left = 18
+	s.set_corner_radius_all(5)
+	s.anti_aliasing = true
 	if state == "focus":
 		s.draw_center = false
-	s.set_content_margin_all(10)
-	s.content_margin_left = 20
-	s.set_corner_radius_all(4)
+		s.border_color = Color(1.0, 0.95, 0.85)
+		s.set_border_width_all(2)
+		s.set_expand_margin_all(3)
 	return s
 
 
@@ -321,10 +377,13 @@ func _build_abilities(def: CharacterDef) -> void:
 		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		b.custom_minimum_size.y = 50
 		b.add_theme_font_size_override("font_size", 15)
+		b.add_theme_color_override("font_focus_color", Color.WHITE)
 		for st in ["normal", "hover", "pressed", "focus", "hover_pressed", "disabled"]:
 			b.add_theme_stylebox_override(st, _card_style(ab.color, st))
 		b.pressed.connect(_on_ability.bind(i))
 		b.focus_entered.connect(_describe.bind(i))
+		b.focus_entered.connect(_refresh_abilities)  # la enfocada no se atenúa aunque no quepan más
+		b.focus_exited.connect(_refresh_abilities)
 		b.mouse_entered.connect(_describe.bind(i))
 		_abilities.add_child(b)
 		_ab_buttons.append(b)
@@ -382,9 +441,10 @@ func _refresh_abilities() -> void:
 		var tag := "[%s] " % ControlsHelp.slot_key(slot, Settings.using_pad) if slot >= 0 else ""
 		b.text = "%s%s\n%s · %d calor · %d s" % [tag, ab.display_name, AbilityData.kind_label(ab.kind()),
 				ab.heat_cost, ab.cooldown]
-		b.modulate = Color(1, 1, 1, 0.55) if full and slot < 0 else Color.WHITE
-	_ab_title.text = "Habilidades: elige %d  (%d/%d)" % [Moveset.LOADOUT_SIZE, _loadout.size(), Moveset.LOADOUT_SIZE]
-	_ab_title.add_theme_color_override("font_color", Color(0.8, 0.8, 0.8) if _loadout_complete() else UiTheme.AMBER)
+		b.modulate = Color(1, 1, 1, 0.55) if full and slot < 0 and not b.has_focus() else Color.WHITE
+	_ab_title.text = "HABILIDADES · ELIGE %d   (%d/%d)%s" % [Moveset.LOADOUT_SIZE, _loadout.size(), Moveset.LOADOUT_SIZE,
+			"" if _loadout_complete() else "   ← FALTAN %d" % (Moveset.LOADOUT_SIZE - _loadout.size())]
+	_ab_title.add_theme_color_override("font_color", Color(0.75, 0.72, 0.66) if _loadout_complete() else Color(1.0, 0.75, 0.35))
 	if _next:
 		_next.disabled = not _loadout_complete()
 
@@ -406,10 +466,11 @@ func _rating_row(label: String, value: int, color: Color) -> void:
 	l.custom_minimum_size.x = 150
 	row.add_child(l)
 	for k in 5:
-		var pip := ColorRect.new()
-		pip.custom_minimum_size = Vector2(30, 12)
+		var pip := Panel.new()
+		pip.custom_minimum_size = Vector2(34, 10)
 		pip.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-		pip.color = color if k < value else Color(0.25, 0.22, 0.22)
+		pip.add_theme_stylebox_override("panel", UiTheme.box(color if k < value else Color(0.2, 0.18, 0.17),
+				Color(0, 0, 0, 0.5), 1, 3, Vector2.ZERO))
 		row.add_child(pip)
 		var gap := Control.new()
 		gap.custom_minimum_size.x = 4
@@ -459,11 +520,16 @@ func _update_step() -> void:
 		_status.text = ""
 		_select(Roster.find(Session.my_character))
 	else:
-		_title.text = "ELIGE AL RIVAL (IA)"
+		_title.text = "ELIGE AL RIVAL"
 		_back.text = "◂ Atrás"
 		_next.text = "¡LUCHAR!"
 		_status.text = "Tú: %s" % Roster.find(Session.my_character).display_name
 		_select(Roster.find(Session.rival_character))
+	for i in _steps.size():
+		var active := i == _step
+		_steps[i].add_theme_color_override("font_color", UiTheme.AMBER if active else UiTheme.DIM.darkened(0.25))
+		_steps[i].add_theme_font_override("font", UiTheme.font(active))
+	_hints.set_items([["A", "Enter", "Elegir / equipar"], ["B", "Esc", "Salir" if _online else ("Menú" if _step == 0 else "Atrás")]])
 	_refresh_abilities()
 
 

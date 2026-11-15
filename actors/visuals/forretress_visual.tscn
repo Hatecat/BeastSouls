@@ -10,20 +10,20 @@ target_height = 1.4
 surface = &"chitin"
 lean_scale = 0.5
 action_map = Dictionary[StringName, StringName]({
-&"attack_heavy_1": &"fight_b",
-&"attack_heavy_2": &"fight_b",
-&"attack_light_1": &"fight_b",
-&"attack_light_2": &"fight_b",
-&"attack_light_3": &"fight_b",
-&"attack_running": &"fight_b",
+&"attack_heavy_1": &"spin_heavy",
+&"attack_heavy_2": &"spin_heavy",
+&"attack_light_1": &"spin_ram",
+&"attack_light_2": &"spin_ram_b",
+&"attack_light_3": &"spin_ram",
+&"attack_running": &"spin_heavy",
 &"block": &"fight_b",
 &"death": &"ko",
-&"dodge": &"fight_b",
+&"dodge": &"spin_ram_b",
 &"hit": &"hit",
 &"idle": &"idle",
 &"run": &"walk",
 &"skill_bite": &"fight_b",
-&"skill_body": &"fight_b",
+&"skill_body": &"spin_heavy",
 &"skill_boost": &"fight_d",
 &"skill_cast": &"fight_d",
 &"skill_claw": &"fight_b",
@@ -33,6 +33,8 @@ action_map = Dictionary[StringName, StringName]({
 &"skill_punch": &"fight_b",
 &"skill_roar": &"fight_d",
 &"skill_shot": &"fight_d",
+&"skill_spin": &"spin_multi",
+&"skill_spin_drop": &"spin_drop",
 &"skill_tail": &"fight_b",
 &"walk": &"walk"
 })

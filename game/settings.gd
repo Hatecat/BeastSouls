@@ -44,6 +44,10 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	if not OS.has_feature("dedicated_server"):  # el servidor no tiene interfaz (ni fuentes del sistema)
 		UiTheme.apply()
+		var cursor_layer := CanvasLayer.new()  # cursor de foco para mando/teclado, encima de todos los menús
+		cursor_layer.layer = 100
+		cursor_layer.add_child(FocusCursor.new())
+		add_child(cursor_layer)
 	_ensure_buses()
 	_add_pad_ui_events()
 	for pair in REBINDABLE:

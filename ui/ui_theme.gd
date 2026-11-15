@@ -35,6 +35,98 @@ static func title_font() -> SystemFont:
 	return font(true)
 
 
+## Fuente de títulos con las letras separadas (rótulos en mayúsculas).
+static func spaced_font(spacing := 4, bold := true) -> FontVariation:
+	var v := FontVariation.new()
+	v.base_font = font(bold)
+	v.spacing_glyph = spacing
+	return v
+
+
+## Rótulo de sección: mayúsculas pequeñas en ámbar.
+static func caption(text: String) -> Label:
+	var l := Label.new()
+	l.text = text.to_upper()
+	l.add_theme_font_override("font", spaced_font(2))
+	l.add_theme_font_size_override("font_size", 13)
+	l.add_theme_color_override("font_color", Color(AMBER.r, AMBER.g, AMBER.b, 0.85))
+	return l
+
+
+## Filete ornamental: rombo y línea que se desvanece. `centered` lo dibuja simétrico (títulos centrados).
+static func ornament(width := 320.0, centered := false) -> Control:
+	var c := Control.new()
+	c.custom_minimum_size = Vector2(width, 14)
+	c.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	c.draw.connect(func() -> void:
+		var y := c.size.y * 0.5
+		var w := c.size.x
+		var clear := Color(AMBER.r, AMBER.g, AMBER.b, 0.0)
+		var x0 := w * 0.5 if centered else 7.0
+		var d := 5.0
+		c.draw_colored_polygon(PackedVector2Array([Vector2(x0 - d, y), Vector2(x0, y - d), Vector2(x0 + d, y), Vector2(x0, y + d)]), AMBER)
+		c.draw_polyline_colors(PackedVector2Array([Vector2(x0 + d + 5, y), Vector2(w, y)]), PackedColorArray([AMBER, clear]), 1.5, true)
+		if centered:
+			c.draw_polyline_colors(PackedVector2Array([Vector2(x0 - d - 5, y), Vector2(0, y)]), PackedColorArray([AMBER, clear]), 1.5, true))
+	return c
+
+
+## Fondo de pantalla completa: penumbra cálida en el centro que se cierra hacia los bordes.
+static func backdrop() -> TextureRect:
+	var t := TextureRect.new()
+	var g := GradientTexture2D.new()
+	g.gradient = Gradient.new()
+	g.gradient.set_color(0, Color(0.17, 0.125, 0.09))
+	g.gradient.set_color(1, Color(0.03, 0.026, 0.026))
+	g.fill = GradientTexture2D.FILL_RADIAL
+	g.fill_from = Vector2(0.5, 0.42)
+	g.fill_to = Vector2(1.05, 1.0)
+	t.texture = g
+	t.stretch_mode = TextureRect.STRETCH_SCALE
+	t.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	t.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	return t
+
+
+## Botón principal de una pantalla («¡Luchar!», «Listo»): relleno ámbar.
+static func primary_button(b: Button) -> void:
+	b.add_theme_font_override("font", spaced_font(2))
+	b.add_theme_stylebox_override("normal", box(Color(0.42, 0.22, 0.07, 0.95), AMBER, 1, 4))
+	b.add_theme_stylebox_override("hover", box(Color(0.58, 0.31, 0.1, 0.98), AMBER.lightened(0.3), 1, 4))
+	b.add_theme_stylebox_override("pressed", box(Color(0.7, 0.4, 0.14), AMBER.lightened(0.4), 1, 4))
+	b.add_theme_color_override("font_color", Color(1.0, 0.92, 0.8))
+
+
+## Botón de lista de menú: sin caja, con una barra a la izquierda; al pasar el ratón o enfocarlo se enciende
+## una franja ámbar que se desvanece hacia la derecha y el texto se desplaza.
+static func menu_button(b: Button, font_size := 22) -> void:
+	b.alignment = HORIZONTAL_ALIGNMENT_LEFT
+	b.add_theme_font_size_override("font_size", font_size)
+	var idle := box(Color(0.05, 0.042, 0.036, 0.55), Color(EDGE.r, EDGE.g, EDGE.b, 0.8), 0, 2, Vector2(22, 10))
+	idle.border_width_left = 3
+	var hot := StyleBoxTexture.new()
+	var g := GradientTexture2D.new()
+	g.gradient = Gradient.new()
+	g.gradient.offsets = PackedFloat32Array([0.0, 0.014, 0.0141, 1.0])
+	g.gradient.colors = PackedColorArray([Color(1.0, 0.78, 0.45), Color(1.0, 0.78, 0.45), Color(0.8, 0.42, 0.12, 0.62), Color(0.5, 0.25, 0.06, 0.0)])
+	g.width = 512
+	g.height = 4
+	hot.texture = g
+	hot.content_margin_left = 34
+	hot.content_margin_right = 22
+	hot.content_margin_top = 10
+	hot.content_margin_bottom = 10
+	b.add_theme_stylebox_override("normal", idle)
+	b.add_theme_stylebox_override("hover", hot)
+	b.add_theme_stylebox_override("pressed", hot)
+	b.add_theme_stylebox_override("hover_pressed", hot)
+	b.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
+	b.add_theme_color_override("font_focus_color", Color(1.0, 0.95, 0.85))
+	b.add_theme_color_override("font_hover_color", Color(1.0, 0.95, 0.85))
+	b.focus_entered.connect(func() -> void: b.add_theme_stylebox_override("normal", hot))
+	b.focus_exited.connect(func() -> void: b.add_theme_stylebox_override("normal", idle))
+
+
 static func box(bg: Color, border: Color, width := 1, radius := 3, pad := Vector2(14, 8)) -> StyleBoxFlat:
 	var s := StyleBoxFlat.new()
 	s.bg_color = bg
@@ -56,8 +148,11 @@ static func build() -> Theme:
 	var hover := box(Color(0.2, 0.14, 0.09, 0.95), AMBER)
 	var pressed := box(Color(0.3, 0.17, 0.07, 0.95), AMBER.lightened(0.2))
 	var disabled := box(Color(0.09, 0.08, 0.075, 0.6), Color(0.25, 0.22, 0.2))
-	var focus := box(Color(0, 0, 0, 0), AMBER, 2)
+	var focus := box(Color(0, 0, 0, 0), Color(1.0, 0.9, 0.72), 2)
 	focus.draw_center = false
+	focus.set_expand_margin_all(2)
+	focus.shadow_color = Color(AMBER.r, AMBER.g, AMBER.b, 0.45)
+	focus.shadow_size = 6
 	for type in ["Button", "OptionButton", "MenuButton"]:
 		t.set_stylebox("normal", type, normal)
 		t.set_stylebox("hover", type, hover)
@@ -84,9 +179,10 @@ static func build() -> Theme:
 		t.set_color("font_hover_pressed_color", type, Color(1.0, 0.9, 0.75))
 		t.set_color("font_focus_color", type, Color(1.0, 0.9, 0.75))
 	# Paneles.
-	var panel := box(BG, EDGE, 1, 4, Vector2(24, 20))
-	panel.shadow_color = Color(0, 0, 0, 0.5)
-	panel.shadow_size = 12
+	var panel := box(BG, Color(0.5, 0.38, 0.25), 1, 6, Vector2(26, 22))
+	panel.border_width_top = 2
+	panel.shadow_color = Color(0, 0, 0, 0.55)
+	panel.shadow_size = 22
 	t.set_stylebox("panel", "PanelContainer", panel)
 	t.set_stylebox("panel", "Panel", panel)
 	t.set_stylebox("panel", "PopupMenu", box(Color(0.08, 0.07, 0.06, 0.98), EDGE, 1, 2, Vector2(6, 6)))

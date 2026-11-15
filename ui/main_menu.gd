@@ -31,6 +31,8 @@ var _cancel: Button
 var _back: Button
 var _options: OptionsMenu
 var _panel: PanelContainer
+var _blurb: Label
+var _hints: HintBar
 
 var _cam: Camera3D
 var _cam_angle := 0.0
@@ -146,32 +148,51 @@ func _build() -> void:
 
 	var title := Label.new()
 	title.text = "BEASTSOULS"
-	title.add_theme_font_override("font", UiTheme.title_font())
-	title.add_theme_font_size_override("font_size", 72)
-	title.add_theme_color_override("font_color", Color(0.97, 0.64, 0.3))
-	title.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.8))
-	title.add_theme_constant_override("shadow_offset_y", 3)
+	title.add_theme_font_override("font", UiTheme.spaced_font(7))
+	title.add_theme_font_size_override("font_size", 76)
+	title.add_theme_color_override("font_color", Color(0.98, 0.68, 0.33))
+	title.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.85))
+	title.add_theme_constant_override("shadow_offset_y", 4)
+	title.add_theme_color_override("font_outline_color", Color(0.25, 0.1, 0.02, 0.9))
+	title.add_theme_constant_override("outline_size", 6)
 	col.add_child(title)
+	col.add_child(UiTheme.ornament(470))
 	var sub := Label.new()
-	sub.text = "Duelos de bestias en la arena"
-	sub.add_theme_color_override("font_color", UiTheme.DIM)
-	sub.add_theme_font_size_override("font_size", 20)
+	sub.text = "DUELOS DE BESTIAS EN LA ARENA"
+	sub.add_theme_font_override("font", UiTheme.spaced_font(4, false))
+	sub.add_theme_color_override("font_color", UiTheme.DIM.lightened(0.15))
+	sub.add_theme_font_size_override("font_size", 16)
 	col.add_child(sub)
 	var gap := Control.new()
-	gap.custom_minimum_size.y = 50
+	gap.custom_minimum_size.y = 56
 	col.add_child(gap)
 
 	_main_box = VBoxContainer.new()
-	_main_box.add_theme_constant_override("separation", 12)
-	_main_box.custom_minimum_size.x = 340
+	_main_box.add_theme_constant_override("separation", 8)
+	_main_box.custom_minimum_size.x = 400
 	_main_box.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 	col.add_child(_main_box)
-	_button(_main_box, "Práctica contra la IA", _on_practice)
-	_button(_main_box, "Jugar online", _show_online.bind(true))
-	_button(_main_box, "Opciones", _open_options)
-	_button(_main_box, "Salir", get_tree().quit)
+	_button(_main_box, "Práctica contra la IA", _on_practice, "Elige tu bestia y un rival y entrena sin prisa.")
+	_button(_main_box, "Jugar online", _show_online.bind(true), "Duelo 1 contra 1 al mejor de tres asaltos.")
+	_button(_main_box, "Opciones", _open_options, "Gráficos, sonido, controles e interfaz.")
+	_button(_main_box, "Salir", get_tree().quit, "Cerrar el juego.")
+	_blurb = Label.new()
+	_blurb.add_theme_font_size_override("font_size", 15)
+	_blurb.add_theme_color_override("font_color", UiTheme.DIM.lightened(0.2))
+	var blurb_pad := MarginContainer.new()
+	blurb_pad.add_theme_constant_override("margin_left", 26)
+	blurb_pad.add_theme_constant_override("margin_top", 10)
+	blurb_pad.add_child(_blurb)
+	_main_box.add_child(blurb_pad)
 
 	_build_online(col)
+
+	_hints = HintBar.make([["A", "Enter", "Elegir"], ["B", "Esc", "Volver"]])
+	_hints.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT)
+	_hints.grow_vertical = Control.GROW_DIRECTION_BEGIN
+	_hints.offset_left = 90.0
+	_hints.offset_bottom = -30.0
+	add_child(_hints)
 
 	var foot := Label.new()
 	foot.text = "Prototipo · modelos provisionales"
@@ -197,10 +218,11 @@ func _build_online(parent: Control) -> void:
 	_panel.add_child(_online_box)
 	var head := Label.new()
 	head.text = "PARTIDA ONLINE"
-	head.add_theme_font_override("font", UiTheme.title_font())
+	head.add_theme_font_override("font", UiTheme.spaced_font(3))
 	head.add_theme_font_size_override("font_size", 24)
 	head.add_theme_color_override("font_color", UiTheme.AMBER)
 	_online_box.add_child(head)
+	_online_box.add_child(UiTheme.ornament(380))
 	_nick = _field(_online_box, "Nombre", "Jugador")
 	_address = _field(_online_box, "IP o servidor", "127.0.0.1")
 	_port = SpinBox.new()
@@ -265,11 +287,13 @@ func _show_online(on: bool) -> void:
 
 func _open_options() -> void:
 	_main_box.visible = false
+	_hints.visible = false
 	_options = OptionsMenu.new()
 	add_child(_options)
 	_options.closed.connect(func() -> void:
 		_options = null
 		_main_box.visible = true
+		_hints.visible = true
 		(_main_box.get_child(2) as Button).grab_focus.call_deferred())
 
 
@@ -297,13 +321,14 @@ func _row(parent: Control, label: String, control: Control) -> void:
 	parent.add_child(row)
 
 
-func _button(parent: Control, text: String, cb: Callable) -> Button:
+func _button(parent: Control, text: String, cb: Callable, blurb := "") -> Button:
 	var b := Button.new()
 	b.text = text
-	b.custom_minimum_size.y = 48
-	b.alignment = HORIZONTAL_ALIGNMENT_LEFT
-	b.add_theme_font_size_override("font_size", 22)
+	b.custom_minimum_size.y = 52
+	UiTheme.menu_button(b, 24)
 	b.pressed.connect(cb)
+	b.focus_entered.connect(func() -> void: _blurb.text = blurb)
+	b.mouse_entered.connect(func() -> void: _blurb.text = blurb)
 	parent.add_child(b)
 	return b
 

@@ -40,6 +40,22 @@ def main():
     extra = open(os.path.join(ROOT, "tools", "rig_templates_extra.py"), encoding="utf-8").read()
     with open(os.path.join(work, "tools", "blender", "rig_templates.py"), "a", encoding="utf-8") as f:
         f.write("\n\n" + extra[extra.index("RIGS_EXTRA = {"):] + "\nRIGS.update(RIGS_EXTRA)\n")
+    # Ajustes y clips propios (tools/anim_extras.py), insertados en la copia de los animadores.
+    sys.path.insert(0, os.path.join(ROOT, "tools"))
+    import anim_extras
+
+    def inject(script, marker, text, before=True):
+        path = os.path.join(work, "tools", "blender", script)
+        src = open(path, encoding="utf-8").read()
+        if src.count(marker) != 1:
+            sys.exit(f"{script}: no encuentro «{marker.strip()}» (¿cambió poke-tactics?)")
+        open(path, "w", encoding="utf-8").write(src.replace(marker, text + marker if before else marker + text))
+
+    inject("animate_pokemon.py", "\nTWEAKS = {\n", anim_extras.POKEMON_TWEAKS.lstrip("\n"), before=False)
+    inject("animate_pokemon.py", "\ndef learnset_actions(name):", "\n" + anim_extras.POKEMON_ACTIONS)
+    inject("animate_generic.py", "\ndef apply_pose(frame, p):", "\n" + anim_extras.GENERIC_ACTIONS)
+    with open(os.path.join(work, "fix_mesh.py"), "w", encoding="utf-8") as f:
+        f.write(anim_extras.FIX_MESH)
 
     def blender(*args):
         r = subprocess.run(["blender", "--background", *args], cwd=work, capture_output=True, text=True, timeout=1200)
@@ -66,6 +82,8 @@ def main():
             out = blender(blend, "--python", "tools/blender/animate_pokemon.py", "--", *[x.strip() for x in m.group(1).split(",")])
         print(name, "|", (re.search(r"Animadas:.*", out) or [out[-400:]])[0])
         blender(blend, "--python", "tools/blender/animate_status.py", "--", "hit", "ko")
+        for line in re.findall(r"Malla soldada.*", blender(blend, "--python", "fix_mesh.py")):
+            print(name, "|", line)
         out = blender(blend, "--python", "tools/blender/export_animations.py")
         m = re.search(r"con (\d+ acciones.*)", out)
         if not m:

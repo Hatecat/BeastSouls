@@ -20,16 +20,17 @@ func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_CENTER)
 	grow_horizontal = Control.GROW_DIRECTION_BOTH
 	grow_vertical = Control.GROW_DIRECTION_BOTH
-	custom_minimum_size = Vector2(760, 560)
+	custom_minimum_size = Vector2(820, 600)
 	var root := VBoxContainer.new()
 	root.add_theme_constant_override("separation", 14)
 	add_child(root)
 	var title := Label.new()
 	title.text = "OPCIONES"
-	title.add_theme_font_override("font", UiTheme.title_font())
+	title.add_theme_font_override("font", UiTheme.spaced_font(5))
 	title.add_theme_font_size_override("font_size", 30)
 	title.add_theme_color_override("font_color", UiTheme.AMBER)
 	root.add_child(title)
+	root.add_child(UiTheme.ornament(700))
 	_tabs = TabContainer.new()
 	_tabs.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	root.add_child(_tabs)
@@ -42,9 +43,13 @@ func _ready() -> void:
 	var back := Button.new()
 	back.text = "Volver"
 	back.custom_minimum_size = Vector2(180, 42)
-	back.size_flags_horizontal = Control.SIZE_SHRINK_END
 	back.pressed.connect(close)
-	root.add_child(back)
+	var foot := HBoxContainer.new()
+	var hints := HintBar.make([["A", "Enter", "Elegir"], ["B", "Esc", "Volver"], ["◂ ▸", "← →", "Cambiar valor o pestaña"]])
+	hints.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	foot.add_child(hints)
+	foot.add_child(back)
+	root.add_child(foot)
 	Settings.changed.connect(_refresh_bindings)
 	_tabs.get_tab_bar().grab_focus.call_deferred()
 
@@ -73,6 +78,7 @@ func _page(name: String) -> VBoxContainer:
 func _row(parent: Control, label: String, control: Control) -> Control:
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 16)
+	row.set_meta(&"focus_frame", true)  # el cursor de foco enmarca la fila entera
 	var l := Label.new()
 	l.text = label
 	l.custom_minimum_size.x = 280

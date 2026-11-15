@@ -29,7 +29,7 @@ func _ready() -> void:
 	_panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
 	_panel.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	_panel.grow_vertical = Control.GROW_DIRECTION_BOTH
-	_panel.custom_minimum_size = Vector2(380, 0)
+	_panel.custom_minimum_size = Vector2(400, 0)
 	_root.add_child(_panel)
 	var box := VBoxContainer.new()
 	box.add_theme_constant_override("separation", 10)
@@ -37,7 +37,7 @@ func _ready() -> void:
 	var title := Label.new()
 	title.text = "PAUSA" if not online else "MENÚ"
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title.add_theme_font_override("font", UiTheme.title_font())
+	title.add_theme_font_override("font", UiTheme.spaced_font(6))
 	title.add_theme_font_size_override("font_size", 34)
 	title.add_theme_color_override("font_color", UiTheme.AMBER)
 	box.add_child(title)
@@ -48,17 +48,27 @@ func _ready() -> void:
 		note.add_theme_color_override("font_color", UiTheme.DIM)
 		note.add_theme_font_size_override("font_size", 14)
 		box.add_child(note)
-	box.add_child(HSeparator.new())
+	box.add_child(UiTheme.ornament(340, true))
+	var gap := Control.new()
+	gap.custom_minimum_size.y = 6
+	box.add_child(gap)
 	_button(box, "Continuar", close)
 	_button(box, "Guía de controles", _open_options.bind(OptionsMenu.TAB_GUIDE))
 	_button(box, "Opciones", _open_options.bind(0))
 	_button(box, "Abandonar partida" if online else "Salir al menú", _quit)
+	var hints := HintBar.make([["A", "Enter", "Elegir"], ["B", "Esc", "Continuar"]])
+	hints.alignment = BoxContainer.ALIGNMENT_CENTER
+	var hint_pad := MarginContainer.new()
+	hint_pad.add_theme_constant_override("margin_top", 10)
+	hint_pad.add_child(hints)
+	box.add_child(hint_pad)
 
 
 func _button(parent: Control, text: String, cb: Callable) -> Button:
 	var b := Button.new()
 	b.text = text
-	b.custom_minimum_size.y = 44
+	b.custom_minimum_size.y = 46
+	UiTheme.menu_button(b, 20)
 	b.pressed.connect(cb)
 	parent.add_child(b)
 	return b

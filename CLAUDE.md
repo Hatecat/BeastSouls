@@ -47,6 +47,10 @@ usar `root.get_node("Net")`. Red: lanzar dos instancias (`-- --host` / `-- --joi
   - `PoseModifier` (SkeletonModifier3D): la cabeza mira al rival fijado (`look_at_point`) y el torso se dobla al
     recibir un golpe (`flinch`); rota en el espacio del visual, no depende de los ejes de los huesos.
   - `SpringBoneSimulator3D` en las cadenas cuyo nombre contiene `spring_patterns` (colas, antenas, orejas).
+    OJO: el simulador parte del reposo del hueso y DESCARTA lo que anima el clip en esos huesos; por eso su
+    `influence` baja a 0 durante las acciones `attack*` / `skill*` (si no, los coletazos no mueven la cola). Un
+    personaje cuya cola va posada o animada siempre (Aipom) la saca de `spring_patterns`.
+  - `face_surface`: superficie para mallas llamadas "Eye" que en realidad son la cara entera (Aipom).
   - `bone_scale` ({"Tail": 0.55}): encoge cadenas enteras desde su primer hueso (lo aplica `PoseModifier`); las
     colas de Ninetales tapaban la cámara.
   - Ataques: `drive(action, clip_time, rate)` clava el clip al `state_time` de la simulación.
@@ -88,7 +92,12 @@ usar `root.get_node("Net")`. Red: lanzar dos instancias (`-- --host` / `-- --joi
   trae los clips `pm0160_…`) y tres sin esqueleto (Aipom, Hitmontop, Forretress). `tools/animate_models.py` los
   pasa por las herramientas de Blender de poke-tactics (setup_animations → animate_pokemon/animate_generic →
   animate_status → export) en una carpeta temporal y deja el .glb con clips `fight_b_*`/`fight_d_*`;
-  `tools/rig_templates_extra.py` lleva los esqueletos de plantilla (la cabeza de Hitmontop va fijada entera a
+  `tools/anim_extras.py` lleva lo propio de BeastSouls que se inyecta en la copia temporal de esos
+  animadores: poses fijas (la cola curvada de Aipom; Zoroark encorvado con la melena por la espalda), clips nuevos o
+  rehechos (coletazo de Aipom; giros de Forretress `spin_ram/_b`, `spin_heavy`, `spin_multi`, `spin_drop`;
+  Hitmontop de cabeza girando como peonza: `top_walk`, `top_kick`, `top_spin`, `top_dash`). Un clip nuevo no
+  puede llevar "hit" ni "ko" en el nombre (animate_status lo toma por variante y no crea el clip base) y el soldado de mallas que vienen como
+  triángulos sueltos (se veían facetadas y con costuras). `tools/rig_templates_extra.py` lleva los esqueletos de plantilla (la cabeza de Hitmontop va fijada entera a
   `Head` con `_props`). Forretress tiene un solo hueso: todos sus ataques usan `fight_b`. Sus kits se escriben
   con los preajustes `_MULTI`, `_BIG`, `_MELEE`, `_QUICK` y `_stun()` del generador.
   `Roster` carga los de `PATHS` y después cualquier otro `.tres` de la carpeta. `tools/new_character.py` crea un
@@ -126,7 +135,13 @@ usar `root.get_node("Net")`. Red: lanzar dos instancias (`-- --host` / `-- --joi
   las 4 habilidades con su tecla. Recarga en sector, coste de Calor, apagado si no se puede usar; encima, el
   resto de acciones en dos líneas.
   `UiTheme` (ui_theme.gd): tema común (fuente serif del sistema, piedra oscura y ámbar) fusionado con el tema por
-  defecto, así lo heredan también los controles de los CanvasLayer. `OptionsMenu` (pestañas Gráficos/Sonido/
+  defecto, así lo heredan también los controles de los CanvasLayer. Ayudas de estilo: `menu_button` (lista
+  con franja ámbar), `primary_button`, `ornament` (filete con rombo), `caption`, `spaced_font`, `backdrop`.
+  `FocusCursor` (focus_cursor.gd): marco que late + flecha sobre el control enfocado; lo crea `Settings` una vez
+  en un CanvasLayer 100 y vale para todos los menús. Solo se ve navegando con mando/teclado. Un contenedor con el
+  meta `focus_frame` (filas de Opciones) se enmarca entero. En las tarjetas del selector, «elegida» usa el color
+  propio y el foco un marco claro: no reutilizar el color de selección para el foco.
+  `HintBar` (hint_bar.gd): leyenda de botones al pie (A/B o Enter/Esc según el dispositivo). `OptionsMenu` (pestañas Gráficos/Sonido/
   Controles/Interfaz, se aplica y guarda al momento; se usa en el menú y en la pausa). `PauseMenu` (Esc/Start):
   en práctica pausa el árbol (los temporizadores de MatchFlow son pausables); online no pausa, solo pone
   `PlayerController.blocked` (input vacío). Vibración del mando en `PlayerController._rumble`.

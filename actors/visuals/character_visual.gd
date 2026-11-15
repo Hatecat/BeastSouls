@@ -35,6 +35,9 @@ signal action_finished(action: StringName)
 @export var lean_scale := 1.0
 ## Huesos con física de muelle (colas, antenas, orejas): cadenas cuyo nombre contiene alguno de estos textos.
 @export var spring_patterns: PackedStringArray = ["Tail", "Feeler", "Ear", "Tongue"]
+## Superficie para las piezas que por nombre parecen ojos pero son la cara entera (Aipom: su malla "Eye" es
+## toda la cara). Vacío = se tratan como ojos (material original, brillante).
+@export var face_surface: StringName = &""
 ## Escala de cadenas de huesos enteras (texto contenido en el nombre → factor): se aplica al primer hueso de
 ## cada cadena, p. ej. {"Tail": 0.6} para acortar colas que tapan la cámara.
 @export var bone_scale: Dictionary[String, float] = {}
@@ -370,6 +373,12 @@ func _is_spring_bone(b: int) -> bool:
 
 
 func _process(delta: float) -> void:
+	if _springs and delta > 0.0:
+		# El simulador parte del reposo del hueso y descarta lo que anima el clip: en ataques y habilidades se
+		# apaga para que se vea el coletazo; al volver a moverse, la cola recupera el muelle.
+		var s := String(current_action)
+		var animated := s.begins_with("attack") or s.begins_with("skill")
+		_springs.influence = move_toward(_springs.influence, 0.0 if animated else 1.0, delta * 7.0)
 	if not motion_enabled or _pivot == null or delta <= 0.0:
 		return
 	var xf := get_global_transform_interpolated()
@@ -476,7 +485,8 @@ func _fix_materials() -> void:
 			var n := mat.resource_name
 			if n.begins_with("FireCore") or n.begins_with("FireSten"):
 				m.set_surface_override_material(i, _fire_material(mat, n.begins_with("FireCore")))
-			elif mat.transparency != BaseMaterial3D.TRANSPARENCY_DISABLED or n.containsn("eye") or n.containsn("iris"):
+			elif mat.transparency != BaseMaterial3D.TRANSPARENCY_DISABLED \
+					or (face_surface == &"" and (n.containsn("eye") or n.containsn("iris"))):
 				# Ojos y piezas con recorte: material original, pero brillante (ojo húmedo).
 				var eye := mat.duplicate() as BaseMaterial3D
 				eye.roughness = 0.12
@@ -484,14 +494,19 @@ func _fix_materials() -> void:
 				eye.metallic_specular = 0.7
 				m.set_surface_override_material(i, eye)
 			else:
+				var look := preset
+				var look_detail := detail
+				if face_surface != &"" and (n.containsn("eye") or n.containsn("iris")):
+					look = SURFACES.get(face_surface, preset)
+					look_detail = load("res://assets/textures/characters/%s.png" % look.detail)
 				var body := ShaderMaterial.new()
 				body.shader = shader
 				body.set_shader_parameter(&"albedo_tex", mat.albedo_texture)
 				body.set_shader_parameter(&"albedo_color", mat.albedo_color)
-				body.set_shader_parameter(&"detail_tex", detail)
-				for key: StringName in preset:
+				body.set_shader_parameter(&"detail_tex", look_detail)
+				for key: StringName in look:
 					if key != &"detail":
-						body.set_shader_parameter(key, preset[key])
+						body.set_shader_parameter(key, look[key])
 				if mat.cull_mode == BaseMaterial3D.CULL_DISABLED:
 					body.render_priority = 0
 				m.set_surface_override_material(i, body)

@@ -8,6 +8,8 @@ script = ExtResource("1_script")
 model_scene = ExtResource("2_model")
 target_height = 1.2
 surface = &"fur"
+face_surface = &"skin"
+spring_patterns = PackedStringArray("Ear")
 action_map = Dictionary[StringName, StringName]({
 &"attack_heavy_1": &"fight_b_tail",
 &"attack_heavy_2": &"fight_b_body",
@@ -47,5 +49,5 @@ sockets = Dictionary[StringName, StringName]({
 &"hand_r": &"RHand",
 &"head": &"Head",
 &"mouth": &"Head",
-&"tail_tip": &"Tail4"
+&"tail_tip": &"Tail6"
 })
