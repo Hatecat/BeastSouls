@@ -1,0 +1,38 @@
+[gd_resource type="Resource" script_class="ChannelAbility" format=3]
+
+[ext_resource type="Script" path="res://combat/abilities/channel_ability.gd" id="1_script"]
+[ext_resource type="Script" path="res://combat/attack_data.gd" id="2_attack"]
+
+[sub_resource type="Resource" id="hit"]
+script = ExtResource("2_attack")
+display_name = "Golpes furia"
+damage = 3
+poise_damage = 4.8
+guard_stamina_damage = 6
+stamina_cost = 0
+stagger_time = 0.3
+knockback = 0.8
+hitstop = 0.05
+heat_gain = 0
+
+[resource]
+script = ExtResource("1_script")
+hit = SubResource("hit")
+display_name = "Golpes furia"
+color = Color(1, 0.92, 0.65, 1)
+action = &"skill_claw"
+heat_cost = 28
+cooldown = 7
+duration = 1.2
+cancel_start = 1
+tracking = 5
+track_until = 1
+channel_start = 0.15
+channel_end = 1.05
+tick_interval = 0.14
+cone_range = 2.6
+cone_angle_deg = 50
+origin_offset = Vector3(0, 0.7, -0.3)
+anim_speed = 1.7
+move_factor = 0.5
+fx_socket = &"hand_r"

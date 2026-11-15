@@ -1,0 +1,28 @@
+[gd_resource type="Resource" script_class="AttackData" format=3]
+
+[ext_resource type="Script" path="res://combat/attack_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+display_name = "Puño"
+action = &"attack_light_2"
+anim_speed = 1.588
+duration = 0.578
+active_start = 0.17
+active_end = 0.272
+combo_start = 0.255
+cancel_start = 0.34
+damage = 10.8
+poise_damage = 13.5
+guard_stamina_damage = 16.2
+stamina_cost = 14.0
+stagger_time = 0.45
+knockback = 2.5
+hitstop = 0.07
+hitbox_offset_start = Vector3(0.38, 1.045, -0.95)
+hitbox_offset_end = Vector3(0, 1.045, -1.2825)
+hitbox_radius = 0.71
+lunge_speed = 3.5
+lunge_start = 0.068
+lunge_end = 0.221
+tracking = 6.0

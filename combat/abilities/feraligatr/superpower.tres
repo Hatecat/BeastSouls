@@ -1,0 +1,35 @@
+[gd_resource type="Resource" script_class="DashAbility" format=3]
+
+[ext_resource type="Script" path="res://combat/abilities/dash_ability.gd" id="1_script"]
+[ext_resource type="Script" path="res://combat/attack_data.gd" id="2_attack"]
+
+[sub_resource type="Resource" id="hit"]
+script = ExtResource("2_attack")
+display_name = "Fuerza bruta"
+damage = 30
+poise_damage = 80
+guard_stamina_damage = 45
+stamina_cost = 0
+stagger_time = 0.9
+knockback = 9
+hitstop = 0.14
+heat_gain = 0
+
+[resource]
+script = ExtResource("1_script")
+hit = SubResource("hit")
+display_name = "Fuerza bruta"
+color = Color(1, 0.55, 0.35, 1)
+action = &"skill_body"
+heat_cost = 40
+cooldown = 11
+duration = 0.85
+cancel_start = 0.7
+tracking = 7
+track_until = 0.2
+dash_start = 0.2
+dash_end = 0.5
+radius = 1.7
+offset = Vector3(0, 1.1, -1)
+anim_speed = 1.5
+dash_speed = 20

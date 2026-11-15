@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="AttackData" format=3]
+
+[ext_resource type="Script" path="res://combat/attack_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+display_name = "Acometida"
+action = &"attack_running"
+anim_speed = 1.091
+duration = 0.935
+active_start = 0.308
+active_end = 0.462
+combo_start = 0.935
+cancel_start = 0.66
+damage = 22.7
+poise_damage = 43.8
+guard_stamina_damage = 37.5
+stamina_cost = 20.0
+stagger_time = 0.65
+knockback = 5.0
+hitstop = 0.1
+hitbox_offset_start = Vector3(0, 1.43, -1.3)
+hitbox_offset_end = Vector3(0, 1.43, -1.56)
+hitbox_radius = 1.17
+lunge_speed = 9
+lunge_start = 0
+lunge_end = 0.385
+tracking = 2.0
+hyper_armor = 40
+heat_gain = 12.0

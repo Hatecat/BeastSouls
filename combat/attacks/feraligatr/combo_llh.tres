@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="AttackData" format=3]
+
+[ext_resource type="Script" path="res://combat/attack_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+display_name = "Dentellada"
+action = &"skill_bite"
+anim_speed = 1.01
+duration = 0.99
+active_start = 0.297
+active_end = 0.416
+combo_start = 0.544
+cancel_start = 0.643
+damage = 26.8
+poise_damage = 55.2
+guard_stamina_damage = 48.3
+stamina_cost = 24.0
+stagger_time = 0.7
+knockback = 5.0
+hitstop = 0.12
+hitbox_offset_start = Vector3(0, 1.95, -1.43)
+hitbox_offset_end = Vector3(0, 1.69, -1.885)
+hitbox_radius = 1.04
+lunge_speed = 4.5
+lunge_start = 0.198
+lunge_end = 0.376
+tracking = 4.0
+hyper_armor = 70
+heat_gain = 14.0

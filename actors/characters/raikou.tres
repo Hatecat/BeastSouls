@@ -1,0 +1,28 @@
+[gd_resource type="Resource" script_class="CharacterDef" format=3]
+
+[ext_resource type="Script" path="res://actors/characters/character_def.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://actors/visuals/raikou_visual.tscn" id="2_visual"]
+[ext_resource type="Resource" path="res://combat/attacks/raikou/moveset.tres" id="3_moveset"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"raikou"
+display_name = "Raikou"
+role = "Bestia del trueno"
+description = "Grande y veloz. Rayos rapidísimos a distancia y embestidas largas; sus habilidades cuestan mucho Calor."
+color = Color(1, 0.9, 0.3, 1)
+visual = ExtResource("2_visual")
+moveset = ExtResource("3_moveset")
+stats = Dictionary[StringName, Variant]({
+&"max_health": 120,
+&"jog_speed": 4.8,
+&"sprint_speed": 8.4,
+&"max_poise": 16
+})
+body_radius = 0.7
+body_height = 2.0
+lock_height = 1.4
+rating_health = 4
+rating_speed = 4
+rating_power = 4
+rating_range = 4

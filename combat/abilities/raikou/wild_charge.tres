@@ -1,0 +1,34 @@
+[gd_resource type="Resource" script_class="DashAbility" format=3]
+
+[ext_resource type="Script" path="res://combat/abilities/dash_ability.gd" id="1_script"]
+[ext_resource type="Script" path="res://combat/attack_data.gd" id="2_attack"]
+
+[sub_resource type="Resource" id="hit"]
+script = ExtResource("2_attack")
+display_name = "Voltio cruel"
+damage = 26
+poise_damage = 52
+guard_stamina_damage = 39
+stamina_cost = 0
+stagger_time = 0.9
+knockback = 8
+hitstop = 0.13
+heat_gain = 0
+
+[resource]
+script = ExtResource("1_script")
+hit = SubResource("hit")
+display_name = "Voltio cruel"
+color = Color(1, 0.9, 0.3, 1)
+action = &"skill_body"
+heat_cost = 35
+cooldown = 10
+duration = 0.85
+cancel_start = 0.7
+tracking = 7
+track_until = 0.2
+dash_start = 0.2
+dash_end = 0.5
+radius = 1.5
+offset = Vector3(0, 1.1, -1.1)
+dash_speed = 30

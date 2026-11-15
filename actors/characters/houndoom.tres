@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="CharacterDef" format=3]
+
+[ext_resource type="Script" path="res://actors/characters/character_def.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://actors/visuals/houndoom_visual.tscn" id="2_visual"]
+[ext_resource type="Resource" path="res://combat/attacks/houndoom/moveset.tres" id="3_moveset"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"houndoom"
+display_name = "Houndoom"
+role = "Cazador"
+description = "Perro infernal agresivo: persigue, muerde y quema. Frágil si lo frenan."
+color = Color(1, 0.4, 0.2, 1)
+visual = ExtResource("2_visual")
+moveset = ExtResource("3_moveset")
+stats = Dictionary[StringName, Variant]({
+&"max_health": 100,
+&"jog_speed": 5,
+&"sprint_speed": 8.6,
+&"strafe_speed": 3.6,
+&"max_poise": 9
+})
+body_radius = 0.55
+body_height = 1.6
+lock_height = 1.1
+rating_health = 3
+rating_speed = 5
+rating_power = 3
+rating_range = 3

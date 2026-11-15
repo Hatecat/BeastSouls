@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="AttackData" format=3]
+
+[ext_resource type="Script" path="res://combat/attack_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+display_name = "Taladro"
+action = &"skill_body"
+anim_speed = 0.971
+duration = 1.03
+active_start = 0.309
+active_end = 0.433
+combo_start = 0.567
+cancel_start = 0.67
+damage = 26
+poise_damage = 61.6
+guard_stamina_damage = 53.9
+stamina_cost = 24.0
+stagger_time = 0.7
+knockback = 5.0
+hitstop = 0.12
+hitbox_offset_start = Vector3(0, 1.65, -1.21)
+hitbox_offset_end = Vector3(0, 1.43, -1.595)
+hitbox_radius = 0.88
+lunge_speed = 4.5
+lunge_start = 0.206
+lunge_end = 0.391
+tracking = 4.0
+hyper_armor = 80
+heat_gain = 14.0

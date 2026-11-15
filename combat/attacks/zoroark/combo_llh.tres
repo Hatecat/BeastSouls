@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="AttackData" format=3]
+
+[ext_resource type="Script" path="res://combat/attack_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+display_name = "Tajo umbrío"
+action = &"skill_claw"
+anim_speed = 1.333
+duration = 0.75
+active_start = 0.225
+active_end = 0.315
+combo_start = 0.413
+cancel_start = 0.488
+damage = 22.1
+poise_damage = 34
+guard_stamina_damage = 29.8
+stamina_cost = 24.0
+stagger_time = 0.7
+knockback = 5.0
+hitstop = 0.12
+hitbox_offset_start = Vector3(0, 1.65, -1.21)
+hitbox_offset_end = Vector3(0, 1.43, -1.595)
+hitbox_radius = 0.88
+lunge_speed = 4.5
+lunge_start = 0.15
+lunge_end = 0.285
+tracking = 4.0
+hyper_armor = 40.0
+heat_gain = 14.0

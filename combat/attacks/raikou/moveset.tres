@@ -1,0 +1,38 @@
+[gd_resource type="Resource" script_class="Moveset" format=3]
+
+[ext_resource type="Script" path="res://combat/moveset.gd" id="1_script"]
+[ext_resource type="Script" path="res://combat/attack_data.gd" id="2_attack"]
+[ext_resource type="Script" path="res://combat/abilities/ability_data.gd" id="3_ability"]
+[ext_resource type="Resource" path="res://combat/abilities/raikou/thunderbolt.tres" id="ab0"]
+[ext_resource type="Resource" path="res://combat/abilities/raikou/charge_beam.tres" id="ab1"]
+[ext_resource type="Resource" path="res://combat/abilities/raikou/thunder.tres" id="ab2"]
+[ext_resource type="Resource" path="res://combat/abilities/raikou/charge.tres" id="ab3"]
+[ext_resource type="Resource" path="res://combat/abilities/raikou/wild_charge.tres" id="ab4"]
+[ext_resource type="Resource" path="res://combat/abilities/raikou/thunder_wave.tres" id="ab5"]
+[ext_resource type="Resource" path="res://combat/abilities/raikou/electro_ball.tres" id="ab6"]
+[ext_resource type="Resource" path="res://combat/abilities/raikou/extreme_speed.tres" id="ab7"]
+[ext_resource type="Resource" path="res://combat/abilities/raikou/spark.tres" id="ab8"]
+[ext_resource type="Resource" path="res://combat/abilities/raikou/electrify.tres" id="ab9"]
+[ext_resource type="Resource" path="res://combat/attacks/raikou/light_1.tres" id="light_1"]
+[ext_resource type="Resource" path="res://combat/attacks/raikou/light_2.tres" id="light_2"]
+[ext_resource type="Resource" path="res://combat/attacks/raikou/light_3.tres" id="light_3"]
+[ext_resource type="Resource" path="res://combat/attacks/raikou/heavy_1.tres" id="heavy_1"]
+[ext_resource type="Resource" path="res://combat/attacks/raikou/heavy_2.tres" id="heavy_2"]
+[ext_resource type="Resource" path="res://combat/attacks/raikou/running.tres" id="running"]
+[ext_resource type="Resource" path="res://combat/attacks/raikou/combo_lh.tres" id="combo_lh"]
+[ext_resource type="Resource" path="res://combat/attacks/raikou/combo_llh.tres" id="combo_llh"]
+[ext_resource type="Resource" path="res://combat/attacks/raikou/combo_lllh.tres" id="combo_lllh"]
+[ext_resource type="Resource" path="res://combat/attacks/raikou/combo_hl.tres" id="combo_hl"]
+
+[resource]
+script = ExtResource("1_script")
+light_combo = Array[ExtResource("2_attack")]([ExtResource("light_1"), ExtResource("light_2"), ExtResource("light_3")])
+heavy_combo = Array[ExtResource("2_attack")]([ExtResource("heavy_1"), ExtResource("heavy_2")])
+running_attack = ExtResource("running")
+combos = Dictionary[String, ExtResource("2_attack")]({
+"LH": ExtResource("combo_lh"),
+"LLH": ExtResource("combo_llh"),
+"LLLH": ExtResource("combo_lllh"),
+"HL": ExtResource("combo_hl")
+})
+abilities = Array[ExtResource("3_ability")]([ExtResource("ab0"), ExtResource("ab1"), ExtResource("ab2"), ExtResource("ab3"), ExtResource("ab4"), ExtResource("ab5"), ExtResource("ab6"), ExtResource("ab7"), ExtResource("ab8"), ExtResource("ab9")])

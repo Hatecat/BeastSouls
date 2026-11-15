@@ -1,0 +1,34 @@
+[gd_resource type="Resource" script_class="AttackData" format=3]
+
+[ext_resource type="Script" path="res://combat/attack_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+display_name = "Embestida"
+action = &"attack_heavy_1"
+anim_speed = 1.087
+duration = 0.92
+active_start = 0.276
+active_end = 0.386
+combo_start = 0.506
+cancel_start = 0.598
+damage = 23.9
+poise_damage = 36.8
+guard_stamina_damage = 32.2
+stamina_cost = 24.0
+stagger_time = 0.7
+knockback = 5.0
+hitstop = 0.12
+hitbox_offset_start = Vector3(0, 1.5, -1.1)
+hitbox_offset_end = Vector3(0, 1.3, -1.45)
+hitbox_radius = 0.8
+lunge_speed = 4.5
+lunge_start = 0.184
+lunge_end = 0.35
+tracking = 4.0
+hyper_armor = 40.0
+chargeable = true
+charge_point = 0.184
+max_charge = 0.8
+charge_multiplier = 1.35
+heat_gain = 14.0

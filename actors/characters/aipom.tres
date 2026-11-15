@@ -1,0 +1,31 @@
+[gd_resource type="Resource" script_class="CharacterDef" format=3]
+
+[ext_resource type="Script" path="res://actors/characters/character_def.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://actors/visuals/aipom_visual.tscn" id="2_visual"]
+[ext_resource type="Resource" path="res://combat/attacks/aipom/moveset.tres" id="3_moveset"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"aipom"
+display_name = "Aipom"
+role = "Travieso"
+description = "El más pequeño y escurridizo. Golpea con la cola, entra y sale; un par de golpes lo tumban."
+color = Color(0.75, 0.55, 1, 1)
+visual = ExtResource("2_visual")
+moveset = ExtResource("3_moveset")
+stats = Dictionary[StringName, Variant]({
+&"max_health": 85,
+&"jog_speed": 5.4,
+&"sprint_speed": 8.8,
+&"strafe_speed": 3.9,
+&"max_poise": 5,
+&"max_stamina": 115,
+&"dodge_distance": 5.2
+})
+body_radius = 0.4
+body_height = 1.2
+lock_height = 0.8
+rating_health = 2
+rating_speed = 5
+rating_power = 2
+rating_range = 2

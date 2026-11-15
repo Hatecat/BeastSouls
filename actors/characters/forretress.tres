@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="CharacterDef" format=3]
+
+[ext_resource type="Script" path="res://actors/characters/character_def.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://actors/visuals/forretress_visual.tscn" id="2_visual"]
+[ext_resource type="Resource" path="res://combat/attacks/forretress/moveset.tres" id="3_moveset"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"forretress"
+display_name = "Forretress"
+role = "Fortaleza"
+description = "Una bola blindada: nada la interrumpe y explota. Lentísima y sin alcance fuera de sus embestidas."
+color = Color(0.75, 0.8, 0.9, 1)
+visual = ExtResource("2_visual")
+moveset = ExtResource("3_moveset")
+stats = Dictionary[StringName, Variant]({
+&"max_health": 150,
+&"jog_speed": 3.5,
+&"sprint_speed": 6,
+&"strafe_speed": 2.5,
+&"max_poise": 40,
+&"max_stamina": 120,
+&"dodge_distance": 3.6,
+&"turn_speed": 9,
+&"walk_anim_speed": 2
+})
+body_radius = 0.75
+body_height = 1.4
+lock_height = 0.8
+rating_health = 5
+rating_speed = 1
+rating_power = 4
+rating_range = 2

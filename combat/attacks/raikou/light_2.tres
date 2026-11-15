@@ -1,0 +1,28 @@
+[gd_resource type="Resource" script_class="AttackData" format=3]
+
+[ext_resource type="Script" path="res://combat/attack_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+display_name = "Colmillo rayo"
+action = &"attack_light_2"
+anim_speed = 1.421
+duration = 0.646
+active_start = 0.19
+active_end = 0.304
+combo_start = 0.285
+cancel_start = 0.38
+damage = 12
+poise_damage = 15
+guard_stamina_damage = 18
+stamina_cost = 14.0
+stagger_time = 0.45
+knockback = 2.5
+hitstop = 0.07
+hitbox_offset_start = Vector3(0.46, 1.265, -1.15)
+hitbox_offset_end = Vector3(0, 1.265, -1.5525)
+hitbox_radius = 0.86
+lunge_speed = 3.5
+lunge_start = 0.076
+lunge_end = 0.247
+tracking = 6.0

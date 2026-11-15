@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="AttackData" format=3]
+
+[ext_resource type="Script" path="res://combat/attack_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+display_name = "Patada doble"
+action = &"skill_kick"
+anim_speed = 1.299
+duration = 0.809
+active_start = 0.277
+active_end = 0.385
+combo_start = 0.501
+cancel_start = 0.539
+damage = 22.7
+poise_damage = 36.5
+guard_stamina_damage = 32.4
+stamina_cost = 26.0
+stagger_time = 0.8
+knockback = 6.0
+hitstop = 0.12
+hitbox_offset_start = Vector3(0, 1.045, -0.95)
+hitbox_offset_end = Vector3(0, 1.045, -1.235)
+hitbox_radius = 0.85
+lunge_speed = 6.0
+lunge_start = 0.193
+lunge_end = 0.347
+tracking = 4.0
+hyper_armor = 40.0
+heat_gain = 14.0

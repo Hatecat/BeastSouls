@@ -1,0 +1,40 @@
+[gd_resource type="Resource" script_class="ProjectileAbility" format=3]
+
+[ext_resource type="Script" path="res://combat/abilities/projectile_ability.gd" id="1_script"]
+[ext_resource type="Script" path="res://combat/attack_data.gd" id="2_attack"]
+
+[sub_resource type="Resource" id="hit"]
+script = ExtResource("2_attack")
+display_name = "Pulso oscuro"
+damage = 7
+poise_damage = 9.8
+guard_stamina_damage = 7.7
+stamina_cost = 0
+stagger_time = 0.2
+knockback = 1
+hitstop = 0.05
+heat_gain = 0
+
+[resource]
+script = ExtResource("1_script")
+hit = SubResource("hit")
+display_name = "Pulso oscuro"
+color = Color(0.55, 0.3, 0.7, 1)
+action = &"skill_shot"
+anim_speed = 1.7
+heat_cost = 22
+cooldown = 5
+duration = 1
+cancel_start = 0.85
+tracking = 6
+track_until = 0.7
+spawn_time = 0.26
+spawn_offset = Vector3(0, 1.1, -1)
+speed = 16
+radius = 0.32
+lifetime = 2.8
+homing = 3.2
+explode_radius = 0
+visual_scale = 0.55
+count = 3
+interval = 0.16

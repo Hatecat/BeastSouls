@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="AttackData" format=3]
+
+[ext_resource type="Script" path="res://combat/attack_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+display_name = "Púa"
+action = &"skill_body"
+anim_speed = 1.262
+duration = 0.927
+active_start = 0.309
+active_end = 0.464
+combo_start = 0.515
+cancel_start = 0.567
+damage = 18
+poise_damage = 38.5
+guard_stamina_damage = 38.5
+stamina_cost = 18.0
+stagger_time = 0.6
+knockback = 4.0
+hitstop = 0.09
+hitbox_offset_start = Vector3(0, 1.1, -0.66)
+hitbox_offset_end = Vector3(0, 1.1, -0.66)
+hitbox_radius = 1.65
+lunge_speed = 2.0
+lunge_start = 0.103
+lunge_end = 0.309
+tracking = 5.0
+heat_gain = 10.0
+hyper_armor = 30

@@ -2,7 +2,8 @@
 
 Souls-like 3D en tercera persona con versus online 1v1. Godot 4.7.2, Forward+, Jolt Physics, todo en GDScript.
 Los modelos de `assets/models/placeholder/` (Charizard, Scyther, Gengar, Snorlax, Beedrill, Vaporeon, Machop,
-Poliwrath, Golem, Mewtwo, Ninetales, Mr. Mime, sacados de poke-tactics) son TEMPORALES y de uso privado: no se distribuyen. Se sustituirán por personajes propios.
+Poliwrath, Golem, Mewtwo, Ninetales, Mr. Mime, sacados de poke-tactics; Feraligatr, Bayleef, Forretress, Aipom,
+Hitmontop, Houndoom, Raikou, Blaziken, Lucario, Zoroark, de ~/Documentos/modelos-desc/regular/<nº pokédex>.glb) son TEMPORALES y de uso privado: no se distribuyen. Se sustituirán por personajes propios.
 
 ## Comandos
 
@@ -14,6 +15,7 @@ $G --path . -- --host --nick=A --latency=60       # alojar (otra ventana: -- --j
                                                   # --char=ID --autoready: el selector elige y se marca listo solo
 python3 tools/gen_characters.py                   # regenerar kits de los personajes provisionales
 python3 tools/new_character.py --id=ID --model=X.glb   # personaje nuevo desde un modelo (docs/NUEVO_PERSONAJE.md)
+python3 tools/animate_models.py lucario:448 forretress:205:generic   # animar un rip sin clips (Blender + poke-tactics)
 python3 tools/gen_textures.py                     # regenerar texturas procedurales del coliseo (numpy + Pillow)
 python3 tools/gen_character_textures.py            # regenerar el microdetalle de piel de los personajes
 python3 tools/gen_music.py                        # regenerar música y ambiente (numpy + ffmpeg/libvorbis)
@@ -82,6 +84,13 @@ usar `root.get_node("Net")`. Red: lanzar dos instancias (`-- --host` / `-- --joi
   `EXTRA_KITS` y sus visuales usan acciones comunes (`skill_shot/roar/boost/cast/punch/kick/body/claw/tail/mind`),
   que también usan los remates de combo para no repetir el clip de la cadena. Mewtwo trae otro juego de clips
   (`pm0150_…`, largos): guardia = `rangeattack02_start` con `block_pose` 0.9 en sus `stats`.
+  Tercera tanda (Feraligatr … Zoroark): los rips de modelos-desc vienen SIN animaciones (salvo Feraligatr, que
+  trae los clips `pm0160_…`) y tres sin esqueleto (Aipom, Hitmontop, Forretress). `tools/animate_models.py` los
+  pasa por las herramientas de Blender de poke-tactics (setup_animations → animate_pokemon/animate_generic →
+  animate_status → export) en una carpeta temporal y deja el .glb con clips `fight_b_*`/`fight_d_*`;
+  `tools/rig_templates_extra.py` lleva los esqueletos de plantilla (la cabeza de Hitmontop va fijada entera a
+  `Head` con `_props`). Forretress tiene un solo hueso: todos sus ataques usan `fight_b`. Sus kits se escriben
+  con los preajustes `_MULTI`, `_BIG`, `_MELEE`, `_QUICK` y `_stun()` del generador.
   `Roster` carga los de `PATHS` y después cualquier otro `.tres` de la carpeta. `tools/new_character.py` crea un
   personaje desde un .glb: lo importa, lee clips y huesos (`tools/inspect_model.gd`), adivina `action_map` y
   sockets, y genera visual, kit por arquetipo (acciones `skill_1..4`) y CharacterDef. Guía: docs/NUEVO_PERSONAJE.md.

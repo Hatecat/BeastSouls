@@ -1,0 +1,28 @@
+[gd_resource type="Resource" script_class="AttackData" format=3]
+
+[ext_resource type="Script" path="res://combat/attack_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+display_name = "Coletazo"
+action = &"attack_light_2"
+anim_speed = 1.731
+duration = 0.53
+active_start = 0.156
+active_end = 0.25
+combo_start = 0.234
+cancel_start = 0.312
+damage = 9.6
+poise_damage = 12
+guard_stamina_damage = 14.4
+stamina_cost = 14.0
+stagger_time = 0.45
+knockback = 2.5
+hitstop = 0.07
+hitbox_offset_start = Vector3(0.36, 0.99, -0.9)
+hitbox_offset_end = Vector3(0, 0.99, -1.215)
+hitbox_radius = 0.68
+lunge_speed = 3.5
+lunge_start = 0.062
+lunge_end = 0.203
+tracking = 6.0

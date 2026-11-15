@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="AttackData" format=3]
+
+[ext_resource type="Script" path="res://combat/attack_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+display_name = "Zarpa traidora"
+action = &"skill_punch"
+anim_speed = 1.806
+duration = 0.648
+active_start = 0.216
+active_end = 0.324
+combo_start = 0.36
+cancel_start = 0.396
+damage = 16.2
+poise_damage = 22.5
+guard_stamina_damage = 22.5
+stamina_cost = 18.0
+stagger_time = 0.6
+knockback = 4.0
+hitstop = 0.09
+hitbox_offset_start = Vector3(0, 1.1, -0.66)
+hitbox_offset_end = Vector3(0, 1.1, -0.66)
+hitbox_radius = 1.65
+lunge_speed = 2.0
+lunge_start = 0.072
+lunge_end = 0.216
+tracking = 5.0
+heat_gain = 10.0

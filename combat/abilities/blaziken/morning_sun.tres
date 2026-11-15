@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="BuffAbility" format=3]
+
+[ext_resource type="Script" path="res://combat/abilities/buff_ability.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+display_name = "Sol matinal"
+color = Color(1, 0.95, 0.7, 1)
+action = &"skill_cast"
+heat_cost = 50
+cooldown = 24
+duration = 1.2
+cancel_start = 0.95
+tracking = 0
+track_until = 0
+buff_id = &"morning_sun"
+trigger_time = 0.45
+buff_duration = 6
+damage_multiplier = 1
+speed_multiplier = 0.85
+action_speed_multiplier = 1
+heal = 0.22

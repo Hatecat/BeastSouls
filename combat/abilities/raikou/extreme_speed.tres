@@ -1,0 +1,35 @@
+[gd_resource type="Resource" script_class="DashAbility" format=3]
+
+[ext_resource type="Script" path="res://combat/abilities/dash_ability.gd" id="1_script"]
+[ext_resource type="Script" path="res://combat/attack_data.gd" id="2_attack"]
+
+[sub_resource type="Resource" id="hit"]
+script = ExtResource("2_attack")
+display_name = "Velocidad extrema"
+damage = 12
+poise_damage = 18
+guard_stamina_damage = 18
+stamina_cost = 0
+stagger_time = 0.6
+knockback = 3
+hitstop = 0.09
+heat_gain = 0
+
+[resource]
+script = ExtResource("1_script")
+hit = SubResource("hit")
+display_name = "Velocidad extrema"
+color = Color(1, 1, 0.8, 1)
+action = &"skill_body"
+heat_cost = 20
+cooldown = 5
+duration = 0.6
+cancel_start = 0.45
+tracking = 7
+track_until = 0.2
+dash_start = 0.08
+dash_end = 0.3
+radius = 1.4
+offset = Vector3(0, 1.1, -1.1)
+anim_speed = 1.6
+dash_speed = 50

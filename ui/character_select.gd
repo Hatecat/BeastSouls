@@ -12,7 +12,7 @@ var _is_ready := false
 var _selected: CharacterDef
 
 var _title: Label
-var _list: VBoxContainer
+var _list: GridContainer
 var _buttons: Dictionary[StringName, Button] = {}
 var _name: Label
 var _role: Label
@@ -94,10 +94,18 @@ func _build() -> void:
 	root.add_child(main)
 
 	# Lista de personajes.
-	_list = VBoxContainer.new()
-	_list.custom_minimum_size.x = 300
-	_list.add_theme_constant_override("separation", 8)
-	main.add_child(_list)
+	# Dos columnas con desplazamiento: el plantel ya no cabe en una sola.
+	var list_scroll := ScrollContainer.new()
+	list_scroll.custom_minimum_size.x = 372
+	list_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	list_scroll.follow_focus = true
+	main.add_child(list_scroll)
+	_list = GridContainer.new()
+	_list.columns = 2
+	_list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_list.add_theme_constant_override("h_separation", 6)
+	_list.add_theme_constant_override("v_separation", 6)
+	list_scroll.add_child(_list)
 	var group := ButtonGroup.new()
 	for def in Roster.all():
 		var b := Button.new()
@@ -105,8 +113,10 @@ func _build() -> void:
 		b.toggle_mode = true
 		b.button_group = group
 		b.alignment = HORIZONTAL_ALIGNMENT_LEFT
-		b.custom_minimum_size.y = 64
-		b.add_theme_font_size_override("font_size", 18)
+		b.custom_minimum_size = Vector2(176, 54)
+		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		b.clip_text = true
+		b.add_theme_font_size_override("font_size", 15)
 		for st in ["normal", "hover", "pressed", "focus", "hover_pressed", "disabled"]:
 			b.add_theme_stylebox_override(st, _card_style(def.color, st))
 		b.pressed.connect(_on_pick.bind(def))

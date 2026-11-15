@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="AttackData" format=3]
+
+[ext_resource type="Script" path="res://combat/attack_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+display_name = "Barrido"
+action = &"skill_tail"
+anim_speed = 1.688
+duration = 0.693
+active_start = 0.231
+active_end = 0.347
+combo_start = 0.385
+cancel_start = 0.424
+damage = 15.3
+poise_damage = 21.2
+guard_stamina_damage = 21.2
+stamina_cost = 18.0
+stagger_time = 0.6
+knockback = 6
+hitstop = 0.09
+hitbox_offset_start = Vector3(0, 0.95, -0.57)
+hitbox_offset_end = Vector3(0, 0.95, -0.57)
+hitbox_radius = 1.42
+lunge_speed = 2.0
+lunge_start = 0.077
+lunge_end = 0.231
+tracking = 5.0
+heat_gain = 10.0

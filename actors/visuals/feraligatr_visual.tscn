@@ -1,0 +1,52 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://actors/visuals/character_visual.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://assets/models/placeholder/feraligatr.glb" id="2_model"]
+
+[node name="FeraligatrVisual" type="Node3D"]
+script = ExtResource("1_script")
+model_scene = ExtResource("2_model")
+target_height = 2.3
+surface = &"scales"
+spring_patterns = PackedStringArray("tail_", "tongue")
+action_map = Dictionary[StringName, StringName]({
+&"attack_heavy_1": &"pm0160_00_00_00422_attack03_end",
+&"attack_heavy_2": &"pm0160_00_00_00490_charge01",
+&"attack_light_1": &"pm0160_00_00_00400_attack01",
+&"attack_light_2": &"pm0160_00_00_00422_attack03_end",
+&"attack_light_3": &"pm0160_00_00_00400_attack01",
+&"attack_running": &"pm0160_00_00_00400_attack01",
+&"block": &"pm0160_00_00_00460_rangeattack02_start",
+&"death": &"pm0160_00_00_00520_down01_start",
+&"dodge": &"pm0160_00_00_00146_stepout01",
+&"hit": &"pm0160_00_00_00500_damage01",
+&"idle": &"pm0160_00_00_00001_battlewait01",
+&"jump": &"pm0160_00_00_00151_jumpup01",
+&"run": &"pm0160_00_00_00100_run01",
+&"skill_bite": &"pm0160_00_00_00400_attack01",
+&"skill_body": &"pm0160_00_00_00490_charge01",
+&"skill_boost": &"pm0160_00_00_00320_refresh01",
+&"skill_cast": &"pm0160_00_00_00460_rangeattack02_start",
+&"skill_claw": &"pm0160_00_00_00400_attack01",
+&"skill_horn": &"pm0160_00_00_00490_charge01",
+&"skill_kick": &"pm0160_00_00_00422_attack03_end",
+&"skill_mind": &"pm0160_00_00_00460_rangeattack02_start",
+&"skill_punch": &"pm0160_00_00_00400_attack01",
+&"skill_roar": &"pm0160_00_00_00300_roar01",
+&"skill_shot": &"pm0160_00_00_00450_rangeattack01",
+&"skill_tail": &"pm0160_00_00_00422_attack03_end",
+&"walk": &"pm0160_00_00_00030_walk01"
+})
+action_speed = Dictionary[StringName, float]({
+&"dodge": 0.5
+})
+sockets = Dictionary[StringName, StringName]({
+&"chest": &"spine_01_94",
+&"foot_l": &"left_foot_96",
+&"foot_r": &"right_foot_100",
+&"hand_l": &"left_hand_81",
+&"hand_r": &"right_hand_89",
+&"head": &"head_75",
+&"mouth": &"jaw_2",
+&"tail_tip": &"tail_04_103"
+})

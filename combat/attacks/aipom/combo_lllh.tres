@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="AttackData" format=3]
+
+[ext_resource type="Script" path="res://combat/attack_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+display_name = "Mano cola"
+action = &"skill_tail"
+anim_speed = 1.282
+duration = 0.78
+active_start = 0.234
+active_end = 0.328
+combo_start = 0.429
+cancel_start = 0.507
+damage = 26
+poise_damage = 40
+guard_stamina_damage = 35
+stamina_cost = 24.0
+stagger_time = 0.7
+knockback = 8
+hitstop = 0.12
+hitbox_offset_start = Vector3(0, 1.35, -0.99)
+hitbox_offset_end = Vector3(0, 1.17, -1.305)
+hitbox_radius = 0.72
+lunge_speed = 4.5
+lunge_start = 0.156
+lunge_end = 0.296
+tracking = 4.0
+hyper_armor = 40.0
+heat_gain = 14.0

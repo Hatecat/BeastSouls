@@ -1,0 +1,41 @@
+[gd_resource type="Resource" script_class="ProjectileAbility" format=3]
+
+[ext_resource type="Script" path="res://combat/abilities/projectile_ability.gd" id="1_script"]
+[ext_resource type="Script" path="res://combat/attack_data.gd" id="2_attack"]
+
+[sub_resource type="Resource" id="hit"]
+script = ExtResource("2_attack")
+display_name = "Púas"
+damage = 8
+poise_damage = 11.2
+guard_stamina_damage = 8.8
+stamina_cost = 0
+stagger_time = 0.2
+knockback = 1
+hitstop = 0.05
+heat_gain = 0
+
+[resource]
+script = ExtResource("1_script")
+hit = SubResource("hit")
+display_name = "Púas"
+color = Color(0.75, 0.8, 0.9, 1)
+action = &"skill_shot"
+anim_speed = 1.7
+heat_cost = 20
+cooldown = 4
+duration = 1
+cancel_start = 0.85
+tracking = 6
+track_until = 0.7
+spawn_time = 0.26
+spawn_offset = Vector3(0, 0.8, -1)
+speed = 24
+radius = 0.32
+lifetime = 2.2
+homing = 1.2
+explode_radius = 0
+visual_scale = 0.55
+count = 3
+interval = 0.13
+interruptible = false

@@ -1,0 +1,28 @@
+[gd_resource type="Resource" script_class="AttackData" format=3]
+
+[ext_resource type="Script" path="res://combat/attack_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+display_name = "Directo"
+action = &"skill_punch"
+anim_speed = 1.875
+duration = 0.518
+active_start = 0.187
+active_end = 0.274
+combo_start = 0.259
+cancel_start = 0.324
+damage = 11.4
+poise_damage = 14.2
+guard_stamina_damage = 17.1
+stamina_cost = 14.0
+stagger_time = 0.45
+knockback = 2.5
+hitstop = 0.07
+hitbox_offset_start = Vector3(0.665, 1.14, -0.76)
+hitbox_offset_end = Vector3(-0.57, 1.045, -1.045)
+hitbox_radius = 0.71
+lunge_speed = 7
+lunge_start = 0.086
+lunge_end = 0.23
+tracking = 6.0
