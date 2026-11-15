@@ -18,7 +18,7 @@ static func rows() -> Array:
 		["Ataque ligero", _k("attack_light"), "RB / R1",
 			"Combo de hasta 3 golpes: vuelve a pulsar cuando conecte el anterior. Rápido, pero cualquier golpe que recibas lo corta."],
 		["Ataque fuerte", _k("attack_heavy"), "RT / R2",
-			"Combo de 2 golpes lentos con armadura: aguanta golpes flojos sin cortarse. Mantén pulsado para cargarlo (más daño)."],
+			"Combo de 2 golpes lentos con armadura: aguanta golpes flojos sin cortarse. Mantén pulsado para cargarlo (más daño). Mezclar ligeros y fuertes saca remates propios de cada personaje (lista en el selector)."],
 		["Ataque en carrera", "%s mientras corres" % _k("attack_light"), "RB mientras corres", "Embestida rápida para cerrar distancia."],
 		["Bloquear", "%s (mantener)" % _k("block"), "LB / L1 (mantener)",
 			"Para los golpes a cambio de estamina. Sin estamina te rompen la guardia y quedas aturdido."],

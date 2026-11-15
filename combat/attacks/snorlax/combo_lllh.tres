@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="AttackData" format=3]
+
+[ext_resource type="Script" path="res://combat/attack_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+display_name = "Mazazo"
+action = &"attack_heavy_1"
+anim_speed = 0.87
+duration = 1.15
+active_start = 0.345
+active_end = 0.483
+combo_start = 0.632
+cancel_start = 0.747
+damage = 31.2
+poise_damage = 64
+guard_stamina_damage = 56
+stamina_cost = 24.0
+stagger_time = 0.7
+knockback = 5.0
+hitstop = 0.12
+hitbox_offset_start = Vector3(0, 1.95, -1.43)
+hitbox_offset_end = Vector3(0, 1.69, -1.885)
+hitbox_radius = 1.04
+lunge_speed = 4.5
+lunge_start = 0.23
+lunge_end = 0.437
+tracking = 4.0
+hyper_armor = 80
+heat_gain = 14.0

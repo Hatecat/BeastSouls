@@ -121,6 +121,10 @@ usar `root.get_node("Net")`. Red: lanzar dos instancias (`-- --host` / `-- --joi
   `ui_cancel` (Godot no los trae): todos los menús se manejan con mando (foco inicial con `grab_focus`).
 - `combat/` — `AttackData` (tiempos activo/combo/cancelación, daño, postura, hitbox local que barre de start a
   end, embestida, seguimiento, hiper armadura, carga) y `Moveset` (combo ligero, combo fuerte, ataque corriendo).
+  Combos mixtos: `Moveset.combos` ("LH", "LLH", "LLLH", "HL" → AttackData; L ligero, H fuerte). `Beast._combo_seq`
+  guarda los botones de la cadena; si la secuencia está en `combos` sale ese ataque y la cadena vuelve a empezar.
+  Los genera `make_combo` en `tools/gen_characters.py` (`combo_<sec>.tres`, también los de Charizard) y el
+  selector los lista. Van al final de `all_attacks()` (índices de red).
   Los de Charizard están en `combat/attacks/charizard/*.tres` (se editan en el inspector; F1 en la arena muestra
   las hitboxes). Hitboxes = consulta de esfera en el tick contra las `Hurtbox` (Area3D, capa 4): deterministas,
   no dependen de los huesos. `HitFx`: chispas y destello (solo presentación).

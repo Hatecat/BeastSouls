@@ -56,7 +56,9 @@ def props_text(p):
     return "".join(f"{k} = {v}\n" for k, v in p.items())
 
 
-def make_attack(template, name, t=1.0, dmg=1.0, reach=1.0, extra=None):
+def make_attack(template, name, t=1.0, dmg=1.0, reach=1.0, extra=None, poise=None):
+    # poise: escala de postura y desgaste de guardia (por defecto, la misma que el daño).
+    poise = dmg if poise is None else poise
     p = dict(read_props(f"combat/attacks/charizard/{template}.tres"))
     p["display_name"] = f'"{name}"'
     for k in TIME_KEYS:
@@ -65,7 +67,7 @@ def make_attack(template, name, t=1.0, dmg=1.0, reach=1.0, extra=None):
     p["anim_speed"] = "%g" % round(num(p.get("anim_speed", "1")) / t, 3)
     for k in ["damage", "poise_damage", "guard_stamina_damage"]:
         if k in p:
-            p[k] = "%g" % round(num(p[k]) * dmg, 1)
+            p[k] = "%g" % round(num(p[k]) * (dmg if k == "damage" else poise), 1)
     for k in ["hitbox_offset_start", "hitbox_offset_end"]:
         if k in p:
             x, y, z = vec(p[k])
@@ -74,6 +76,17 @@ def make_attack(template, name, t=1.0, dmg=1.0, reach=1.0, extra=None):
         p["hitbox_radius"] = "%g" % round(num(p["hitbox_radius"]) * reach, 2)
     for k, v in (extra or {}).items():
         p[k] = v if isinstance(v, str) else "%g" % v
+    return p
+
+
+def make_combo(template, name, action=None, **kw):
+    """Ataque de combo mixto (Moveset.combos): como make_attack, pero nunca cargable y con la animación que se pida."""
+    extra = dict(kw.pop("extra", None) or {})
+    p = make_attack(template, name, extra=extra, **kw)
+    for k in ["chargeable", "charge_point", "max_charge", "charge_multiplier"]:
+        p.pop(k, None)
+    if action:
+        p["action"] = f'&"{action}"'
     return p
 
 
@@ -118,7 +131,7 @@ def make_ability(cid, file, kind, name, col, action, hit=None, **kw):
     return f"res://combat/abilities/{cid}/{file}.tres"
 
 
-def make_moveset(cid, attacks, abilities):
+def make_moveset(cid, attacks, abilities, combos=None):
     """`abilities`: las 4 por defecto (ranuras 1 distancia, 2 cerca, 3 área, 4 mejora). Se completa el catálogo
     hasta 10 con las de EXTRA_KITS[cid] si existen."""
     abilities = list(abilities) + [f(cid) for f in EXTRA_KITS.get(cid, [])]
@@ -128,13 +141,22 @@ def make_moveset(cid, attacks, abilities):
         ext.append(f'[ext_resource type="Resource" path="{a}" id="ab{i}"]')
     for k in ["light_1", "light_2", "light_3", "heavy_1", "heavy_2", "running"]:
         ext.append(f'[ext_resource type="Resource" path="res://combat/attacks/{cid}/{k}.tres" id="{k}"]')
+    combos = combos or {}
+    for seq in combos:
+        ext.append(f'[ext_resource type="Resource" path="res://combat/attacks/{cid}/combo_{seq.lower()}.tres" id="combo_{seq.lower()}"]')
+    combo_body = ""
+    if combos:
+        combo_body = 'combos = Dictionary[String, ExtResource("2_attack")]({\n%s\n})\n' % ",\n".join(
+            f'"{seq}": ExtResource("combo_{seq.lower()}")' for seq in combos)
     body = ('light_combo = Array[ExtResource("2_attack")]([ExtResource("light_1"), ExtResource("light_2"), ExtResource("light_3")])\n'
             'heavy_combo = Array[ExtResource("2_attack")]([ExtResource("heavy_1"), ExtResource("heavy_2")])\n'
-            'running_attack = ExtResource("running")\n'
+            'running_attack = ExtResource("running")\n' + combo_body +
             'abilities = Array[ExtResource("3_ability")]([%s])\n' % ", ".join(f'ExtResource("ab{i}")' for i in range(len(abilities))))
     write(f"combat/attacks/{cid}/moveset.tres", "\n".join(ext) + "\n", body, "res://combat/moveset.gd", "Moveset")
     for k, p in attacks.items():
         write(f"combat/attacks/{cid}/{k}.tres", "", props_text(p))
+    for seq, p in combos.items():
+        write(f"combat/attacks/{cid}/combo_{seq.lower()}.tres", "", props_text(p))
 
 
 def make_def(cid, name, role, desc, col, stats, body, ratings):
@@ -323,7 +345,12 @@ def main():
              (1.0, 0.55, 0.2), {}, (0.55, 2.0, 1.3), (3, 3, 3, 4))
     # Su moveset reutiliza los ataques y las 4 habilidades hechas a mano; solo se añaden las extra del catálogo.
     make_moveset("charizard", {}, [f"res://combat/abilities/charizard/{n}.tres"
-                                   for n in ["fireball", "flamethrower", "roar", "dragon_dance"]])
+                                   for n in ["fireball", "flamethrower", "roar", "dragon_dance"]], {
+        "LH": make_combo("running", "Cabezazo", dmg=0.8, extra={"lunge_speed": 6, "knockback": 7}),
+        "LLH": make_combo("heavy_1", "Garra dragón", t=0.85, dmg=1.0, extra={"burn_time": 2.0}),
+        "LLLH": make_combo("heavy_2", "Picado", t=0.9, dmg=1.05),
+        "HL": make_combo("light_3", "Coletazo de remate", t=0.9, dmg=1.0),
+    })
 
     # Scyther: rápido, frágil, combos cortos.
     G = (0.55, 1.0, 0.4)
@@ -353,10 +380,15 @@ def main():
                      heat_cost=45, cooldown=20, duration=1.1, cancel_start=0.9, tracking=0, track_until=0,
                      buff_id='&"danza_espadas"', trigger_time=0.4, buff_duration=8, damage_multiplier=1.4,
                      speed_multiplier=1.0, action_speed_multiplier=1.05),
-    ])
+    ], {
+        "LH": make_combo("running", "Tajo relámpago", t=0.75, dmg=0.75, extra={"lunge_speed": 11}),
+        "LLH": make_combo("heavy_2", "Corte doble", t=0.7, dmg=0.8, reach=1.15),
+        "LLLH": make_combo("heavy_1", "Ejecución", t=0.8, dmg=1.0, poise=1.2, reach=1.15),
+        "HL": make_combo("light_3", "Contratajo", t=0.7, dmg=0.9, reach=0.9),
+    })
     make_def("scyther", "Scyther", "Asesino veloz",
              "Cuchillas rapidísimas y gran movilidad, pero poca vida y postura. Golpea y sal.",
-             G, {"max_health": 85.0, "jog_speed": 5.2, "sprint_speed": 8.6, "strafe_speed": 3.8, "max_poise": 5.0,
+             G, {"max_health": 95.0, "jog_speed": 5.2, "sprint_speed": 8.6, "strafe_speed": 3.8, "max_poise": 5.0,
                  "max_stamina": 110.0, "dodge_distance": 5.2},
              (0.5, 2.0, 1.3), (2, 5, 3, 2))
 
@@ -388,7 +420,12 @@ def main():
                      heat_cost=50, cooldown=20, duration=1.3, cancel_start=1.0, tracking=0, track_until=0,
                      buff_id='&"maquinacion"', trigger_time=0.5, buff_duration=10, damage_multiplier=1.35,
                      speed_multiplier=1.1, action_speed_multiplier=1.15),
-    ])
+    ], {
+        "LH": make_combo("light_3", "Zarpazo espectral", t=0.9, dmg=1.0, extra={"heat_gain": 14}),
+        "LLH": make_combo("heavy_2", "Doble puño sombra", t=0.9, dmg=0.95, extra={"heat_gain": 20}),
+        "LLLH": make_combo("heavy_1", "Garra umbría", t=0.9, dmg=1.05, extra={"knockback": 7}),
+        "HL": make_combo("running", "Finta sombría", t=0.9, dmg=0.8, extra={"lunge_speed": 9}),
+    })
     make_def("gengar", "Gengar", "Embaucador",
              "Esquivas largas con mucha invulnerabilidad. Proyectiles teledirigidos e hipnosis que aturde.",
              P, {"max_health": 95.0, "jog_speed": 4.6, "max_poise": 8.0, "dodge_distance": 5.5,
@@ -399,12 +436,12 @@ def main():
     N = (1.0, 0.92, 0.65)
     E_ = (0.75, 0.55, 0.3)
     make_moveset("snorlax", {
-        "light_1": make_attack("light_1", "Manotazo", t=1.15, dmg=1.3, reach=1.25, extra={"hyper_armor": 20}),
-        "light_2": make_attack("light_2", "Pisotón", t=1.15, dmg=1.3, reach=1.25, extra={"hyper_armor": 20}),
-        "light_3": make_attack("light_3", "Panzazo", t=1.15, dmg=1.3, reach=1.25, extra={"hyper_armor": 30}),
-        "heavy_1": make_attack("heavy_1", "Golpe cuerpo", t=1.2, dmg=1.35, reach=1.3, extra={"hyper_armor": 80}),
-        "heavy_2": make_attack("heavy_2", "Mordisco voraz", t=1.2, dmg=1.35, reach=1.3, extra={"hyper_armor": 80}),
-        "running": make_attack("running", "Avalancha", t=1.1, dmg=1.3, reach=1.25, extra={"hyper_armor": 60}),
+        "light_1": make_attack("light_1", "Manotazo", t=1.15, dmg=1.1, poise=1.3, reach=1.25, extra={"hyper_armor": 20}),
+        "light_2": make_attack("light_2", "Pisotón", t=1.15, dmg=1.1, poise=1.3, reach=1.25, extra={"hyper_armor": 20}),
+        "light_3": make_attack("light_3", "Panzazo", t=1.15, dmg=1.1, poise=1.3, reach=1.25, extra={"hyper_armor": 30}),
+        "heavy_1": make_attack("heavy_1", "Golpe cuerpo", t=1.2, dmg=1.15, poise=1.35, reach=1.3, extra={"hyper_armor": 80}),
+        "heavy_2": make_attack("heavy_2", "Mordisco voraz", t=1.2, dmg=1.15, poise=1.35, reach=1.3, extra={"hyper_armor": 80}),
+        "running": make_attack("running", "Avalancha", t=1.1, dmg=1.1, poise=1.3, reach=1.25, extra={"hyper_armor": 60}),
     }, [
         make_ability("snorlax", "hyper_beam", "channel", "Hiperrayo", N, "skill_hyper_beam",
                      hit=dict(damage=4.5, poise_damage=8, guard_stamina_damage=10, stagger_time=0.35, knockback=1.2),
@@ -423,7 +460,12 @@ def main():
                      interruptible=False, heat_cost=60, cooldown=30, duration=1.6, cancel_start=1.4, tracking=0, track_until=0,
                      buff_id='&"descanso"', trigger_time=0.6, buff_duration=4, damage_multiplier=1.0,
                      speed_multiplier=0.6, action_speed_multiplier=0.85, heal=0.35),
-    ])
+    ], {
+        "LH": make_combo("running", "Empujón", t=1.0, dmg=0.9, poise=1.3, reach=1.25, extra={"hyper_armor": 40, "knockback": 9}),
+        "LLH": make_combo("heavy_2", "Plancha", t=1.05, dmg=1.1, poise=1.5, reach=1.3, extra={"hyper_armor": 80, "knockback": 8}),
+        "LLLH": make_combo("heavy_1", "Mazazo", t=1.15, dmg=1.2, poise=1.6, reach=1.3, extra={"hyper_armor": 80}),
+        "HL": make_combo("light_3", "Bofetón", t=1.0, dmg=1.1, poise=1.3, reach=1.25, extra={"hyper_armor": 30}),
+    })
     make_def("snorlax", "Snorlax", "Tanque",
              "Enorme y lento. Mucha vida y armadura en casi todos sus golpes; el Terremoto no se puede bloquear.",
              N, {"max_health": 150.0, "jog_speed": 3.6, "sprint_speed": 6.0, "strafe_speed": 2.6, "max_poise": 30.0,
@@ -459,10 +501,15 @@ def main():
                      heat_cost=40, cooldown=18, duration=0.9, cancel_start=0.7, tracking=0, track_until=0,
                      buff_id='&"agilidad"', trigger_time=0.3, buff_duration=8, damage_multiplier=1.0,
                      speed_multiplier=1.4, action_speed_multiplier=1.2),
-    ])
+    ], {
+        "LH": make_combo("running", "Pin misil", t=0.8, dmg=0.75, extra={"lunge_speed": 10, "burn_time": 2.0}),
+        "LLH": make_combo("heavy_1", "Aguijón letal", t=0.8, dmg=0.9, reach=1.2, extra={"burn_time": 4.0}),
+        "LLLH": make_combo("heavy_2", "Estocada tóxica", t=0.85, dmg=1.0, reach=1.2, extra={"burn_time": 5.0}),
+        "HL": make_combo("light_3", "Doble picotazo", t=0.75, dmg=0.85, extra={"burn_time": 2.0}),
+    })
     make_def("beedrill", "Beedrill", "Hostigador",
              "Rápido y venenoso: casi todos sus golpes envenenan. Presiona sin parar.",
-             Y, {"max_health": 90.0, "jog_speed": 5.0, "sprint_speed": 8.5, "strafe_speed": 3.6, "max_poise": 6.0},
+             Y, {"max_health": 95.0, "jog_speed": 5.0, "sprint_speed": 8.5, "strafe_speed": 3.6, "max_poise": 6.0},
              (0.5, 2.0, 1.4), (2, 4, 3, 3))
 
     # Vaporeon: control a media distancia con agua, se cura.
@@ -493,7 +540,12 @@ def main():
                      heat_cost=50, cooldown=25, duration=1.3, cancel_start=1.0, tracking=0, track_until=0,
                      buff_id='&"acua_aro"', trigger_time=0.5, buff_duration=12, damage_multiplier=1.1,
                      speed_multiplier=1.0, action_speed_multiplier=1.0, heal=0.25),
-    ])
+    ], {
+        "LH": make_combo("running", "Acometida", dmg=0.8, extra={"lunge_speed": 9}),
+        "LLH": make_combo("heavy_2", "Coletazo acuático", t=0.9, dmg=0.95, extra={"knockback": 8}),
+        "LLLH": make_combo("heavy_1", "Cascada", t=0.9, dmg=1.0),
+        "HL": make_combo("light_3", "Giro de cola", dmg=1.0, extra={"knockback": 6}),
+    })
     make_def("vaporeon", "Vaporeon", "Controlador",
              "Mucho aguante y control a media distancia: empuja con agua y se cura.",
              W, {"max_health": 120.0, "jog_speed": 4.4, "max_poise": 12.0},

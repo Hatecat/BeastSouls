@@ -14,7 +14,7 @@ color = Color(0.55, 1, 0.4, 1)
 visual = ExtResource("2_visual")
 moveset = ExtResource("3_moveset")
 stats = Dictionary[StringName, Variant]({
-&"max_health": 85,
+&"max_health": 95,
 &"jog_speed": 5.2,
 &"sprint_speed": 8.6,
 &"strafe_speed": 3.8,

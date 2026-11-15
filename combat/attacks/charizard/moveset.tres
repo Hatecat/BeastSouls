@@ -19,10 +19,20 @@
 [ext_resource type="Resource" path="res://combat/attacks/charizard/heavy_1.tres" id="heavy_1"]
 [ext_resource type="Resource" path="res://combat/attacks/charizard/heavy_2.tres" id="heavy_2"]
 [ext_resource type="Resource" path="res://combat/attacks/charizard/running.tres" id="running"]
+[ext_resource type="Resource" path="res://combat/attacks/charizard/combo_lh.tres" id="combo_lh"]
+[ext_resource type="Resource" path="res://combat/attacks/charizard/combo_llh.tres" id="combo_llh"]
+[ext_resource type="Resource" path="res://combat/attacks/charizard/combo_lllh.tres" id="combo_lllh"]
+[ext_resource type="Resource" path="res://combat/attacks/charizard/combo_hl.tres" id="combo_hl"]
 
 [resource]
 script = ExtResource("1_script")
 light_combo = Array[ExtResource("2_attack")]([ExtResource("light_1"), ExtResource("light_2"), ExtResource("light_3")])
 heavy_combo = Array[ExtResource("2_attack")]([ExtResource("heavy_1"), ExtResource("heavy_2")])
 running_attack = ExtResource("running")
+combos = Dictionary[String, ExtResource("2_attack")]({
+"LH": ExtResource("combo_lh"),
+"LLH": ExtResource("combo_llh"),
+"LLLH": ExtResource("combo_lllh"),
+"HL": ExtResource("combo_hl")
+})
 abilities = Array[ExtResource("3_ability")]([ExtResource("ab0"), ExtResource("ab1"), ExtResource("ab2"), ExtResource("ab3"), ExtResource("ab4"), ExtResource("ab5"), ExtResource("ab6"), ExtResource("ab7"), ExtResource("ab8"), ExtResource("ab9")])

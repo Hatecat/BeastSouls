@@ -160,6 +160,8 @@ var _buffered := 0
 var _buffer_time := 0.0
 var _combo_chain: Array[AttackData] = []
 var _combo_index := -1
+## Botones pulsados en la cadena actual ("L"/"H"), para los combos mixtos de `Moveset.combos`.
+var _combo_seq := ""
 var _charge_done := false
 var _hit_targets: Array[Beast] = []
 var _hitstop := 0.0
@@ -562,6 +564,7 @@ func _try_dodge(inp: PlayerInput) -> bool:
 		facing = yaw_of(_dodge_dir)
 	sprinting = false
 	_combo_index = -1
+	_combo_seq = ""
 	action_seq += 1
 	_anim = &""  # para que una esquiva encadenada reinicie el clip
 	_spend_stamina(dodge_cost)
@@ -600,15 +603,26 @@ func _try_attack(inp: PlayerInput) -> bool:
 	if kind == PlayerInput.LIGHT and sprinting and moveset.running_attack:
 		atk = moveset.running_attack
 		_combo_index = -1
+		_combo_seq = ""
 	else:
-		var chain := moveset.light_combo if kind == PlayerInput.LIGHT else moveset.heavy_combo
-		if chain.is_empty():
-			return false
-		# Se continúa el combo solo si venimos de un ataque del mismo tipo.
-		var continuing := state == State.ATTACK and _combo_chain == chain and _combo_index >= 0
-		_combo_index = (_combo_index + 1) % chain.size() if continuing else 0
-		_combo_chain = chain
-		atk = chain[_combo_index]
+		var key := "L" if kind == PlayerInput.LIGHT else "H"
+		var seq := _combo_seq + key if state == State.ATTACK else key
+		var special := moveset.combo_attack(seq)
+		if special:
+			# Combo mixto: sustituye al ataque que tocaría y cierra la cadena.
+			atk = special
+			_combo_index = -1
+			_combo_seq = seq
+		else:
+			var chain := moveset.light_combo if kind == PlayerInput.LIGHT else moveset.heavy_combo
+			if chain.is_empty():
+				return false
+			# Se continúa la cadena solo si venimos de un ataque del mismo tipo.
+			var continuing := state == State.ATTACK and _combo_chain == chain and _combo_index >= 0
+			_combo_index = (_combo_index + 1) % chain.size() if continuing else 0
+			_combo_chain = chain
+			_combo_seq = seq if _combo_index > 0 else key
+			atk = chain[_combo_index]
 	_buffered &= ~kind
 	_start_attack(atk, inp)
 	return true

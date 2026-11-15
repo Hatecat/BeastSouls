@@ -17,6 +17,7 @@ var _buttons: Dictionary[StringName, Button] = {}
 var _name: Label
 var _role: Label
 var _desc: Label
+var _combos: Label
 var _ratings: VBoxContainer
 var _abilities: GridContainer
 var _ab_title: Label
@@ -151,6 +152,11 @@ func _build() -> void:
 	_desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_desc.add_theme_font_size_override("font_size", 17)
 	right.add_child(_desc)
+	_combos = Label.new()
+	_combos.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_combos.add_theme_font_size_override("font_size", 14)
+	_combos.add_theme_color_override("font_color", Color(0.85, 0.82, 0.75))
+	right.add_child(_combos)
 	right.add_child(HSeparator.new())
 	_ratings = VBoxContainer.new()
 	right.add_child(_ratings)
@@ -265,6 +271,12 @@ func _select(def: CharacterDef) -> void:
 	_name.add_theme_color_override("font_color", def.color)
 	_role.text = def.role
 	_desc.text = def.description
+	# Combos mixtos: L = ataque ligero, F = ataque fuerte.
+	var combos: PackedStringArray = []
+	for c: Array in def.moveset.combo_list() if def.moveset else []:
+		combos.append("%s %s" % ["·".join(String(c[0]).replace("H", "F").split("")), c[1]])
+	_combos.text = "Combos (L ligero, F fuerte):  " + "   ".join(combos)
+	_combos.visible = not combos.is_empty()
 	for c in _ratings.get_children():
 		c.queue_free()
 	var health: float = def.stats.get(&"max_health", 100.0)

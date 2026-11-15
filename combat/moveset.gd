@@ -8,6 +8,9 @@ extends Resource
 @export var heavy_combo: Array[AttackData] = []
 ## Ataque ligero mientras se corre.
 @export var running_attack: AttackData
+## Combos mixtos: secuencia de botones desde el inicio de la cadena ("L" ligero, "H" fuerte; p. ej. "LLH") →
+## ataque que sale en ese paso en lugar del que tocaría. Tras él, la cadena vuelve a empezar.
+@export var combos: Dictionary[String, AttackData] = {}
 ## Catálogo de habilidades del personaje (hasta 10). El jugador equipa 4 antes del combate; las 4 primeras
 ## son la selección por defecto. Las equipadas están en `Beast.abilities`.
 @export var abilities: Array[AbilityData] = []
@@ -37,7 +40,24 @@ func loadout_abilities(picks: Array) -> Array[AbilityData]:
 	return out
 
 
-## Índice estable de un ataque (para la red): ligeros, luego fuertes, luego el de carrera. -1 si no está.
+## Ataque de combo para la secuencia `seq`, o null si esa secuencia sigue la cadena normal.
+func combo_attack(seq: String) -> AttackData:
+	return combos.get(seq)
+
+
+## Combos ordenados de corto a largo: [[secuencia, nombre], ...] (para la interfaz).
+func combo_list() -> Array:
+	var keys := combos.keys()
+	keys.sort_custom(func(a: String, b: String) -> bool:
+		return a.length() < b.length() if a.length() != b.length() else a > b)
+	var out := []
+	for k: String in keys:
+		out.append([k, combos[k].display_name])
+	return out
+
+
+## Índice estable de un ataque (para la red): ligeros, fuertes, el de carrera y los combos (por secuencia).
+## -1 si no está.
 func attack_index(atk: AttackData) -> int:
 	if atk == null:
 		return -1
@@ -55,4 +75,8 @@ func all_attacks() -> Array[AttackData]:
 	out.append_array(heavy_combo)
 	if running_attack:
 		out.append(running_attack)
+	var keys := combos.keys()
+	keys.sort()
+	for k: String in keys:
+		out.append(combos[k])
 	return out

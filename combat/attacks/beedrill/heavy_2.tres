@@ -30,6 +30,6 @@ hyper_armor = 40.0
 chargeable = true
 charge_point = 0.225
 max_charge = 0.8
-charge_multiplier = 1.6
+charge_multiplier = 1.35
 heat_gain = 14.0
 burn_time = 3
