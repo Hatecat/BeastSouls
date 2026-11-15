@@ -92,7 +92,7 @@ def make_combo(template, name, action=None, **kw):
 
 def hit_sub(name, **kw):
     d = dict(damage=10, poise_damage=20, guard_stamina_damage=15, stamina_cost=0, stagger_time=0.5,
-             knockback=3, hitstop=0.05, heat_gain=0)
+             knockback=3, hitstop=0.05)
     d.update(kw)
     lines = [f'display_name = "{name}"']
     for k, v in d.items():
@@ -174,47 +174,47 @@ def make_def(cid, name, role, desc, col, stats, body, ratings):
 # --- Habilidades extra del catálogo (cada personaje equipa 4 de 10) -----------------------------------
 # Atajos con valores por defecto razonables; cualquier campo se puede sobrescribir con **kw.
 
-def x_proj(file, name, col, action, dmg, heat, cd, hit=None, **kw):
+def x_proj(file, name, col, action, dmg, pp, cd, hit=None, **kw):
     h = dict(damage=dmg, poise_damage=dmg * 1.4, guard_stamina_damage=dmg * 1.1, knockback=3)
     h.update(hit or {})
-    d = dict(anim_speed=1.7, heat_cost=heat, cooldown=cd, duration=0.8, cancel_start=0.62, tracking=6, track_until=0.3,
+    d = dict(anim_speed=1.7, pp_cost=pp, cooldown=cd, duration=0.8, cancel_start=0.62, tracking=6, track_until=0.3,
              spawn_time=0.3, spawn_offset=(0, 1.3, -1.0), speed=20, radius=0.4, lifetime=2.0, homing=1.0,
              explode_radius=1.6, visual_scale=1.0)
     d.update(kw)
     return lambda cid: make_ability(cid, file, "projectile", name, col, action, hit=h, **d)
 
 
-def x_channel(file, name, col, action, dmg, heat, cd, hit=None, **kw):
+def x_channel(file, name, col, action, dmg, pp, cd, hit=None, **kw):
     h = dict(damage=dmg, poise_damage=dmg * 1.6, guard_stamina_damage=dmg * 2, stagger_time=0.3, knockback=0.8)
     h.update(hit or {})
-    d = dict(heat_cost=heat, cooldown=cd, duration=1.5, cancel_start=1.3, tracking=2.0, track_until=1.25,
+    d = dict(pp_cost=pp, cooldown=cd, duration=1.5, cancel_start=1.3, tracking=2.0, track_until=1.25,
              channel_start=0.3, channel_end=1.25, tick_interval=0.15, cone_range=5.0, cone_angle_deg=25,
              origin_offset=(0, 1.2, -0.6))
     d.update(kw)
     return lambda cid: make_ability(cid, file, "channel", name, col, action, hit=h, **d)
 
 
-def x_area(file, name, col, action, dmg, heat, cd, radius, hit=None, **kw):
+def x_area(file, name, col, action, dmg, pp, cd, radius, hit=None, **kw):
     h = dict(damage=dmg, poise_damage=55, guard_stamina_damage=35, stagger_time=0.8, knockback=6, hitstop=0.1)
     h.update(hit or {})
-    d = dict(heat_cost=heat, cooldown=cd, duration=1.2, cancel_start=0.95, tracking=4, track_until=0.35,
+    d = dict(pp_cost=pp, cooldown=cd, duration=1.2, cancel_start=0.95, tracking=4, track_until=0.35,
              trigger_time=0.45, radius=radius, caster_shake=0.4)
     d.update(kw)
     return lambda cid: make_ability(cid, file, "area", name, col, action, hit=h, **d)
 
 
-def x_buff(file, name, col, action, heat, cd, time, dmg=1.0, speed=1.0, rate=1.0, heal=0.0, **kw):
-    d = dict(heat_cost=heat, cooldown=cd, duration=1.2, cancel_start=0.95, tracking=0, track_until=0,
+def x_buff(file, name, col, action, pp, cd, time, dmg=1.0, speed=1.0, rate=1.0, heal=0.0, **kw):
+    d = dict(pp_cost=pp, cooldown=cd, duration=1.2, cancel_start=0.95, tracking=0, track_until=0,
              buff_id=f'&"{file}"', trigger_time=0.45, buff_duration=time, damage_multiplier=dmg,
              speed_multiplier=speed, action_speed_multiplier=rate, heal=heal)
     d.update(kw)
     return lambda cid: make_ability(cid, file, "buff", name, col, action, **d)
 
 
-def x_dash(file, name, col, dmg, heat, cd, meters, hit=None, action="attack_running", **kw):
+def x_dash(file, name, col, dmg, pp, cd, meters, hit=None, action="attack_running", **kw):
     h = dict(damage=dmg, poise_damage=dmg * 2, guard_stamina_damage=dmg * 1.5, stagger_time=0.6, knockback=5, hitstop=0.09)
     h.update(hit or {})
-    d = dict(heat_cost=heat, cooldown=cd, duration=0.85, cancel_start=0.7, tracking=7, track_until=0.2,
+    d = dict(pp_cost=pp, cooldown=cd, duration=0.85, cancel_start=0.7, tracking=7, track_until=0.2,
              dash_start=0.2, dash_end=0.5, radius=1.3, offset=(0, 1.0, -0.8))
     d.update(kw)
     d["dash_speed"] = round(meters / (d["dash_end"] - d["dash_start"]), 1)
@@ -714,20 +714,20 @@ def main():
     }, [
         make_ability("scyther", "air_slash", "projectile", "Aire afilado", G, "skill_air_slash",
                      hit=dict(damage=14, poise_damage=20, guard_stamina_damage=18, knockback=2.5),
-                     anim_speed=2.0, heat_cost=15, cooldown=2.5, duration=0.6, cancel_start=0.45, tracking=8, track_until=0.25,
+                     anim_speed=2.0, pp_cost=15, cooldown=2.5, duration=0.6, cancel_start=0.45, tracking=8, track_until=0.25,
                      spawn_time=0.22, spawn_offset=(0, 1.4, -1.0), speed=28, radius=0.35, lifetime=1.2, homing=0.5,
                      explode_radius=0.9, visual_scale=0.7),
         make_ability("scyther", "fury_cutter", "channel", "Corte furia", G, "skill_fury_cutter",
                      hit=dict(damage=3.2, poise_damage=7, guard_stamina_damage=8, stagger_time=0.3, knockback=0.5),
-                     anim_speed=1.6, heat_cost=30, cooldown=6, duration=1.2, cancel_start=1.0, tracking=5, track_until=1.0,
+                     anim_speed=1.6, pp_cost=30, cooldown=6, duration=1.2, cancel_start=1.0, tracking=5, track_until=1.0,
                      move_factor=0.5, channel_start=0.15, channel_end=1.0, tick_interval=0.12, cone_range=3.0,
                      cone_angle_deg=45, origin_offset=(0, 1.3, -0.5), fx_socket='&"hand_r"'),
         make_ability("scyther", "x_scissor", "area", "Tijera X", G, "skill_x_scissor",
                      hit=dict(damage=18, poise_damage=60, guard_stamina_damage=40, stagger_time=0.8, knockback=6, hitstop=0.1),
-                     heat_cost=35, cooldown=10, duration=1.0, cancel_start=0.8, tracking=6, track_until=0.3,
+                     pp_cost=35, cooldown=10, duration=1.0, cancel_start=0.8, tracking=6, track_until=0.3,
                      trigger_time=0.35, radius=3.5, caster_shake=0.3),
         make_ability("scyther", "swords_dance", "buff", "Danza espadas", (0.85, 1.0, 0.85), "skill_swords_dance",
-                     heat_cost=45, cooldown=20, duration=1.1, cancel_start=0.9, tracking=0, track_until=0,
+                     pp_cost=45, cooldown=20, duration=1.1, cancel_start=0.9, tracking=0, track_until=0,
                      buff_id='&"danza_espadas"', trigger_time=0.4, buff_duration=8, damage_multiplier=1.4,
                      speed_multiplier=1.0, action_speed_multiplier=1.05),
     ], {
@@ -747,32 +747,32 @@ def main():
     make_moveset("gengar", {
         "light_1": make_attack("light_1", "Arañazo", dmg=0.9),
         "light_2": make_attack("light_2", "Puño sombra", dmg=0.9),
-        "light_3": make_attack("light_3", "Lengüetazo", dmg=0.95, extra={"heat_gain": 12}),
+        "light_3": make_attack("light_3", "Lengüetazo", dmg=0.95),
         "heavy_1": make_attack("heavy_1", "Mordisco fantasma", dmg=0.95),
         "heavy_2": make_attack("heavy_2", "Golpe umbrío", dmg=0.95),
         "running": make_attack("running", "Sombra vil", dmg=0.9, extra={"lunge_speed": 9}),
     }, [
         make_ability("gengar", "shadow_ball", "projectile", "Bola sombra", P, "skill_shadow_ball",
                      hit=dict(damage=22, poise_damage=30, guard_stamina_damage=25, knockback=4.5, hitstop=0.06),
-                     anim_speed=1.6, heat_cost=25, cooldown=4, duration=0.85, cancel_start=0.65, tracking=6, track_until=0.3,
+                     anim_speed=1.6, pp_cost=25, cooldown=4, duration=0.85, cancel_start=0.65, tracking=6, track_until=0.3,
                      spawn_time=0.32, spawn_offset=(0, 1.2, -1.0), speed=14, radius=0.5, lifetime=2.5, homing=2.0,
                      explode_radius=2.2, visual_scale=1.3),
         make_ability("gengar", "dark_pulse", "channel", "Pulso umbrío", P, "skill_dark_pulse",
                      hit=dict(damage=3.2, poise_damage=4, guard_stamina_damage=6, stagger_time=0.3, knockback=0.8),
-                     heat_cost=35, cooldown=8, duration=1.6, cancel_start=1.4, tracking=1.8, track_until=1.35,
+                     pp_cost=35, cooldown=8, duration=1.6, cancel_start=1.4, tracking=1.8, track_until=1.35,
                      channel_start=0.3, channel_end=1.35, tick_interval=0.15, cone_range=6.5, cone_angle_deg=22,
                      origin_offset=(0, 1.0, -0.6)),
         make_ability("gengar", "hypnosis", "area", "Hipnosis", (0.9, 0.5, 1.0), "skill_hypnosis",
                      hit=dict(damage=2, poise_damage=100, guard_stamina_damage=0, stagger_time=1.8, knockback=1, hitstop=0.1, unblockable=True),
-                     heat_cost=45, cooldown=16, duration=1.3, cancel_start=1.0, tracking=4, track_until=0.4,
+                     pp_cost=45, cooldown=16, duration=1.3, cancel_start=1.0, tracking=4, track_until=0.4,
                      trigger_time=0.5, radius=5.0, caster_shake=0.3),
         make_ability("gengar", "nasty_plot", "buff", "Maquinación", (0.75, 0.35, 1.0), "skill_nasty_plot",
-                     heat_cost=50, cooldown=20, duration=1.3, cancel_start=1.0, tracking=0, track_until=0,
+                     pp_cost=50, cooldown=20, duration=1.3, cancel_start=1.0, tracking=0, track_until=0,
                      buff_id='&"maquinacion"', trigger_time=0.5, buff_duration=10, damage_multiplier=1.35,
                      speed_multiplier=1.1, action_speed_multiplier=1.15),
     ], {
-        "LH": make_combo("light_3", "Zarpazo espectral", t=0.9, dmg=1.0, extra={"heat_gain": 14}),
-        "LLH": make_combo("heavy_2", "Doble puño sombra", t=0.9, dmg=0.95, extra={"heat_gain": 20}),
+        "LH": make_combo("light_3", "Zarpazo espectral", t=0.9, dmg=1.0),
+        "LLH": make_combo("heavy_2", "Doble puño sombra", t=0.9, dmg=0.95),
         "LLLH": make_combo("heavy_1", "Garra umbría", t=0.9, dmg=1.05, extra={"knockback": 7}),
         "HL": make_combo("running", "Finta sombría", t=0.9, dmg=0.8, extra={"lunge_speed": 9}),
     })
@@ -795,19 +795,19 @@ def main():
     }, [
         make_ability("snorlax", "hyper_beam", "channel", "Hiperrayo", N, "skill_hyper_beam",
                      hit=dict(damage=4.5, poise_damage=8, guard_stamina_damage=10, stagger_time=0.35, knockback=1.2),
-                     interruptible=False, anim_speed=0.75, heat_cost=45, cooldown=12, duration=2.2, cancel_start=2.0, tracking=1.2, track_until=1.9,
+                     interruptible=False, anim_speed=0.75, pp_cost=45, cooldown=12, duration=2.2, cancel_start=2.0, tracking=1.2, track_until=1.9,
                      channel_start=0.6, channel_end=1.9, tick_interval=0.12, cone_range=10.0, cone_angle_deg=8,
                      origin_offset=(0, 2.0, -0.8)),
         make_ability("snorlax", "body_slam", "area", "Golpe cuerpo", E_, "skill_body_slam",
                      hit=dict(damage=30, poise_damage=70, guard_stamina_damage=50, stagger_time=0.9, knockback=8, hitstop=0.14),
-                     interruptible=False, heat_cost=30, cooldown=8, duration=1.1, cancel_start=0.9, tracking=5, track_until=0.35,
+                     interruptible=False, pp_cost=30, cooldown=8, duration=1.1, cancel_start=0.9, tracking=5, track_until=0.35,
                      trigger_time=0.45, radius=3.2, caster_shake=0.5),
         make_ability("snorlax", "earthquake", "area", "Terremoto", E_, "skill_earthquake",
                      hit=dict(damage=15, poise_damage=70, guard_stamina_damage=0, stagger_time=1.0, knockback=5, hitstop=0.1, unblockable=True),
-                     interruptible=False, heat_cost=45, cooldown=15, duration=1.4, cancel_start=1.1, tracking=0, track_until=0,
+                     interruptible=False, pp_cost=45, cooldown=15, duration=1.4, cancel_start=1.1, tracking=0, track_until=0,
                      trigger_time=0.55, radius=8.0, caster_shake=0.8),
         make_ability("snorlax", "rest", "buff", "Descanso", (0.6, 0.8, 1.0), "skill_rest",
-                     interruptible=False, heat_cost=60, cooldown=30, duration=1.6, cancel_start=1.4, tracking=0, track_until=0,
+                     interruptible=False, pp_cost=60, cooldown=30, duration=1.6, cancel_start=1.4, tracking=0, track_until=0,
                      buff_id='&"descanso"', trigger_time=0.6, buff_duration=4, damage_multiplier=1.0,
                      speed_multiplier=0.6, action_speed_multiplier=0.85, heal=0.35),
     ], {
@@ -835,20 +835,20 @@ def main():
     }, [
         make_ability("beedrill", "pin_missile", "projectile", "Pin misil", Y, "skill_pin_missile",
                      hit=dict(damage=6, poise_damage=8, guard_stamina_damage=8, stagger_time=0.25, knockback=1, hitstop=0.02, burn_time=1.5),
-                     anim_speed=1.8, heat_cost=15, cooldown=2.5, duration=0.85, cancel_start=0.7, tracking=8, track_until=0.6,
+                     anim_speed=1.8, pp_cost=15, cooldown=2.5, duration=0.85, cancel_start=0.7, tracking=8, track_until=0.6,
                      spawn_time=0.2, spawn_offset=(0, 1.4, -1.0), speed=30, radius=0.25, lifetime=1.2, homing=2.0,
                      explode_radius=0.0, visual_scale=0.45, count=3, interval=0.12),
         make_ability("beedrill", "twineedle", "channel", "Pin furia", Y, "skill_twineedle",
                      hit=dict(damage=4, poise_damage=6, guard_stamina_damage=8, stagger_time=0.3, knockback=0.5, burn_time=2.0),
-                     anim_speed=1.5, heat_cost=30, cooldown=7, duration=1.2, cancel_start=1.0, tracking=5, track_until=1.0,
+                     anim_speed=1.5, pp_cost=30, cooldown=7, duration=1.2, cancel_start=1.0, tracking=5, track_until=1.0,
                      move_factor=0.6, channel_start=0.15, channel_end=1.0, tick_interval=0.16, cone_range=3.2,
                      cone_angle_deg=35, origin_offset=(0, 1.3, -0.6), fx_socket='&"hand_r"'),
         make_ability("beedrill", "toxic_burst", "area", "Bomba tóxica", T, "skill_toxic_burst",
                      hit=dict(damage=10, poise_damage=50, guard_stamina_damage=30, stagger_time=0.7, knockback=4, hitstop=0.08, burn_time=5.0),
-                     heat_cost=40, cooldown=14, duration=1.2, cancel_start=0.9, tracking=3, track_until=0.4,
+                     pp_cost=40, cooldown=14, duration=1.2, cancel_start=0.9, tracking=3, track_until=0.4,
                      trigger_time=0.45, radius=5.0, caster_shake=0.4),
         make_ability("beedrill", "agility", "buff", "Agilidad", (0.95, 0.95, 0.4), "skill_agility",
-                     heat_cost=40, cooldown=18, duration=0.9, cancel_start=0.7, tracking=0, track_until=0,
+                     pp_cost=40, cooldown=18, duration=0.9, cancel_start=0.7, tracking=0, track_until=0,
                      buff_id='&"agilidad"', trigger_time=0.3, buff_duration=8, damage_multiplier=1.0,
                      speed_multiplier=1.4, action_speed_multiplier=1.2),
     ], {
@@ -874,20 +874,20 @@ def main():
     }, [
         make_ability("vaporeon", "water_pulse", "projectile", "Hidropulso", W, "skill_water_pulse",
                      hit=dict(damage=16, poise_damage=40, guard_stamina_damage=25, stagger_time=0.6, knockback=6, hitstop=0.06),
-                     anim_speed=1.8, heat_cost=20, cooldown=3, duration=0.8, cancel_start=0.6, tracking=6, track_until=0.3,
+                     anim_speed=1.8, pp_cost=20, cooldown=3, duration=0.8, cancel_start=0.6, tracking=6, track_until=0.3,
                      spawn_time=0.3, spawn_offset=(0, 1.0, -1.2), speed=20, radius=0.45, lifetime=2.0, homing=1.0,
                      explode_radius=2.0, visual_scale=1.1),
         make_ability("vaporeon", "hydro_pump", "channel", "Hidrobomba", W, "skill_hydro_pump",
                      hit=dict(damage=4, poise_damage=6, guard_stamina_damage=8, stagger_time=0.3, knockback=1.5),
-                     heat_cost=40, cooldown=9, duration=1.7, cancel_start=1.5, tracking=1.8, track_until=1.45,
+                     pp_cost=40, cooldown=9, duration=1.7, cancel_start=1.5, tracking=1.8, track_until=1.45,
                      channel_start=0.35, channel_end=1.45, tick_interval=0.15, cone_range=7.5, cone_angle_deg=18,
                      origin_offset=(0, 1.0, -0.9)),
         make_ability("vaporeon", "surf", "area", "Surf", (0.4, 0.75, 1.0), "skill_surf",
                      hit=dict(damage=14, poise_damage=60, guard_stamina_damage=35, stagger_time=0.8, knockback=9, hitstop=0.1),
-                     heat_cost=45, cooldown=14, duration=1.4, cancel_start=1.1, tracking=3, track_until=0.4,
+                     pp_cost=45, cooldown=14, duration=1.4, cancel_start=1.1, tracking=3, track_until=0.4,
                      trigger_time=0.55, radius=7.0, caster_shake=0.5),
         make_ability("vaporeon", "aqua_ring", "buff", "Acua aro", (0.5, 0.85, 1.0), "skill_aqua_ring",
-                     heat_cost=50, cooldown=25, duration=1.3, cancel_start=1.0, tracking=0, track_until=0,
+                     pp_cost=50, cooldown=25, duration=1.3, cancel_start=1.0, tracking=0, track_until=0,
                      buff_id='&"acua_aro"', trigger_time=0.5, buff_duration=12, damage_multiplier=1.1,
                      speed_multiplier=1.0, action_speed_multiplier=1.0, heal=0.25),
     ], {
@@ -973,12 +973,12 @@ def main():
         "running": make_attack("running", "Acometida mental", dmg=0.95, reach=1.2, extra={"lunge_speed": 10}),
     }, [], {
         "LH": make_combo("light_3", "Golpe cinético", "attack_heavy_2", t=0.9, dmg=1.0, reach=1.2, extra={"knockback": 8}),
-        "LLH": make_combo("heavy_1", "Psicocorte", "attack_light_1", t=0.85, dmg=0.95, reach=1.35, extra={"heat_gain": 20}),
+        "LLH": make_combo("heavy_1", "Psicocorte", "attack_light_1", t=0.85, dmg=0.95, reach=1.35),
         "LLLH": make_combo("heavy_2", "Colapso", "attack_heavy_1", t=0.95, dmg=1.15, poise=1.4, reach=1.35, extra={"knockback": 8}),
         "HL": make_combo("running", "Destello", "attack_light_1", t=0.85, dmg=0.85, reach=1.2, extra={"lunge_speed": 9}),
     })
     make_def("mewtwo", "Mewtwo", "Psíquico",
-             "Domina la media y larga distancia con psíquicos potentes y un teletransporte. Sus habilidades cuestan mucho Calor.",
+             "Domina la media y larga distancia con psíquicos potentes y un teletransporte. Sus habilidades cuestan muchos PP.",
              _PSY, {"max_health": 100.0, "jog_speed": 4.8, "sprint_speed": 7.8, "max_poise": 10.0, "dodge_distance": 5.4,
                     "block_pose": 0.9},
              (0.55, 2.3, 1.55), (3, 4, 4, 5))
@@ -1111,7 +1111,7 @@ def main():
     })
     make_def("hitmontop", "Hitmontop", "Peonza",
              "Gira sin parar: patadas en abanico, mucha movilidad y buen aguante para su tamaño.",
-             _F, {"max_health": 105.0, "jog_speed": 4.8, "sprint_speed": 8.0, "max_poise": 12.0, "max_stamina": 110.0},
+             _F, {"max_health": 105.0, "jog_speed": 4.8, "sprint_speed": 8.0, "max_poise": 12.0, "max_stamina": 110.0, "walk_anim_speed": 4.4},
              (0.45, 1.5, 1.0), (3, 4, 3, 2))
     # Houndoom: presión con fuego.
     make_moveset("houndoom", {
@@ -1146,7 +1146,7 @@ def main():
         "HL": make_combo("light_3", "Dentellada", "skill_bite", t=0.85, dmg=1.0, reach=1.15),
     })
     make_def("raikou", "Raikou", "Bestia del trueno",
-             "Grande y veloz. Rayos rapidísimos a distancia y embestidas largas; sus habilidades cuestan mucho Calor.",
+             "Grande y veloz. Rayos rapidísimos a distancia y embestidas largas; sus habilidades cuestan muchos PP.",
              _EL, {"max_health": 120.0, "jog_speed": 4.8, "sprint_speed": 8.4, "max_poise": 16.0},
              (0.7, 2.0, 1.4), (4, 4, 4, 4))
     # Blaziken: patadas de fuego.
@@ -1177,7 +1177,7 @@ def main():
         "running": make_attack("running", "Ataque óseo", t=0.9, dmg=0.95, reach=1.05, extra={'lunge_speed': 10}),
     }, [], {
         "LH": make_combo("light_3", "Palma fuerza", "skill_punch", t=0.81, dmg=0.95, reach=1.05, extra={'knockback': 7}),
-        "LLH": make_combo("heavy_1", "Tajo cruzado", "skill_claw", t=0.81, dmg=0.9, reach=1.05, extra={'heat_gain': 20}),
+        "LLH": make_combo("heavy_1", "Tajo cruzado", "skill_claw", t=0.81, dmg=0.9, reach=1.05),
         "LLLH": make_combo("heavy_2", "A bocajarro", "skill_kick", t=0.85, dmg=1.09, reach=1.05, extra={'knockback': 8}),
         "HL": make_combo("light_1", "Puño bala", "skill_punch", t=0.77, dmg=1.0, reach=1.05, extra={'lunge_speed': 7}),
     })

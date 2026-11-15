@@ -13,7 +13,6 @@ stamina_cost = 0
 stagger_time = 0.6
 knockback = 5
 hitstop = 0.09
-heat_gain = 0
 burn_time = 2
 
 [resource]
@@ -22,7 +21,7 @@ hit = SubResource("hit")
 display_name = "Nitrocarga"
 color = Color(1, 0.55, 0.2, 1)
 action = &"skill_body"
-heat_cost = 25
+pp_cost = 25
 cooldown = 6
 duration = 0.85
 cancel_start = 0.7

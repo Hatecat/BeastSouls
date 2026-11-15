@@ -13,7 +13,6 @@ stamina_cost = 0
 stagger_time = 0.35
 knockback = 1.2
 hitstop = 0.05
-heat_gain = 0
 
 [resource]
 script = ExtResource("1_script")
@@ -23,7 +22,7 @@ color = Color(1, 0.92, 0.65, 1)
 action = &"skill_hyper_beam"
 interruptible = false
 anim_speed = 0.75
-heat_cost = 45
+pp_cost = 45
 cooldown = 12
 duration = 2.2
 cancel_start = 2

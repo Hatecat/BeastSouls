@@ -13,7 +13,6 @@ stamina_cost = 0
 stagger_time = 0.2
 knockback = 1
 hitstop = 0.05
-heat_gain = 0
 burn_time = 4
 
 [resource]
@@ -23,7 +22,7 @@ display_name = "Fuego fatuo"
 color = Color(0.55, 0.75, 1, 1)
 action = &"skill_shot"
 anim_speed = 1.7
-heat_cost = 20
+pp_cost = 20
 cooldown = 4
 duration = 1
 cancel_start = 0.85

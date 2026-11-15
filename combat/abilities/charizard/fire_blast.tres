@@ -13,7 +13,6 @@ stamina_cost = 0
 stagger_time = 0.8
 knockback = 7
 hitstop = 0.12
-heat_gain = 0
 burn_time = 4
 
 [resource]
@@ -23,7 +22,7 @@ display_name = "Llamarada"
 color = Color(1, 0.35, 0.1, 1)
 action = &"skill_fireball"
 anim_speed = 1.1
-heat_cost = 45
+pp_cost = 45
 cooldown = 10
 duration = 1.2
 cancel_start = 1

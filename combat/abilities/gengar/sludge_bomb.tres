@@ -13,7 +13,6 @@ stamina_cost = 0
 stagger_time = 0.6
 knockback = 4
 hitstop = 0.05
-heat_gain = 0
 burn_time = 6
 
 [resource]
@@ -23,7 +22,7 @@ display_name = "Bomba lodo"
 color = Color(0.6, 0.25, 0.75, 1)
 action = &"skill_shadow_ball"
 anim_speed = 1.3
-heat_cost = 35
+pp_cost = 35
 cooldown = 8
 duration = 1
 cancel_start = 0.8

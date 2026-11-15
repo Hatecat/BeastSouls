@@ -33,7 +33,7 @@ action_map = Dictionary[StringName, StringName]({
 &"skill_roar": &"fight_d_sound",
 &"skill_shot": &"fight_d_breath",
 &"skill_tail": &"top_spin",
-&"walk": &"walk"
+&"walk": &"top_walk"
 })
 action_speed = Dictionary[StringName, float]({
 &"dodge": 1.6,

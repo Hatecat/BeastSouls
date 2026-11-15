@@ -13,7 +13,6 @@ stamina_cost = 0
 stagger_time = 0.5
 knockback = 4.5
 hitstop = 0.06
-heat_gain = 0
 
 [resource]
 script = ExtResource("1_script")
@@ -22,7 +21,7 @@ display_name = "Bola sombra"
 color = Color(0.62, 0.3, 1, 1)
 action = &"skill_shadow_ball"
 anim_speed = 1.6
-heat_cost = 25
+pp_cost = 25
 cooldown = 4
 duration = 0.85
 cancel_start = 0.65

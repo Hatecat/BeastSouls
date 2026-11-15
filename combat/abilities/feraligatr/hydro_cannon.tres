@@ -13,7 +13,6 @@ stamina_cost = 0
 stagger_time = 0.5
 knockback = 6
 hitstop = 0.08
-heat_gain = 0
 
 [resource]
 script = ExtResource("1_script")
@@ -22,7 +21,7 @@ display_name = "Hidrocañón"
 color = Color(0.3, 0.62, 1, 1)
 action = &"skill_shot"
 anim_speed = 2
-heat_cost = 30
+pp_cost = 30
 cooldown = 6
 duration = 0.8
 cancel_start = 0.62

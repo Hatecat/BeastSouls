@@ -13,7 +13,6 @@ stamina_cost = 0
 stagger_time = 0.6
 knockback = 6
 hitstop = 0.09
-heat_gain = 0
 
 [resource]
 script = ExtResource("1_script")
@@ -21,7 +20,7 @@ hit = SubResource("hit")
 display_name = "Puño incremento"
 color = Color(1, 0.55, 0.35, 1)
 action = &"skill_punch"
-heat_cost = 30
+pp_cost = 30
 cooldown = 8
 duration = 0.85
 cancel_start = 0.7

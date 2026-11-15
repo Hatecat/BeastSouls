@@ -439,8 +439,8 @@ func _refresh_abilities() -> void:
 		b.set_pressed_no_signal(slot >= 0)
 		b.disabled = locked
 		var tag := "[%s] " % ControlsHelp.slot_key(slot, Settings.using_pad) if slot >= 0 else ""
-		b.text = "%s%s\n%s · %d calor · %d s" % [tag, ab.display_name, AbilityData.kind_label(ab.kind()),
-				ab.heat_cost, ab.cooldown]
+		b.text = "%s%s\n%s · %d PP · %d s de recarga" % [tag, ab.display_name, AbilityData.kind_label(ab.kind()),
+				ab.pp_cost, ab.cooldown]
 		b.modulate = Color(1, 1, 1, 0.55) if full and slot < 0 and not b.has_focus() else Color.WHITE
 	_ab_title.text = "HABILIDADES · ELIGE %d   (%d/%d)%s" % [Moveset.LOADOUT_SIZE, _loadout.size(), Moveset.LOADOUT_SIZE,
 			"" if _loadout_complete() else "   ← FALTAN %d" % (Moveset.LOADOUT_SIZE - _loadout.size())]

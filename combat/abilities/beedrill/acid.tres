@@ -13,7 +13,6 @@ stamina_cost = 0
 stagger_time = 0.3
 knockback = 0.8
 hitstop = 0.05
-heat_gain = 0
 burn_time = 2.5
 
 [resource]
@@ -22,7 +21,7 @@ hit = SubResource("hit")
 display_name = "Ácido"
 color = Color(0.7, 0.3, 1, 1)
 action = &"skill_pin_missile"
-heat_cost = 35
+pp_cost = 35
 cooldown = 9
 duration = 1.5
 cancel_start = 1.3

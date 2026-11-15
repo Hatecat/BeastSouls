@@ -13,7 +13,6 @@ stamina_cost = 0
 stagger_time = 1.1
 knockback = 11
 hitstop = 0.16
-heat_gain = 0
 
 [resource]
 script = ExtResource("1_script")
@@ -21,7 +20,7 @@ hit = SubResource("hit")
 display_name = "Autodestrucción"
 color = Color(1, 0.5, 0.15, 1)
 action = &"skill_cast"
-heat_cost = 70
+pp_cost = 70
 cooldown = 30
 duration = 1.7
 cancel_start = 1.5

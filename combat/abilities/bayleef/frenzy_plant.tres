@@ -13,7 +13,6 @@ stamina_cost = 0
 stagger_time = 1
 knockback = 8
 hitstop = 0.14
-heat_gain = 0
 
 [resource]
 script = ExtResource("1_script")
@@ -21,7 +20,7 @@ hit = SubResource("hit")
 display_name = "Planta feroz"
 color = Color(0.35, 0.8, 0.25, 1)
 action = &"skill_roar"
-heat_cost = 60
+pp_cost = 60
 cooldown = 22
 duration = 1.5
 cancel_start = 1.3

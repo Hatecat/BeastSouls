@@ -13,7 +13,6 @@ stamina_cost = 0
 stagger_time = 0.6
 knockback = 5
 hitstop = 0.09
-heat_gain = 0
 burn_time = 3
 
 [resource]
@@ -22,7 +21,7 @@ hit = SubResource("hit")
 display_name = "Envite ígneo"
 color = Color(1, 0.55, 0.2, 1)
 action = &"attack_running"
-heat_cost = 30
+pp_cost = 30
 cooldown = 9
 duration = 0.85
 cancel_start = 0.7

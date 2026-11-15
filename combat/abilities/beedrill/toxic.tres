@@ -13,7 +13,6 @@ stamina_cost = 0
 stagger_time = 0.4
 knockback = 2
 hitstop = 0.1
-heat_gain = 0
 burn_time = 9
 unblockable = true
 
@@ -23,7 +22,7 @@ hit = SubResource("hit")
 display_name = "Tóxico"
 color = Color(0.7, 0.3, 1, 1)
 action = &"skill_toxic_burst"
-heat_cost = 45
+pp_cost = 45
 cooldown = 16
 duration = 1.2
 cancel_start = 0.95

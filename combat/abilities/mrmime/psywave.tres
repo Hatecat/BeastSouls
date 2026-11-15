@@ -13,7 +13,6 @@ stamina_cost = 0
 stagger_time = 0.5
 knockback = 5
 hitstop = 0.06
-heat_gain = 0
 
 [resource]
 script = ExtResource("1_script")
@@ -22,7 +21,7 @@ display_name = "Psicoonda"
 color = Color(0.8, 0.45, 1, 1)
 action = &"skill_shot"
 anim_speed = 1.7
-heat_cost = 30
+pp_cost = 30
 cooldown = 6
 duration = 0.8
 cancel_start = 0.62

@@ -13,7 +13,6 @@ stamina_cost = 0
 stagger_time = 0.5
 knockback = 4
 hitstop = 0.05
-heat_gain = 0
 burn_time = 3
 
 [resource]
@@ -23,7 +22,7 @@ display_name = "Pirotecnia"
 color = Color(1, 0.55, 0.2, 1)
 action = &"skill_shot"
 anim_speed = 1.7
-heat_cost = 22
+pp_cost = 22
 cooldown = 4
 duration = 0.8
 cancel_start = 0.62

@@ -13,7 +13,6 @@ stamina_cost = 0
 stagger_time = 0.8
 knockback = 9
 hitstop = 0.1
-heat_gain = 0
 
 [resource]
 script = ExtResource("1_script")
@@ -21,7 +20,7 @@ hit = SubResource("hit")
 display_name = "Contraataque"
 color = Color(1, 0.55, 0.35, 1)
 action = &"skill_body"
-heat_cost = 20
+pp_cost = 20
 cooldown = 5
 duration = 0.85
 cancel_start = 0.68

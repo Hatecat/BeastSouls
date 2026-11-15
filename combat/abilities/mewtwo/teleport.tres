@@ -13,7 +13,6 @@ stamina_cost = 0
 stagger_time = 0.6
 knockback = 2
 hitstop = 0.09
-heat_gain = 0
 
 [resource]
 script = ExtResource("1_script")
@@ -21,7 +20,7 @@ hit = SubResource("hit")
 display_name = "Teletransporte"
 color = Color(0.8, 0.7, 1, 1)
 action = &"dodge"
-heat_cost = 20
+pp_cost = 20
 cooldown = 5
 duration = 0.55
 cancel_start = 0.4

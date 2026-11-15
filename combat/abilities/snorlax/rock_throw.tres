@@ -13,7 +13,6 @@ stamina_cost = 0
 stagger_time = 0.8
 knockback = 7
 hitstop = 0.12
-heat_gain = 0
 
 [resource]
 script = ExtResource("1_script")
@@ -22,7 +21,7 @@ display_name = "Lanzarrocas"
 color = Color(0.75, 0.55, 0.3, 1)
 action = &"skill_hyper_beam"
 anim_speed = 1
-heat_cost = 30
+pp_cost = 30
 cooldown = 7
 duration = 1.2
 cancel_start = 1

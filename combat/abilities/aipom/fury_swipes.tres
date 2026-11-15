@@ -13,7 +13,6 @@ stamina_cost = 0
 stagger_time = 0.3
 knockback = 0.8
 hitstop = 0.05
-heat_gain = 0
 
 [resource]
 script = ExtResource("1_script")
@@ -21,7 +20,7 @@ hit = SubResource("hit")
 display_name = "Golpes furia"
 color = Color(1, 0.92, 0.65, 1)
 action = &"skill_claw"
-heat_cost = 28
+pp_cost = 28
 cooldown = 7
 duration = 1.2
 cancel_start = 1

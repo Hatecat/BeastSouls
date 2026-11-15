@@ -13,7 +13,6 @@ stamina_cost = 0
 stagger_time = 0.9
 knockback = 9
 hitstop = 0.14
-heat_gain = 0
 
 [resource]
 script = ExtResource("1_script")
@@ -21,7 +20,7 @@ hit = SubResource("hit")
 display_name = "Rodada"
 color = Color(0.75, 0.55, 0.3, 1)
 action = &"attack_heavy_1"
-heat_cost = 35
+pp_cost = 35
 cooldown = 10
 duration = 1.25
 cancel_start = 1.1

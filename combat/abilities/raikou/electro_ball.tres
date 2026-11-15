@@ -13,7 +13,6 @@ stamina_cost = 0
 stagger_time = 0.2
 knockback = 1
 hitstop = 0.05
-heat_gain = 0
 
 [resource]
 script = ExtResource("1_script")
@@ -22,7 +21,7 @@ display_name = "Bola voltio"
 color = Color(1, 0.9, 0.3, 1)
 action = &"skill_shot"
 anim_speed = 1.7
-heat_cost = 22
+pp_cost = 22
 cooldown = 5
 duration = 1
 cancel_start = 0.85

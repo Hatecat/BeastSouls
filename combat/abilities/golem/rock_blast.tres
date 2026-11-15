@@ -13,7 +13,6 @@ stamina_cost = 0
 stagger_time = 0.3
 knockback = 2.5
 hitstop = 0.05
-heat_gain = 0
 
 [resource]
 script = ExtResource("1_script")
@@ -22,7 +21,7 @@ display_name = "Pedrada"
 color = Color(0.75, 0.55, 0.3, 1)
 action = &"skill_shot"
 anim_speed = 1.7
-heat_cost = 25
+pp_cost = 25
 cooldown = 5
 duration = 1.05
 cancel_start = 0.9

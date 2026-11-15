@@ -62,7 +62,7 @@ usar `root.get_node("Net")`. Red: lanzar dos instancias (`-- --host` / `-- --joi
     contorno, luz que atraviesa y brillo de borde. Ojos y piezas con recorte conservan su material.
   Probado y descartado: subdividir las mallas en Blender (saca costuras y no mejora la silueta).
 - `actors/player/` — `Beast` (beast.gd/.tscn): CharacterBody3D con la simulación (estados LOCOMOTION, BLOCK, DODGE,
-  ATTACK, ABILITY, STAGGER, DEAD; estamina, postura, Calor, recargas, mejoras, quemadura, esquiva con i-frames,
+  ATTACK, ABILITY, STAGGER, DEAD; estamina, postura, PP (`pp`: empiezan llenos y se regeneran solos, `pp_regen` por segundo; no se ganan golpeando), recargas, mejoras, quemadura, esquiva con i-frames,
   input buffer, hitstop). `simulate(PlayerInput, delta)` es la única entrada de la lógica.
   Golpes recibidos (`receive_hit`): todo golpe empuja (`_knock`: `AttackData.knockback` × `knockback_distance`
   metros en `knockback_time`; la mitad al bloquear). Si rompe la postura → STAGGER (`stagger_time`). Si no la
@@ -132,7 +132,7 @@ usar `root.get_node("Net")`. Red: lanzar dos instancias (`-- --host` / `-- --joi
   (estilo Souls, se borra tras 2.5 s sin golpear), ayuda y panel de depuración (según Settings).
   `ActionDiamond` (action_diamond.gd): rombo abajo a la derecha con lo que hace cada botón ahora mismo. Mando: X / Y
   habilidades (con LT pasan a la 3 y la 4; la otra pareja va en un círculo pequeño), B esquivar, A saltar. Teclado:
-  las 4 habilidades con su tecla. Recarga en sector, coste de Calor, apagado si no se puede usar; encima, el
+  las 4 habilidades con su tecla. Recarga en sector, coste de PP, apagado si no se puede usar; encima, el
   resto de acciones en dos líneas.
   `UiTheme` (ui_theme.gd): tema común (fuente serif del sistema, piedra oscura y ámbar) fusionado con el tema por
   defecto, así lo heredan también los controles de los CanvasLayer. Ayudas de estilo: `menu_button` (lista
@@ -158,13 +158,13 @@ usar `root.get_node("Net")`. Red: lanzar dos instancias (`-- --host` / `-- --joi
   Los de Charizard están en `combat/attacks/charizard/*.tres` (se editan en el inspector; F1 en la arena muestra
   las hitboxes). Hitboxes = consulta de esfera en el tick contra las `Hurtbox` (Area3D, capa 4): deterministas,
   no dependen de los huesos. `HitFx`: chispas y destello (solo presentación).
-- `combat/abilities/` — `AbilityData` (base: coste de Calor, recarga, tiempos, seguimiento) con `start/tick/finish`;
+- `combat/abilities/` — `AbilityData` (base: coste de PP `pp_cost`, recarga `cooldown` por ranura, tiempos, seguimiento) con `start/tick/finish`;
   el estado de cada lanzamiento va en el diccionario `cast`, NUNCA en el Resource (se comparte). Subclases:
   `ChannelAbility` (cono por ticks), `ProjectileAbility` (→ `combat/projectile.gd`), `AreaAbility`, `BuffAbility`,
   `DashAbility` (embestida: fija la velocidad del lanzador y golpea una vez). Cada una define `kind()`,
   `summary()` (texto del selector) y `reach()`; `DummyBrain` decide por `kind()`, no por ranura.
   Kit de Charizard en `combat/abilities/charizard/` (ranuras 1-4 en `moveset.tres`: bola de fuego, lanzallamas,
-  rugido, danza dragón). AttackData tiene además `unblockable`, `burn_time` y `heat_gain`.
+  rugido, danza dragón). AttackData tiene además `unblockable` y `burn_time`.
 - `combat/fx.gd` — constructores de efectos (chorro de fuego, ascuas, bola, onda, explosión). REGLA: cachear
   materiales/mallas con `Fx._cached()`; crear recursos nuevos por efecto costaba ~40 ms por fotograma en partida.
   `Fx.prewarm()` (en el `_ready` del nivel) compila los shaders al cargar.

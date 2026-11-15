@@ -14,7 +14,7 @@ extends Resource
 @export var anim_speed := 1.0
 
 @export_group("Coste")
-@export var heat_cost := 30.0
+@export var pp_cost := 30.0
 @export var cooldown := 5.0
 
 @export_group("Tiempos")

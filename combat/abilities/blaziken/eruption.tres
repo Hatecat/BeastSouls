@@ -13,7 +13,6 @@ stamina_cost = 0
 stagger_time = 0.8
 knockback = 6
 hitstop = 0.1
-heat_gain = 0
 burn_time = 3
 
 [resource]
@@ -22,7 +21,7 @@ hit = SubResource("hit")
 display_name = "Erupción"
 color = Color(1, 0.4, 0.15, 1)
 action = &"skill_roar"
-heat_cost = 38
+pp_cost = 38
 cooldown = 11
 duration = 1.2
 cancel_start = 0.95

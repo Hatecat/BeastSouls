@@ -13,7 +13,6 @@ stamina_cost = 0
 stagger_time = 0.8
 knockback = 7
 hitstop = 0.12
-heat_gain = 0
 
 [resource]
 script = ExtResource("1_script")
@@ -22,7 +21,7 @@ display_name = "Onda de choque"
 color = Color(1, 0.7, 0.4, 1)
 action = &"skill_shot"
 anim_speed = 1.1
-heat_cost = 40
+pp_cost = 40
 cooldown = 10
 duration = 1.2
 cancel_start = 1

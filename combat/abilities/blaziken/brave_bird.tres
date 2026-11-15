@@ -13,7 +13,6 @@ stamina_cost = 0
 stagger_time = 0.9
 knockback = 9
 hitstop = 0.14
-heat_gain = 0
 
 [resource]
 script = ExtResource("1_script")
@@ -21,7 +20,7 @@ hit = SubResource("hit")
 display_name = "Pájaro osado"
 color = Color(1, 0.75, 0.5, 1)
 action = &"skill_body"
-heat_cost = 45
+pp_cost = 45
 cooldown = 12
 duration = 0.85
 cancel_start = 0.7

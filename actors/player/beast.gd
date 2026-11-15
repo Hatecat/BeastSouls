@@ -102,11 +102,12 @@ var action_seq := 0
 ## Tiempo que se recuerda una pulsación que aún no se pudo ejecutar (input buffer).
 @export var input_buffer_time := 0.3
 
-@export_group("Calor")
-## Recurso de las habilidades: se gana golpeando (AttackData.heat_gain) y recibiendo golpes.
-@export var max_heat := 100.0
-@export var start_heat := 30.0
-@export var heat_on_hit_taken := 5.0
+@export_group("PP")
+## Recurso de las habilidades: empieza lleno y se regenera solo, poco a poco (no se gana golpeando).
+@export var max_pp := 100.0
+@export var start_pp := 100.0
+## PP por segundo.
+@export var pp_regen := 3.0
 ## Daño por segundo de la quemadura.
 @export var burn_dps := 3.0
 
@@ -137,7 +138,7 @@ var locked_on := false
 var attack: AttackData
 ## Carga acumulada del ataque en curso (segundos).
 var charge := 0.0
-var heat := 0.0
+var pp := 0.0
 ## Habilidad en curso (estado ABILITY) y su ranura.
 var ability: AbilityData
 var ability_slot := -1
@@ -340,7 +341,7 @@ func revive() -> void:
 	health = max_health
 	stamina = max_stamina
 	poise = max_poise
-	heat = start_heat
+	pp = start_pp
 	for i in ABILITY_SLOTS:
 		cooldowns[i] = 0.0
 	buffs.clear()
@@ -412,10 +413,8 @@ func receive_hit(attacker: Beast, atk: AttackData, multiplier := 1.0, source := 
 	if result == HitResult.KILLED:
 		health = 0.0
 		_die()
-	else:
-		heat = minf(max_heat, heat + heat_on_hit_taken)
-		if atk.burn_time > 0.0 and result != HitResult.BLOCKED:
-			burn_time = maxf(burn_time, atk.burn_time)
+	elif atk.burn_time > 0.0 and result != HitResult.BLOCKED:
+		burn_time = maxf(burn_time, atk.burn_time)
 	_hitstop = atk.hitstop
 	hit_received.emit(attacker, result, damage)
 	_fx_hit_received(attacker, result)
@@ -619,6 +618,10 @@ func _try_attack(inp: PlayerInput) -> bool:
 				return false
 			# Se continúa la cadena solo si venimos de un ataque del mismo tipo.
 			var continuing := state == State.ATTACK and _combo_chain == chain and _combo_index >= 0
+			# Un remate (último golpe de la cadena, combo mixto o ataque corriendo) no enlaza con otra cadena:
+			# hay que esperar a que termine su recuperación. Sin esto, machacar el ligero no dejaba hueco.
+			if state == State.ATTACK and (_combo_index < 0 or (continuing and _combo_index == chain.size() - 1)):
+				return false
 			_combo_index = (_combo_index + 1) % chain.size() if continuing else 0
 			_combo_chain = chain
 			_combo_seq = seq if _combo_index > 0 else key
@@ -720,22 +723,19 @@ func _check_hits(a: AttackData) -> void:
 
 
 ## Aplica un golpe de este Beast a `victim` (ataques, habilidades, proyectiles).
-## Aplica las mejoras de daño, da Calor y emite `hit_landed`.
+## Aplica las mejoras de daño y emite `hit_landed`.
 func deal_hit(victim: Beast, atk: AttackData, source := Vector3.INF, multiplier := 1.0) -> HitResult:
 	if victim.is_remote:
 		# En red decide la víctima, en su máquina; aquí llegará su confirmación (confirm_remote_hit).
 		return HitResult.IGNORED
 	var result := victim.receive_hit(self, atk, multiplier * damage_multiplier(), source)
 	if result != HitResult.IGNORED:
-		var gain := atk.heat_gain * (0.5 if result == HitResult.BLOCKED else 1.0)
-		heat = minf(max_heat, heat + gain)
 		hit_landed.emit(victim, result, atk)
 	return result
 
 
-## El dueño de `target` (remoto) confirma que nuestro golpe le alcanzó: Calor, hitstop y efectos.
-func confirm_remote_hit(target: Beast, result: HitResult, heat_gain: float, hitstop: float) -> void:
-	heat = minf(max_heat, heat + heat_gain * (0.5 if result == HitResult.BLOCKED else 1.0))
+## El dueño de `target` (remoto) confirma que nuestro golpe le alcanzó: hitstop y efectos.
+func confirm_remote_hit(target: Beast, result: HitResult, hitstop: float) -> void:
 	if state == State.ATTACK:
 		_hitstop = maxf(_hitstop, hitstop * 0.5)  # llega tarde: medio hitstop para no frenar de más
 	target._fx_hit_received(self, result)
@@ -783,7 +783,7 @@ func can_use_ability(slot: int) -> bool:
 	if slot < 0 or slot >= abilities.size():
 		return false
 	var ab := abilities[slot]
-	return ab != null and cooldowns[slot] <= 0.0 and heat >= ab.heat_cost
+	return ab != null and cooldowns[slot] <= 0.0 and pp >= ab.pp_cost
 
 
 func _try_ability(inp: PlayerInput) -> bool:
@@ -809,7 +809,7 @@ func _start_ability(slot: int, inp: PlayerInput) -> void:
 	elif inp.move.length() > 0.2:
 		facing = yaw_of(inp.move_3d())
 	sprinting = false
-	heat -= ab.heat_cost
+	pp -= ab.pp_cost
 	cooldowns[slot] = ab.cooldown
 	_set_state(State.ABILITY)
 	ability = ab
@@ -856,7 +856,7 @@ func net_snapshot() -> Array:
 	return [
 		Time.get_ticks_usec() / 1_000_000.0, global_position, velocity, facing, state, state_time,
 		action_seq, moveset.attack_index(attack) if moveset else -1, ability_slot, charge, _charge_done,
-		health, stamina, heat, poise, burn_time, buff_list, sprinting, _dodge_duration, _stagger_duration,
+		health, stamina, pp, poise, burn_time, buff_list, sprinting, _dodge_duration, _stagger_duration,
 		locked_on, _hitstop,
 	]
 
@@ -950,6 +950,7 @@ func _tick_resources(delta: float) -> void:
 	_poise_wait -= delta
 	if _poise_wait <= 0.0:
 		poise = minf(max_poise, poise + poise_regen * delta)
+	pp = minf(max_pp, pp + pp_regen * delta)
 	for i in ABILITY_SLOTS:
 		cooldowns[i] = maxf(0.0, cooldowns[i] - delta)
 	for i in range(buffs.size() - 1, -1, -1):

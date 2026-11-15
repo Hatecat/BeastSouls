@@ -30,7 +30,7 @@ static func rows() -> Array:
 		["Fijar objetivo", _k("lock_on"), "R3 (pulsar stick der.)",
 			"La cámara sigue al rival y te mueves a su alrededor. Cambia de objetivo con la rueda o moviendo el stick derecho."],
 		["Habilidades 1 y 2", "%s · %s" % [_k("ability_1"), _k("ability_2")], "X / Cuadrado · Y / Triángulo",
-			"Las principales: 1 a distancia, 2 de cerca. Gastan Calor (barra naranja), que se gana golpeando, y tienen recarga."],
+			"Las principales: 1 a distancia, 2 de cerca. Gastan PP (barra azul), que se regeneran solos poco a poco, y cada una tiene su tiempo de recarga."],
 		["Habilidades 3 y 4", "%s · %s" % [_k("ability_3"), _k("ability_4")], "LT / L2 (mantener) + X · Y",
 			"Las secundarias: 3 de área, 4 de mejora. Con mando, mantén LT y el HUD resalta la segunda barra."],
 		["Pausa y opciones", "Esc", "Start", ""],

@@ -5,7 +5,7 @@ extends Control
 ##     X / Y son las habilidades 1 y 2; con LT mantenido pasan a ser la 3 y la 4 (la otra pareja se ve en el
 ##     círculo pequeño pegado a cada botón). B esquiva y A salta.
 ##   Teclado: las cuatro habilidades en rombo con su tecla.
-## Encima, dos líneas con el resto de acciones. Lo que no se puede usar ahora (sin Calor, en recarga, sin
+## Encima, dos líneas con el resto de acciones. Lo que no se puede usar ahora (sin PP, en recarga, sin
 ## estamina, en el aire) sale apagado; la recarga es un sector oscuro que se va cerrando.
 
 const R := 34.0        ## radio de cada botón
@@ -140,15 +140,15 @@ func _ability_node(font: Font, p: Vector2, dir: Vector2, key: String, slot: int,
 	if beast.ability_slot == slot and beast.ability == ab:
 		draw_arc(p, R + 5.0, 0.0, TAU, 48, Color(1, 1, 1, 0.95), 3.0, true)
 	_glyph(font, p, dir, key)
-	# Dentro: segundos de recarga o coste de Calor.
-	var enough := beast.heat >= ab.heat_cost
+	# Dentro: segundos de recarga o coste de PP.
+	var enough := beast.pp >= ab.pp_cost
 	if cd > 0.05:
 		_text(font, p + Vector2(-R, 14.0), "%.0f" % ceilf(cd), HORIZONTAL_ALIGNMENT_CENTER, R * 2.0, 20, Color(1, 1, 1, 0.95))
 	else:
-		_text(font, p + Vector2(-R, 14.0 if not PAD_COLORS.has(key) else 6.0), "%d" % ab.heat_cost, HORIZONTAL_ALIGNMENT_CENTER, R * 2.0, 14,
-				Color(1.0, 0.85, 0.55) if enough else Color(1.0, 0.45, 0.4))
+		_text(font, p + Vector2(-R, 14.0 if not PAD_COLORS.has(key) else 6.0), "%d" % ab.pp_cost, HORIZONTAL_ALIGNMENT_CENTER, R * 2.0, 14,
+				Color(0.7, 0.86, 1.0) if enough else Color(1.0, 0.45, 0.4))
 	var col := Color(1, 1, 1, 0.95) if usable else Color(1, 1, 1, 0.62)
-	_label(font, p, dir, ab.display_name, AbilityData.kind_label(ab.kind()) if usable or cd > 0.05 else "Falta Calor", col)
+	_label(font, p, dir, ab.display_name, AbilityData.kind_label(ab.kind()) if usable or cd > 0.05 else "Faltan PP", col)
 	# Pareja alternativa (con LT): círculo pequeño hacia fuera del rombo.
 	if alt_slot >= 0 and alt_slot < beast.abilities.size():
 		var other := beast.abilities[alt_slot]

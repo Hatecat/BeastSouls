@@ -14,7 +14,6 @@ stagger_time = 0.5
 knockback = 4.0
 hitstop = 0.06
 burn_time = 2.0
-heat_gain = 0.0
 
 [resource]
 script = ExtResource("1_script")
@@ -23,7 +22,7 @@ display_name = "Bola de fuego"
 color = Color(1.0, 0.62, 0.2, 1.0)
 action = &"skill_fireball"
 anim_speed = 1.8
-heat_cost = 20.0
+pp_cost = 20.0
 cooldown = 3.0
 duration = 0.8
 cancel_start = 0.6

@@ -13,7 +13,6 @@ stamina_cost = 0
 stagger_time = 0.3
 knockback = 0.8
 hitstop = 0.05
-heat_gain = 0
 
 [resource]
 script = ExtResource("1_script")
@@ -21,7 +20,7 @@ hit = SubResource("hit")
 display_name = "Rayo burbuja"
 color = Color(0.55, 0.8, 1, 1)
 action = &"skill_shot"
-heat_cost = 35
+pp_cost = 35
 cooldown = 8
 duration = 1.5
 cancel_start = 1.3

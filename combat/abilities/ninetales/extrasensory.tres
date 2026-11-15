@@ -13,7 +13,6 @@ stamina_cost = 0
 stagger_time = 0.5
 knockback = 3
 hitstop = 0.05
-heat_gain = 0
 
 [resource]
 script = ExtResource("1_script")
@@ -22,7 +21,7 @@ display_name = "Paranormal"
 color = Color(0.9, 0.6, 1, 1)
 action = &"skill_mind"
 anim_speed = 1.8
-heat_cost = 25
+pp_cost = 25
 cooldown = 5
 duration = 0.8
 cancel_start = 0.62

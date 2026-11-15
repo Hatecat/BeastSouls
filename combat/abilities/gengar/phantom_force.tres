@@ -13,7 +13,6 @@ stamina_cost = 0
 stagger_time = 0.6
 knockback = 5
 hitstop = 0.09
-heat_gain = 0
 
 [resource]
 script = ExtResource("1_script")
@@ -21,7 +20,7 @@ hit = SubResource("hit")
 display_name = "Golpe fantasma"
 color = Color(0.62, 0.3, 1, 1)
 action = &"attack_running"
-heat_cost = 30
+pp_cost = 30
 cooldown = 9
 duration = 0.95
 cancel_start = 0.8

@@ -13,7 +13,6 @@ stamina_cost = 0
 stagger_time = 0.9
 knockback = 6
 hitstop = 0.13
-heat_gain = 0
 
 [resource]
 script = ExtResource("1_script")
@@ -21,7 +20,7 @@ hit = SubResource("hit")
 display_name = "Trueno"
 color = Color(1, 0.9, 0.3, 1)
 action = &"skill_roar"
-heat_cost = 45
+pp_cost = 45
 cooldown = 12
 duration = 1.2
 cancel_start = 0.95

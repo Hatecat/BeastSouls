@@ -54,7 +54,7 @@ func _physics_process(delta: float) -> void:
 func _on_remote_hit_local(target: Beast, result: Beast.HitResult, atk: AttackData) -> void:
 	if target != local or atk == null:
 		return
-	Net.send_event({type = "hit", result = result, gain = atk.heat_gain, hitstop = atk.hitstop})
+	Net.send_event({type = "hit", result = result, hitstop = atk.hitstop})
 
 
 func _on_local_died() -> void:
@@ -64,6 +64,6 @@ func _on_local_died() -> void:
 func _on_event(e: Dictionary) -> void:
 	match e.get("type", ""):
 		"hit":
-			local.confirm_remote_hit(remote, int(e.result) as Beast.HitResult, float(e.gain), float(e.hitstop))
+			local.confirm_remote_hit(remote, int(e.result) as Beast.HitResult, float(e.hitstop))
 		"died":
 			remote_died.emit()

@@ -18,7 +18,8 @@ stats = Dictionary[StringName, Variant]({
 &"jog_speed": 4.8,
 &"sprint_speed": 8,
 &"max_poise": 12,
-&"max_stamina": 110
+&"max_stamina": 110,
+&"walk_anim_speed": 4.4
 })
 body_radius = 0.45
 body_height = 1.5

@@ -13,7 +13,6 @@ stamina_cost = 0
 stagger_time = 1
 knockback = 4
 hitstop = 0.1
-heat_gain = 0
 unblockable = true
 
 [resource]
@@ -22,7 +21,7 @@ hit = SubResource("hit")
 display_name = "Avalancha"
 color = Color(0.9, 0.8, 0.55, 1)
 action = &"skill_claw"
-heat_cost = 45
+pp_cost = 45
 cooldown = 15
 duration = 1.3
 cancel_start = 1.05

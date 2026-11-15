@@ -13,7 +13,6 @@ stamina_cost = 0
 stagger_time = 1.4
 knockback = 1
 hitstop = 0.1
-heat_gain = 0
 unblockable = true
 
 [resource]
@@ -22,7 +21,7 @@ hit = SubResource("hit")
 display_name = "Mal de ojo"
 color = Color(0.7, 0.4, 0.8, 1)
 action = &"skill_mind"
-heat_cost = 45
+pp_cost = 45
 cooldown = 16
 duration = 1.2
 cancel_start = 0.95

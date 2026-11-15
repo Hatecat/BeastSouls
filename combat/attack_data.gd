@@ -36,8 +36,6 @@ extends Resource
 @export var unblockable := false
 ## Segundos de quemadura que aplica (0 = ninguna).
 @export var burn_time := 0.0
-## Calor que gana el atacante al acertar (la mitad si se lo bloquean).
-@export var heat_gain := 8.0
 
 @export_group("Hitbox")
 ## Esfera en coordenadas locales del personaje (adelante = -Z). Se desplaza de start a end

@@ -13,7 +13,6 @@ stamina_cost = 0
 stagger_time = 0.9
 knockback = 7
 hitstop = 0.13
-heat_gain = 0
 
 [resource]
 script = ExtResource("1_script")
@@ -21,7 +20,7 @@ hit = SubResource("hit")
 display_name = "Puño dinámico"
 color = Color(1, 0.55, 0.35, 1)
 action = &"skill_punch"
-heat_cost = 35
+pp_cost = 35
 cooldown = 10
 duration = 0.85
 cancel_start = 0.7

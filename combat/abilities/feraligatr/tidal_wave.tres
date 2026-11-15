@@ -13,7 +13,6 @@ stamina_cost = 0
 stagger_time = 0.8
 knockback = 9
 hitstop = 0.1
-heat_gain = 0
 
 [resource]
 script = ExtResource("1_script")
@@ -21,7 +20,7 @@ hit = SubResource("hit")
 display_name = "Maremoto"
 color = Color(0.3, 0.62, 1, 1)
 action = &"skill_roar"
-heat_cost = 40
+pp_cost = 40
 cooldown = 12
 duration = 1.2
 cancel_start = 0.95

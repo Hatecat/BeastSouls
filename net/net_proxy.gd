@@ -9,7 +9,7 @@ extends Node
 
 ## Índices de la instantánea (Beast.net_snapshot).
 enum { T, POS, VEL, FACING, STATE, STATE_TIME, SEQ, ATTACK, ABILITY, CHARGE, CHARGE_DONE, HEALTH, STAMINA,
-	HEAT, POISE, BURN, BUFFS, SPRINTING, DODGE_DUR, STAGGER_DUR, LOCKED, HITSTOP }
+	PP, POISE, BURN, BUFFS, SPRINTING, DODGE_DUR, STAGGER_DUR, LOCKED, HITSTOP }
 
 ## Retardo de interpolación (s). Debe cubrir el intervalo entre instantáneas (~33 ms) más el jitter.
 @export var interp_delay := 0.1
@@ -113,7 +113,7 @@ func _apply(a: Array, b: Array, alpha: float, extra: float, rt: float, _delta: f
 	beast._charge_done = a[CHARGE_DONE]
 	beast.health = a[HEALTH]
 	beast.stamina = a[STAMINA]
-	beast.heat = a[HEAT]
+	beast.pp = a[PP]
 	beast.poise = a[POISE]
 	beast.burn_time = a[BURN]
 	beast.sprinting = a[SPRINTING]

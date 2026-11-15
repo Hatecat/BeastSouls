@@ -14,7 +14,6 @@ stagger_time = 0.3
 knockback = 0.6
 hitstop = 0.0
 burn_time = 4.0
-heat_gain = 0.0
 
 [resource]
 script = ExtResource("1_script")
@@ -23,7 +22,7 @@ display_name = "Lanzallamas"
 color = Color(1.0, 0.38, 0.1, 1.0)
 action = &"skill_flamethrower"
 anim_speed = 1.0
-heat_cost = 35.0
+pp_cost = 35.0
 cooldown = 7.0
 duration = 1.7
 cancel_start = 1.5

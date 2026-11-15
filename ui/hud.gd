@@ -13,7 +13,7 @@ extends CanvasLayer
 
 var _health: Bar
 var _stamina: Bar
-var _heat: Bar
+var _pp: Bar
 var _diamond: ActionDiamond
 var _status: Label
 var _debug: Label
@@ -63,11 +63,11 @@ func _ready() -> void:
 	add_child(root)
 	_health = _make_bar(Color(0.62, 0.08, 0.06), 14.0)
 	_stamina = _make_bar(Color(0.18, 0.52, 0.22), 9.0)
-	_heat = _make_bar(Color(0.95, 0.45, 0.08), 7.0)
-	_heat.trail_color = Color(1.0, 0.9, 0.6)
+	_pp = _make_bar(Color(0.25, 0.5, 0.95), 7.0)
+	_pp.trail_color = Color(0.75, 0.88, 1.0)
 	root.add_child(_health)
 	root.add_child(_stamina)
-	root.add_child(_heat)
+	root.add_child(_pp)
 
 	# Rombo de acciones y habilidades (abajo a la derecha).
 	_diamond = ActionDiamond.new()
@@ -289,8 +289,8 @@ func _process(_delta: float) -> void:
 	_stamina.custom_minimum_size.x = beast.max_stamina * px_per_point
 	_health.value = beast.health / beast.max_health
 	_stamina.value = beast.stamina / beast.max_stamina
-	_heat.custom_minimum_size.x = beast.max_heat * px_per_point * 0.6
-	_heat.value = beast.heat / beast.max_heat
+	_pp.custom_minimum_size.x = beast.max_pp * px_per_point * 0.6
+	_pp.value = beast.pp / beast.max_pp
 	_diamond.beast = beast
 	var status := PackedStringArray()
 	if beast.burn_time > 0.0:
@@ -313,11 +313,11 @@ func _process(_delta: float) -> void:
 			atk = "  %s%s" % [beast.attack.display_name, "  carga x%.2f" % beast.charge_multiplier() if beast.charge > 0.0 else ""]
 		elif beast.ability:
 			atk = "  " + beast.ability.display_name
-		_debug.text = "Estado: %s%s%s%s\nVelocidad: %.1f m/s\nVida: %d · Estamina: %d · Postura: %d · Calor: %d\nObjetivo: %s\n%s\nFPS: %d · Calidad: %s (F3)" % [
+		_debug.text = "Estado: %s%s%s%s\nVelocidad: %.1f m/s\nVida: %d · Estamina: %d · Postura: %d · PP: %d\nObjetivo: %s\n%s\nFPS: %d · Calidad: %s (F3)" % [
 			Beast.State.keys()[beast.state], atk,
 			"  [correr]" if beast.sprinting else "",
 			"  [invulnerable]" if beast.is_invulnerable() else "",
-			beast.horizontal_speed(), beast.health, beast.stamina, beast.poise, beast.heat, target,
+			beast.horizontal_speed(), beast.health, beast.stamina, beast.poise, beast.pp, target,
 			_net_or_ai_text(),
 			Engine.get_frames_per_second(), Graphics.quality_name()]
 

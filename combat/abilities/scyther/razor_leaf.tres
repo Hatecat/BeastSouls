@@ -13,7 +13,6 @@ stamina_cost = 0
 stagger_time = 0.25
 knockback = 1
 hitstop = 0.05
-heat_gain = 0
 
 [resource]
 script = ExtResource("1_script")
@@ -22,7 +21,7 @@ display_name = "Viento cortante"
 color = Color(0.55, 1, 0.4, 1)
 action = &"skill_air_slash"
 anim_speed = 2
-heat_cost = 20
+pp_cost = 20
 cooldown = 4
 duration = 0.85
 cancel_start = 0.7

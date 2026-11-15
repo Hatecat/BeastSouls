@@ -13,7 +13,6 @@ stamina_cost = 0
 stagger_time = 0.25
 knockback = 1
 hitstop = 0.05
-heat_gain = 0
 burn_time = 1.5
 
 [resource]
@@ -23,7 +22,7 @@ display_name = "Ascuas"
 color = Color(1, 0.55, 0.2, 1)
 action = &"skill_fireball"
 anim_speed = 1.7
-heat_cost = 15
+pp_cost = 15
 cooldown = 3
 duration = 0.9
 cancel_start = 0.72

@@ -13,7 +13,6 @@ stamina_cost = 0
 stagger_time = 0.6
 knockback = 5
 hitstop = 0.09
-heat_gain = 0
 
 [resource]
 script = ExtResource("1_script")
@@ -21,7 +20,7 @@ hit = SubResource("hit")
 display_name = "As oculto"
 color = Color(0.75, 0.55, 1, 1)
 action = &"skill_punch"
-heat_cost = 15
+pp_cost = 15
 cooldown = 4
 duration = 0.7
 cancel_start = 0.55

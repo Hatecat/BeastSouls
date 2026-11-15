@@ -13,7 +13,6 @@ stamina_cost = 0
 stagger_time = 0.6
 knockback = 8
 hitstop = 0.09
-heat_gain = 0
 
 [resource]
 script = ExtResource("1_script")
@@ -21,7 +20,7 @@ hit = SubResource("hit")
 display_name = "Acua cola"
 color = Color(0.3, 0.62, 1, 1)
 action = &"skill_body"
-heat_cost = 30
+pp_cost = 30
 cooldown = 8
 duration = 0.85
 cancel_start = 0.7

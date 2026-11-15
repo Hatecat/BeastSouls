@@ -13,7 +13,6 @@ stamina_cost = 0
 stagger_time = 0.8
 knockback = 8
 hitstop = 0.1
-heat_gain = 0
 
 [resource]
 script = ExtResource("1_script")
@@ -21,7 +20,7 @@ hit = SubResource("hit")
 display_name = "Barrido de cola"
 color = Color(0.3, 0.62, 1, 1)
 action = &"skill_tail"
-heat_cost = 20
+pp_cost = 20
 cooldown = 6
 duration = 0.85
 cancel_start = 0.68

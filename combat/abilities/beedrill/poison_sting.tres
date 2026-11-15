@@ -13,7 +13,6 @@ stamina_cost = 0
 stagger_time = 0.5
 knockback = 3
 hitstop = 0.05
-heat_gain = 0
 burn_time = 8
 
 [resource]
@@ -23,7 +22,7 @@ display_name = "Picotazo veneno"
 color = Color(0.7, 0.3, 1, 1)
 action = &"skill_pin_missile"
 anim_speed = 1.8
-heat_cost = 20
+pp_cost = 20
 cooldown = 4
 duration = 0.8
 cancel_start = 0.62
