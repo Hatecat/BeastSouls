@@ -383,7 +383,7 @@ def main():
     ], {
         "LH": make_combo("running", "Tajo relámpago", t=0.75, dmg=0.75, extra={"lunge_speed": 11}),
         "LLH": make_combo("heavy_2", "Corte doble", t=0.7, dmg=0.8, reach=1.15),
-        "LLLH": make_combo("heavy_1", "Ejecución", t=0.8, dmg=1.0, poise=1.2, reach=1.15),
+        "LLLH": make_combo("heavy_1", "Ejecución", t=0.8, dmg=1.3, poise=1.3, reach=1.15),
         "HL": make_combo("light_3", "Contratajo", t=0.7, dmg=0.9, reach=0.9),
     })
     make_def("scyther", "Scyther", "Asesino veloz",
