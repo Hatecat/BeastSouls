@@ -1,0 +1,35 @@
+[gd_resource type="Resource" script_class="DashAbility" format=3]
+
+[ext_resource type="Script" path="res://combat/abilities/dash_ability.gd" id="1_script"]
+[ext_resource type="Script" path="res://combat/attack_data.gd" id="2_attack"]
+
+[sub_resource type="Resource" id="hit"]
+script = ExtResource("2_attack")
+display_name = "Teletransporte"
+damage = 10
+poise_damage = 15
+guard_stamina_damage = 15
+stamina_cost = 0
+stagger_time = 0.6
+knockback = 2
+hitstop = 0.09
+heat_gain = 0
+
+[resource]
+script = ExtResource("1_script")
+hit = SubResource("hit")
+display_name = "Teletransporte"
+color = Color(0.8, 0.7, 1, 1)
+action = &"dodge"
+heat_cost = 20
+cooldown = 5
+duration = 0.55
+cancel_start = 0.4
+tracking = 10
+track_until = 0.08
+dash_start = 0.08
+dash_end = 0.26
+radius = 1.3
+offset = Vector3(0, 1, -0.8)
+anim_speed = 1
+dash_speed = 55.6

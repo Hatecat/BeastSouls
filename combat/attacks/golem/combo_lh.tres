@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="AttackData" format=3]
+
+[ext_resource type="Script" path="res://combat/attack_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+display_name = "Cabezazo"
+action = &"skill_body"
+anim_speed = 1.143
+duration = 0.892
+active_start = 0.294
+active_end = 0.441
+combo_start = 0.892
+cancel_start = 0.63
+damage = 20.9
+poise_damage = 49
+guard_stamina_damage = 42
+stamina_cost = 20.0
+stagger_time = 0.65
+knockback = 9
+hitstop = 0.1
+hitbox_offset_start = Vector3(0, 1.32, -1.2)
+hitbox_offset_end = Vector3(0, 1.32, -1.44)
+hitbox_radius = 1.08
+lunge_speed = 8.0
+lunge_start = 0
+lunge_end = 0.367
+tracking = 2.0
+hyper_armor = 50
+heat_gain = 12.0

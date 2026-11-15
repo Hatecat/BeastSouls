@@ -1,0 +1,35 @@
+[gd_resource type="Resource" script_class="DashAbility" format=3]
+
+[ext_resource type="Script" path="res://combat/abilities/dash_ability.gd" id="1_script"]
+[ext_resource type="Script" path="res://combat/attack_data.gd" id="2_attack"]
+
+[sub_resource type="Resource" id="hit"]
+script = ExtResource("2_attack")
+display_name = "Rodar"
+damage = 28
+poise_damage = 80
+guard_stamina_damage = 42
+stamina_cost = 0
+stagger_time = 0.9
+knockback = 9
+hitstop = 0.14
+heat_gain = 0
+
+[resource]
+script = ExtResource("1_script")
+hit = SubResource("hit")
+display_name = "Rodar"
+color = Color(0.75, 0.55, 0.3, 1)
+action = &"skill_body"
+heat_cost = 35
+cooldown = 9
+duration = 1.05
+cancel_start = 0.9
+tracking = 7
+track_until = 0.2
+dash_start = 0.25
+dash_end = 0.7
+radius = 1.6
+offset = Vector3(0, 1, -0.8)
+interruptible = false
+dash_speed = 20

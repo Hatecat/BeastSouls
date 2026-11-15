@@ -35,6 +35,9 @@ signal action_finished(action: StringName)
 @export var lean_scale := 1.0
 ## Huesos con física de muelle (colas, antenas, orejas): cadenas cuyo nombre contiene alguno de estos textos.
 @export var spring_patterns: PackedStringArray = ["Tail", "Feeler", "Ear", "Tongue"]
+## Escala de cadenas de huesos enteras (texto contenido en el nombre → factor): se aplica al primer hueso de
+## cada cadena, p. ej. {"Tail": 0.6} para acortar colas que tapan la cámara.
+@export var bone_scale: Dictionary[String, float] = {}
 @export var spring_stiffness := 3.0
 @export var spring_drag := 0.45
 
@@ -308,6 +311,12 @@ func _setup_procedural() -> void:
 			_pose.head_bone = -1  # la cabeza es la raíz (Gengar): girarla giraría el cuerpo entero
 		elif parent != _pose.chest_bone and String(skeleton.get_bone_name(parent)).containsn("neck"):
 			_pose.neck_bone = parent
+	for b in skeleton.get_bone_count():
+		var bone_name := String(skeleton.get_bone_name(b))
+		var parent := skeleton.get_bone_parent(b)
+		for pattern: String in bone_scale:
+			if bone_name.contains(pattern) and not (parent >= 0 and String(skeleton.get_bone_name(parent)).contains(pattern)):
+				_pose.scaled_bones[b] = bone_scale[pattern]
 	skeleton.add_child(_pose)
 	_setup_springs()
 	_trail = AttackTrail.new()

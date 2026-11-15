@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="AttackData" format=3]
+
+[ext_resource type="Script" path="res://combat/attack_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+display_name = "Empellón"
+action = &"skill_body"
+anim_speed = 1.2
+duration = 0.85
+active_start = 0.28
+active_end = 0.42
+combo_start = 0.85
+cancel_start = 0.6
+damage = 18.7
+poise_damage = 29.8
+guard_stamina_damage = 25.5
+stamina_cost = 20.0
+stagger_time = 0.65
+knockback = 8
+hitstop = 0.1
+hitbox_offset_start = Vector3(0, 1.1, -1)
+hitbox_offset_end = Vector3(0, 1.1, -1.2)
+hitbox_radius = 0.9
+lunge_speed = 8.0
+lunge_start = 0
+lunge_end = 0.35
+tracking = 2.0
+hyper_armor = 30
+heat_gain = 12.0

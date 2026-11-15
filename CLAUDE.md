@@ -1,8 +1,8 @@
 # BeastSouls
 
 Souls-like 3D en tercera persona con versus online 1v1. Godot 4.7.2, Forward+, Jolt Physics, todo en GDScript.
-Los modelos de `assets/models/placeholder/` (Charizard, Scyther, Gengar, Snorlax, Beedrill, Vaporeon, sacados de
-poke-tactics) son TEMPORALES y de uso privado: no se distribuyen. Se sustituirán por personajes propios.
+Los modelos de `assets/models/placeholder/` (Charizard, Scyther, Gengar, Snorlax, Beedrill, Vaporeon, Machop,
+Poliwrath, Golem, Mewtwo, Ninetales, Mr. Mime, sacados de poke-tactics) son TEMPORALES y de uso privado: no se distribuyen. Se sustituirán por personajes propios.
 
 ## Comandos
 
@@ -45,6 +45,8 @@ usar `root.get_node("Net")`. Red: lanzar dos instancias (`-- --host` / `-- --joi
   - `PoseModifier` (SkeletonModifier3D): la cabeza mira al rival fijado (`look_at_point`) y el torso se dobla al
     recibir un golpe (`flinch`); rota en el espacio del visual, no depende de los ejes de los huesos.
   - `SpringBoneSimulator3D` en las cadenas cuyo nombre contiene `spring_patterns` (colas, antenas, orejas).
+  - `bone_scale` ({"Tail": 0.55}): encoge cadenas enteras desde su primer hueso (lo aplica `PoseModifier`); las
+    colas de Ninetales tapaban la cámara.
   - Ataques: `drive(action, clip_time, rate)` clava el clip al `state_time` de la simulación.
     `_analyze_attacks()` busca en cada clip de ataque el instante de máximo avance (impacto) y
     `Beast._attack_clip_time()` lo hace caer en la ventana activa (anticipación que acelera, golpe seco,
@@ -76,6 +78,10 @@ usar `root.get_node("Net")`. Red: lanzar dos instancias (`-- --host` / `-- --joi
   `Session.my_loadout` / `rival_loadout`; la última selección de cada personaje se guarda en
   user://settings.cfg (sección "loadouts"). Online viaja en los eventos "pick" y "start".
   Los efectos (`Fx`) toman el color de la habilidad (`AbilityData.color`).
+  Segunda tanda (Machop, Poliwrath, Golem, Mewtwo, Ninetales, Mr. Mime): sus 10 habilidades están todas en
+  `EXTRA_KITS` y sus visuales usan acciones comunes (`skill_shot/roar/boost/cast/punch/kick/body/claw/tail/mind`),
+  que también usan los remates de combo para no repetir el clip de la cadena. Mewtwo trae otro juego de clips
+  (`pm0150_…`, largos): guardia = `rangeattack02_start` con `block_pose` 0.9 en sus `stats`.
   `Roster` carga los de `PATHS` y después cualquier otro `.tres` de la carpeta. `tools/new_character.py` crea un
   personaje desde un .glb: lo importa, lee clips y huesos (`tools/inspect_model.gd`), adivina `action_map` y
   sockets, y genera visual, kit por arquetipo (acciones `skill_1..4`) y CharacterDef. Guía: docs/NUEVO_PERSONAJE.md.

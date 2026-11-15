@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="AttackData" format=3]
+
+[ext_resource type="Script" path="res://combat/attack_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+display_name = "Gran final"
+action = &"skill_kick"
+anim_speed = 1.111
+duration = 0.9
+active_start = 0.27
+active_end = 0.378
+combo_start = 0.495
+cancel_start = 0.585
+damage = 29.9
+poise_damage = 56
+guard_stamina_damage = 49
+stamina_cost = 24.0
+stagger_time = 0.7
+knockback = 8
+hitstop = 0.12
+hitbox_offset_start = Vector3(0, 1.725, -1.265)
+hitbox_offset_end = Vector3(0, 1.495, -1.6675)
+hitbox_radius = 0.92
+lunge_speed = 4.5
+lunge_start = 0.18
+lunge_end = 0.342
+tracking = 4.0
+hyper_armor = 40.0
+heat_gain = 14.0

@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="BuffAbility" format=3]
+
+[ext_resource type="Script" path="res://combat/abilities/buff_ability.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+display_name = "Recuperación"
+color = Color(0.8, 1, 0.85, 1)
+action = &"skill_boost"
+heat_cost = 55
+cooldown = 26
+duration = 1.2
+cancel_start = 0.95
+tracking = 0
+track_until = 0
+buff_id = &"recover"
+trigger_time = 0.45
+buff_duration = 5
+damage_multiplier = 1
+speed_multiplier = 0.75
+action_speed_multiplier = 1
+heal = 0.3
+anim_speed = 1.7

@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="AttackData" format=3]
+
+[ext_resource type="Script" path="res://combat/attack_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+display_name = "Zarpa pétrea"
+action = &"attack_light_2"
+anim_speed = 1.125
+duration = 0.816
+active_start = 0.24
+active_end = 0.384
+combo_start = 0.36
+cancel_start = 0.48
+damage = 13.2
+poise_damage = 21
+guard_stamina_damage = 25.2
+stamina_cost = 14.0
+stagger_time = 0.45
+knockback = 2.5
+hitstop = 0.07
+hitbox_offset_start = Vector3(0.48, 1.32, -1.2)
+hitbox_offset_end = Vector3(0, 1.32, -1.62)
+hitbox_radius = 0.9
+lunge_speed = 3.5
+lunge_start = 0.096
+lunge_end = 0.312
+tracking = 6.0
+hyper_armor = 25

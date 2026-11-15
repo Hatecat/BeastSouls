@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="AreaAbility" format=3]
+
+[ext_resource type="Script" path="res://combat/abilities/area_ability.gd" id="1_script"]
+[ext_resource type="Script" path="res://combat/attack_data.gd" id="2_attack"]
+
+[sub_resource type="Resource" id="hit"]
+script = ExtResource("2_attack")
+display_name = "Danza caos"
+damage = 3
+poise_damage = 100
+guard_stamina_damage = 0
+stamina_cost = 0
+stagger_time = 1.5
+knockback = 1
+hitstop = 0.1
+heat_gain = 0
+unblockable = true
+
+[resource]
+script = ExtResource("1_script")
+hit = SubResource("hit")
+display_name = "Danza caos"
+color = Color(1, 0.7, 0.9, 1)
+action = &"skill_roar"
+heat_cost = 45
+cooldown = 16
+duration = 1.2
+cancel_start = 0.95
+tracking = 4
+track_until = 0.35
+trigger_time = 0.5
+radius = 4.5
+caster_shake = 0.4

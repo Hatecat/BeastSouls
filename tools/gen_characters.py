@@ -230,6 +230,9 @@ _Y = (0.85, 1.0, 0.25)
 _T = (0.7, 0.3, 1.0)
 _W = (0.3, 0.62, 1.0)
 _ICE = (0.7, 0.95, 1.0)
+_F = (1.0, 0.55, 0.35)
+_PSY = (0.8, 0.45, 1.0)
+_MIME = (1.0, 0.55, 0.8)
 _NI = dict(interruptible=False)  # Snorlax no se corta
 
 EXTRA_KITS = {
@@ -329,6 +332,152 @@ EXTRA_KITS = {
         x_buff("rain_dance", "Danza lluvia", (0.45, 0.7, 1.0), "skill_aqua_ring", 40, 20, 10, speed=1.25, rate=1.12),
         x_proj("scald", "Escaldar", (0.75, 0.85, 1.0), "skill_water_pulse", 18, 30, 6, hit=dict(burn_time=4.0, knockback=4),
                speed=22, explode_radius=1.8, spawn_offset=(0, 1.0, -1.2)),
+    ],
+    # --- Segunda tanda (catálogo completo aquí: las 4 primeras son la selección por defecto) ---------
+    "machop": [
+        x_proj("vacuum_wave", "Onda vacío", _F, "skill_shot", 15, 20, 4, speed=24, radius=0.35, explode_radius=1.2,
+               visual_scale=0.8, spawn_offset=(0, 1.0, -0.8)),
+        x_dash("mach_punch", "Ultrapuño", _F, 16, 15, 4, 6.0, action="skill_punch", anim_speed=1.5, duration=0.7,
+               cancel_start=0.55, dash_start=0.12, dash_end=0.36, radius=1.1, offset=(0, 0.9, -0.7)),
+        x_area("seismic_toss", "Sísmico", _F, "skill_body", 20, 35, 10, 3.5, anim_speed=1.2, trigger_time=0.42),
+        x_buff("bulk_up", "Corpulencia", (1.0, 0.75, 0.6), "skill_boost", 45, 20, 9, dmg=1.3, rate=1.1),
+        x_channel("close_combat", "A bocajarro", _F, "skill_punch", 3.4, 30, 7, anim_speed=1.8, duration=1.2,
+                  cancel_start=1.0, tracking=5, track_until=1.0, move_factor=0.5, channel_start=0.15, channel_end=1.0,
+                  tick_interval=0.14, cone_range=2.6, cone_angle_deg=50, origin_offset=(0, 1.0, -0.4), fx_socket='&"hand_r"'),
+        x_dash("jump_kick", "Patada salto", _F, 22, 30, 9, 8.0, action="skill_kick", anim_speed=1.4,
+               hit=dict(knockback=7), offset=(0, 0.9, -0.7)),
+        x_area("rock_smash", "Golpe roca", _E, "skill_punch", 14, 20, 5, 2.8, hit=dict(poise_damage=40, knockback=4),
+               anim_speed=1.3, trigger_time=0.34, duration=0.9, cancel_start=0.7, caster_shake=0.25),
+        x_proj("focus_blast", "Onda certera", (1.0, 0.7, 0.4), "skill_shot", 30, 45, 11,
+               hit=dict(stagger_time=0.8, knockback=7, hitstop=0.12), anim_speed=1.2, duration=1.15, cancel_start=0.95,
+               spawn_time=0.55, speed=15, radius=0.6, lifetime=2.4, homing=0.6, explode_radius=2.6, visual_scale=1.6,
+               spawn_offset=(0, 1.0, -0.9)),
+        x_buff("focus_energy", "Concentración", (0.8, 0.9, 1.0), "skill_cast", 40, 18, 8, speed=1.2, rate=1.25),
+        x_area("scary_face", "Grito de guerra", (1.0, 0.85, 0.5), "skill_roar", 6, 45, 16, 4.0,
+               hit=dict(poise_damage=100, guard_stamina_damage=0, stagger_time=1.3, knockback=1, unblockable=True)),
+    ],
+    "poliwrath": [
+        x_proj("water_gun", "Pistola agua", _W, "skill_shot", 16, 20, 3.5, hit=dict(knockback=5), speed=22,
+               spawn_offset=(0, 1.2, -1.0)),
+        x_dash("dynamic_punch", "Puño dinámico", _F, 26, 35, 10, 7.0, action="skill_punch", anim_speed=1.3,
+               hit=dict(stagger_time=0.9, knockback=7, hitstop=0.13)),
+        x_area("sea_wave", "Onda marina", _W, "skill_roar", 18, 40, 12, 4.8, hit=dict(knockback=9)),
+        x_buff("belly_drum_p", "Corpulencia", (0.6, 0.8, 1.0), "skill_boost", 50, 22, 10, dmg=1.3, heal=0.1),
+        x_channel("bubble_beam", "Rayo burbuja", (0.55, 0.8, 1.0), "skill_shot", 3.8, 35, 8, cone_range=7.0,
+                  cone_angle_deg=14, origin_offset=(0, 1.2, -0.8), fx_socket='&"chest"'),
+        x_dash("waterfall", "Cascada", _W, 18, 25, 6, 9.0, action="skill_body", hit=dict(knockback=8)),
+        x_area("hypnosis_p", "Hipnosis", (0.75, 0.6, 1.0), "skill_cast", 2, 45, 16, 4.0,
+               hit=dict(poise_damage=100, guard_stamina_damage=0, stagger_time=1.6, knockback=1, unblockable=True),
+               trigger_time=0.5),
+        x_proj("bubbles", "Burbujas", (0.6, 0.85, 1.0), "skill_shot", 6, 20, 4, hit=dict(stagger_time=0.25, knockback=2),
+               duration=1.0, cancel_start=0.85, track_until=0.75, spawn_time=0.25, speed=15, radius=0.35, lifetime=2.2,
+               homing=2.4, explode_radius=0.0, visual_scale=0.6, count=4, interval=0.14, spawn_offset=(0, 1.2, -1.0)),
+        x_channel("submission", "Sumisión", _F, "skill_body", 4.5, 30, 8, anim_speed=1.4, duration=1.1, cancel_start=0.95,
+                  tracking=5, track_until=0.9, move_factor=0.4, channel_start=0.2, channel_end=0.9, tick_interval=0.14,
+                  cone_range=2.8, cone_angle_deg=50, origin_offset=(0, 1.2, -0.4), fx_socket='&"hand_r"'),
+        x_buff("rest_p", "Descanso", (0.6, 0.8, 1.0), "skill_cast", 55, 28, 4, heal=0.28, speed=0.6, rate=0.85),
+    ],
+    "golem": [
+        x_proj("rock_throw", "Lanzarrocas", _E, "skill_shot", 26, 30, 6, hit=dict(stagger_time=0.8, knockback=7, hitstop=0.12),
+               anim_speed=1.0, duration=1.2, cancel_start=1.0, spawn_time=0.5, speed=15, radius=0.6, lifetime=2.4,
+               homing=0.4, explode_radius=2.2, visual_scale=1.7, spawn_offset=(0, 1.5, -1.3), **_NI),
+        x_dash("rollout_g", "Rodar", _E, 28, 35, 9, 9.0, action="skill_body",
+               hit=dict(poise_damage=80, stagger_time=0.9, knockback=9, hitstop=0.14), dash_start=0.25, dash_end=0.7,
+               duration=1.05, cancel_start=0.9, radius=1.6, **_NI),
+        x_area("magnitude", "Magnitud", _E, "skill_roar", 20, 45, 13, 6.5, hit=dict(poise_damage=70, stagger_time=0.9),
+               trigger_time=0.55, duration=1.35, cancel_start=1.1, tracking=0, track_until=0, caster_shake=0.8, **_NI),
+        x_buff("iron_defense", "Fortaleza", (0.85, 0.8, 0.7), "skill_boost", 50, 24, 10, dmg=1.2, speed=0.9, heal=0.15,
+               duration=1.4, **_NI),
+        x_area("explosion", "Explosión", (1.0, 0.5, 0.15), "skill_cast", 40, 70, 30, 5.0,
+               hit=dict(poise_damage=120, guard_stamina_damage=70, stagger_time=1.1, knockback=11, hitstop=0.16),
+               anim_speed=0.7, trigger_time=0.95, duration=1.7, cancel_start=1.5, tracking=0, track_until=0,
+               caster_shake=1.0, **_NI),
+        x_channel("rock_tomb", "Tumba rocas", _E, "skill_shot", 4.5, 35, 9, hit=dict(poise_damage=9, knockback=1.5),
+                  cone_range=5.0, cone_angle_deg=28, origin_offset=(0, 1.3, -0.9), fx_socket='&"chest"', **_NI),
+        x_proj("rock_blast", "Pedrada", _E, "skill_shot", 8, 25, 5, hit=dict(stagger_time=0.3, knockback=2.5),
+               duration=1.05, cancel_start=0.9, track_until=0.8, spawn_time=0.28, speed=19, radius=0.4, lifetime=2.0,
+               homing=0.8, explode_radius=0.0, visual_scale=0.8, count=3, interval=0.18, spawn_offset=(0, 1.5, -1.3), **_NI),
+        x_area("stomp", "Pisotón", _E, "skill_kick", 16, 20, 6, 3.2, hit=dict(poise_damage=45), anim_speed=1.3,
+               trigger_time=0.38, duration=0.95, cancel_start=0.78, **_NI),
+        x_area("rock_slide", "Avalancha", (0.9, 0.8, 0.55), "skill_claw", 12, 45, 15, 4.5,
+               hit=dict(poise_damage=100, guard_stamina_damage=0, stagger_time=1.0, knockback=4, unblockable=True),
+               trigger_time=0.55, duration=1.3, cancel_start=1.05, **_NI),
+        x_buff("rock_polish", "Pulimento", (0.8, 0.9, 1.0), "skill_boost", 40, 20, 8, speed=1.35, rate=1.15, duration=1.3, **_NI),
+    ],
+    "mewtwo": [
+        x_proj("aura_sphere", "Esfera aural", _PSY, "skill_shot", 20, 25, 4, hit=dict(knockback=4, hitstop=0.06),
+               anim_speed=2.3, speed=18, radius=0.5, lifetime=2.6, homing=3.0, explode_radius=1.8, visual_scale=1.2,
+               spawn_offset=(0, 1.6, -1.1)),
+        x_channel("psybeam", "Psicorrayo", _PSY, "skill_shot", 3.6, 35, 8, anim_speed=0.9, tracking=1.6, cone_range=9.0,
+                  cone_angle_deg=9, channel_start=0.45, origin_offset=(0, 1.6, -0.9), fx_socket='&"hand_r"'),
+        x_area("psychic", "Psíquico", _PSY, "skill_roar", 18, 40, 12, 6.0, hit=dict(knockback=9), anim_speed=1.6),
+        x_buff("calm_mind", "Paz mental", (0.9, 0.75, 1.0), "skill_boost", 50, 20, 10, dmg=1.3, rate=1.1, anim_speed=1.7),
+        x_proj("psystrike", "Onda mental", (0.95, 0.4, 1.0), "skill_shot", 34, 45, 10,
+               hit=dict(stagger_time=0.8, knockback=8, hitstop=0.13), anim_speed=1.3, duration=1.2, cancel_start=1.0,
+               spawn_time=0.55, speed=14, radius=0.75, lifetime=2.6, homing=0.8, explode_radius=3.2, visual_scale=2.0,
+               spawn_offset=(0, 1.6, -1.2)),
+        x_dash("teleport", "Teletransporte", (0.8, 0.7, 1.0), 10, 20, 5, 10.0, action="dodge", anim_speed=1.0,
+               hit=dict(poise_damage=15, knockback=2), duration=0.55, cancel_start=0.4, dash_start=0.08, dash_end=0.26,
+               tracking=10, track_until=0.08),
+        x_area("disable", "Anulación", (0.75, 0.6, 1.0), "skill_cast", 3, 45, 16, 5.0,
+               hit=dict(poise_damage=100, guard_stamina_damage=0, stagger_time=1.5, knockback=1, unblockable=True),
+               anim_speed=1.3, trigger_time=0.5),
+        x_proj("swift", "Rapidez", (1.0, 0.9, 0.5), "skill_shot", 5, 20, 4, hit=dict(stagger_time=0.2, knockback=1),
+               anim_speed=2.3, duration=1.05, cancel_start=0.9, track_until=0.8, spawn_time=0.3, speed=22, radius=0.3,
+               lifetime=1.8, homing=3.2, explode_radius=0.0, visual_scale=0.5, count=5, interval=0.1,
+               spawn_offset=(0, 1.6, -1.1)),
+        x_buff("recover", "Recuperación", (0.8, 1.0, 0.85), "skill_boost", 55, 26, 5, heal=0.3, speed=0.75, anim_speed=1.7),
+        x_area("repulse", "Repulsión", _PSY, "skill_cast", 12, 20, 6, 3.2, hit=dict(poise_damage=45, knockback=11),
+               anim_speed=1.6, trigger_time=0.3, duration=0.85, cancel_start=0.68, caster_shake=0.2),
+    ],
+    "ninetales": [
+        x_proj("will_o_wisp", "Fuego fatuo", (0.55, 0.75, 1.0), "skill_shot", 5, 20, 4,
+               hit=dict(stagger_time=0.2, knockback=1, burn_time=4.0), duration=1.0, cancel_start=0.85, track_until=0.7,
+               spawn_time=0.26, speed=13, radius=0.32, lifetime=3.0, homing=3.4, explode_radius=0.0, visual_scale=0.6,
+               count=3, interval=0.16, spawn_offset=(0, 1.1, -1.0)),
+        x_channel("fire_breath", "Aliento ígneo", _FIRE, "skill_shot", 3.4, 35, 7, hit=dict(burn_time=1.0), cone_range=6.0,
+                  cone_angle_deg=22, origin_offset=(0, 1.1, -0.8)),
+        x_area("fire_ring", "Anillo ígneo", (1.0, 0.45, 0.15), "skill_tail", 16, 35, 11, 5.0, hit=dict(burn_time=3.0),
+               anim_speed=1.5, trigger_time=0.5),
+        x_buff("sunny_day", "Día soleado", (1.0, 0.9, 0.5), "skill_boost", 50, 20, 10, dmg=1.3, speed=1.1),
+        x_proj("inferno", "Infierno", (1.0, 0.35, 0.1), "skill_shot", 32, 45, 10,
+               hit=dict(stagger_time=0.8, knockback=7, hitstop=0.12, burn_time=5.0), anim_speed=1.1, duration=1.2,
+               cancel_start=1.0, spawn_time=0.55, speed=13, radius=0.7, lifetime=2.6, homing=0.6, explode_radius=3.2,
+               visual_scale=1.9, spawn_offset=(0, 1.1, -1.0)),
+        x_dash("flame_charge", "Nitrocarga", _FIRE, 18, 25, 6, 8.0, action="skill_body", hit=dict(burn_time=2.0),
+               offset=(0, 0.8, -0.8)),
+        x_area("confuse_ray", "Rayo confuso", (0.8, 0.6, 1.0), "skill_mind", 2, 45, 16, 5.0,
+               hit=dict(poise_damage=100, guard_stamina_damage=0, stagger_time=1.6, knockback=1, unblockable=True),
+               trigger_time=0.5),
+        x_proj("extrasensory", "Paranormal", (0.9, 0.6, 1.0), "skill_mind", 16, 25, 5, hit=dict(knockback=3),
+               anim_speed=1.8, speed=26, radius=0.4, lifetime=1.8, homing=2.2, explode_radius=0.0, visual_scale=0.9,
+               spawn_offset=(0, 1.1, -1.0)),
+        x_channel("fire_spin_n", "Giro fuego", _FIRE, "skill_tail", 3.0, 25, 6, hit=dict(burn_time=1.0), anim_speed=1.3,
+                  duration=1.3, cancel_start=1.1, tracking=5, track_until=1.05, move_factor=0.6, channel_start=0.2,
+                  channel_end=1.05, tick_interval=0.13, cone_range=3.4, cone_angle_deg=60, origin_offset=(0, 1.0, -0.6)),
+        x_buff("safeguard", "Velo sagrado", (1.0, 0.95, 0.8), "skill_cast", 50, 24, 6, heal=0.22, speed=0.85),
+    ],
+    "mrmime": [
+        x_proj("magical_leaf", "Hoja mágica", (0.6, 1.0, 0.6), "skill_shot", 6, 18, 3.5, hit=dict(stagger_time=0.2, knockback=1),
+               duration=1.0, cancel_start=0.85, track_until=0.7, spawn_time=0.26, speed=20, radius=0.3, lifetime=2.0,
+               homing=3.0, explode_radius=0.0, visual_scale=0.55, count=3, interval=0.13, spawn_offset=(0, 1.2, -0.9)),
+        x_channel("double_slap", "Doble bofetón", _MIME, "skill_punch", 3.2, 28, 6, anim_speed=1.7, duration=1.2,
+                  cancel_start=1.0, tracking=5, track_until=1.0, move_factor=0.5, channel_start=0.15, channel_end=1.0,
+                  tick_interval=0.14, cone_range=3.0, cone_angle_deg=50, origin_offset=(0, 1.2, -0.4), fx_socket='&"hand_r"'),
+        x_area("barrier", "Barrera", (0.7, 0.9, 1.0), "skill_cast", 14, 35, 10, 4.0, hit=dict(knockback=11),
+               trigger_time=0.38, duration=1.0, cancel_start=0.8),
+        x_buff("mimic", "Mímica", (1.0, 0.8, 0.9), "skill_boost", 45, 20, 9, dmg=1.25, speed=1.15, rate=1.15),
+        x_proj("psywave", "Psicoonda", _PSY, "skill_shot", 22, 30, 6, hit=dict(knockback=5, hitstop=0.06), speed=17,
+               radius=0.5, homing=1.6, explode_radius=2.0, visual_scale=1.2, spawn_offset=(0, 1.2, -0.9)),
+        x_dash("drain_punch", "Puño drenaje", _F, 20, 30, 8, 7.0, action="skill_punch", anim_speed=1.3),
+        x_area("teeter_dance", "Danza caos", (1.0, 0.7, 0.9), "skill_roar", 3, 45, 16, 4.5,
+               hit=dict(poise_damage=100, guard_stamina_damage=0, stagger_time=1.5, knockback=1, unblockable=True),
+               trigger_time=0.5),
+        x_channel("dazzling_gleam", "Brillo mágico", (1.0, 0.75, 0.95), "skill_shot", 3.4, 35, 9, cone_range=6.0,
+                  cone_angle_deg=20, origin_offset=(0, 1.2, -0.7), fx_socket='&"hand_r"'),
+        x_buff("wish", "Deseo", (1.0, 0.95, 0.75), "skill_cast", 50, 25, 6, heal=0.25),
+        x_area("fake_out", "Sorpresa", _MIME, "skill_claw", 13, 20, 5, 3.0, hit=dict(poise_damage=45, knockback=5),
+               anim_speed=1.4, trigger_time=0.3, duration=0.85, cancel_start=0.68, caster_shake=0.2),
     ],
 }
 
@@ -550,6 +699,127 @@ def main():
              "Mucho aguante y control a media distancia: empuja con agua y se cura.",
              W, {"max_health": 120.0, "jog_speed": 4.4, "max_poise": 12.0},
              (0.6, 1.5, 1.0), (4, 3, 2, 5))
+    # ---------------------------------------------------------------------------------------------
+    # Segunda tanda. Sus 10 habilidades están en EXTRA_KITS; los remates usan clips distintos a los
+    # de la cadena normal (acciones skill_punch/kick/body... del visual).
+
+    # Machop: luchador pequeño y rápido, cadenas largas y poco alcance.
+    make_moveset("machop", {
+        "light_1": make_attack("light_1", "Golpe kárate", t=0.8, dmg=0.85, reach=0.85),
+        "light_2": make_attack("light_2", "Puño certero", t=0.8, dmg=0.85, reach=0.85),
+        "light_3": make_attack("light_3", "Patada baja", t=0.85, dmg=0.9, reach=0.75),
+        "heavy_1": make_attack("heavy_1", "Patada giro", t=0.85, dmg=0.9, reach=0.9),
+        "heavy_2": make_attack("heavy_2", "Tacleada", t=0.85, dmg=0.9, reach=0.9),
+        "running": make_attack("running", "Golpe bajo", t=0.8, dmg=0.85, reach=0.9, extra={"lunge_speed": 10}),
+    }, [], {
+        "LH": make_combo("light_3", "Gancho", "skill_kick", t=0.75, dmg=0.9, reach=0.8, extra={"knockback": 6}),
+        "LLH": make_combo("heavy_2", "Tajo cruzado", "skill_punch", t=0.75, dmg=0.85, reach=0.9),
+        "LLLH": make_combo("heavy_1", "Demolición", "skill_body", t=0.85, dmg=1.15, poise=1.4, reach=0.95, extra={"knockback": 8}),
+        "HL": make_combo("light_1", "Puño bala", "skill_punch", t=0.7, dmg=1.0, reach=0.9, extra={"lunge_speed": 7}),
+    })
+    make_def("machop", "Machop", "Luchador",
+             "Pequeño, rápido y con cadenas largas. Tiene que pegarse al rival: casi no tiene alcance.",
+             _F, {"max_health": 100.0, "jog_speed": 5.0, "sprint_speed": 8.2, "strafe_speed": 3.6, "max_poise": 9.0,
+                  "max_stamina": 115.0},
+             (0.45, 1.5, 1.0), (3, 4, 3, 1))
+
+    # Poliwrath: fajador con armadura en los fuertes y agua para empujar.
+    make_moveset("poliwrath", {
+        "light_1": make_attack("light_1", "Puñetazo", dmg=1.0, reach=1.0),
+        "light_2": make_attack("light_2", "Patada", dmg=1.0, reach=1.0),
+        "light_3": make_attack("light_3", "Gancho alto", dmg=1.05, reach=0.9),
+        "heavy_1": make_attack("heavy_1", "Golpe cuerpo", t=1.05, dmg=1.05, reach=1.05, extra={"hyper_armor": 60}),
+        "heavy_2": make_attack("heavy_2", "Machada", t=1.05, dmg=1.05, reach=1.05, extra={"hyper_armor": 60}),
+        "running": make_attack("running", "Placaje", dmg=1.0, extra={"lunge_speed": 9, "hyper_armor": 30}),
+    }, [], {
+        "LH": make_combo("running", "Empellón", "skill_body", dmg=0.85, extra={"knockback": 8, "hyper_armor": 30}),
+        "LLH": make_combo("heavy_1", "Gancho hidráulico", "skill_punch", t=0.9, dmg=1.0, extra={"hyper_armor": 60}),
+        "LLLH": make_combo("heavy_2", "Puño certero", "skill_punch", t=0.95, dmg=1.15, poise=1.4, extra={"hyper_armor": 60}),
+        "HL": make_combo("light_3", "Patada circular", "skill_kick", t=0.9, dmg=1.05, extra={"knockback": 6}),
+    })
+    make_def("poliwrath", "Poliwrath", "Fajador",
+             "Aguanta el intercambio: armadura en sus golpes fuertes, mucha vida y agua para apartar al rival.",
+             _W, {"max_health": 125.0, "jog_speed": 4.3, "sprint_speed": 7.0, "max_poise": 16.0, "max_stamina": 110.0},
+             (0.6, 1.9, 1.25), (4, 2, 4, 2))
+
+    # Golem: coloso de roca; lentísimo, armadura en todo y área enorme.
+    make_moveset("golem", {
+        "light_1": make_attack("light_1", "Puño roca", t=1.2, dmg=1.1, poise=1.4, reach=1.2, extra={"hyper_armor": 25}),
+        "light_2": make_attack("light_2", "Zarpa pétrea", t=1.2, dmg=1.1, poise=1.4, reach=1.2, extra={"hyper_armor": 25}),
+        "light_3": make_attack("light_3", "Pisotón", t=1.2, dmg=1.1, poise=1.4, reach=1.2, extra={"hyper_armor": 35}),
+        "heavy_1": make_attack("heavy_1", "Embate", t=1.25, dmg=1.12, poise=1.5, reach=1.25, extra={"hyper_armor": 90}),
+        "heavy_2": make_attack("heavy_2", "Machacar", t=1.25, dmg=1.12, poise=1.5, reach=1.25, extra={"hyper_armor": 90}),
+        "running": make_attack("running", "Desenrollar", t=1.1, dmg=1.15, poise=1.4, reach=1.2, extra={"hyper_armor": 70}),
+    }, [], {
+        "LH": make_combo("running", "Cabezazo", "skill_body", t=1.05, dmg=0.95, poise=1.4, reach=1.2, extra={"hyper_armor": 50, "knockback": 9}),
+        "LLH": make_combo("heavy_2", "Roca afilada", "skill_claw", t=1.1, dmg=1.15, poise=1.6, reach=1.25, extra={"hyper_armor": 90}),
+        "LLLH": make_combo("heavy_1", "Martillazo", "skill_punch", t=1.2, dmg=1.15, poise=1.8, reach=1.3, extra={"hyper_armor": 90, "knockback": 8}),
+        "HL": make_combo("light_3", "Patada sísmica", "skill_kick", t=1.05, dmg=1.15, poise=1.4, reach=1.2, extra={"hyper_armor": 35}),
+    })
+    make_def("golem", "Golem", "Coloso",
+             "El más duro y el más lento. Nada lo interrumpe y sus áreas son enormes, pero cada golpe se ve venir.",
+             _E, {"max_health": 160.0, "jog_speed": 3.4, "sprint_speed": 5.8, "strafe_speed": 2.4, "max_poise": 34.0,
+                  "max_stamina": 120.0, "dodge_distance": 3.2, "turn_speed": 8.0, "walk_anim_speed": 2.0},
+             (0.85, 2.0, 1.3), (5, 1, 5, 3))
+
+    # Mewtwo: psíquico de largo alcance; pega fuerte con habilidades caras.
+    make_moveset("mewtwo", {
+        "light_1": make_attack("light_1", "Palma psíquica", dmg=0.95, reach=1.25),
+        "light_2": make_attack("light_2", "Barrido", dmg=0.95, reach=1.25),
+        "light_3": make_attack("light_3", "Coletazo", dmg=1.0, reach=1.15),
+        "heavy_1": make_attack("heavy_1", "Corte psíquico", dmg=1.0, reach=1.3),
+        "heavy_2": make_attack("heavy_2", "Látigo", dmg=1.0, reach=1.3),
+        "running": make_attack("running", "Acometida mental", dmg=0.95, reach=1.2, extra={"lunge_speed": 10}),
+    }, [], {
+        "LH": make_combo("light_3", "Golpe cinético", "attack_heavy_2", t=0.9, dmg=1.0, reach=1.2, extra={"knockback": 8}),
+        "LLH": make_combo("heavy_1", "Psicocorte", "attack_light_1", t=0.85, dmg=0.95, reach=1.35, extra={"heat_gain": 20}),
+        "LLLH": make_combo("heavy_2", "Colapso", "attack_heavy_1", t=0.95, dmg=1.15, poise=1.4, reach=1.35, extra={"knockback": 8}),
+        "HL": make_combo("running", "Destello", "attack_light_1", t=0.85, dmg=0.85, reach=1.2, extra={"lunge_speed": 9}),
+    })
+    make_def("mewtwo", "Mewtwo", "Psíquico",
+             "Domina la media y larga distancia con psíquicos potentes y un teletransporte. Sus habilidades cuestan mucho Calor.",
+             _PSY, {"max_health": 100.0, "jog_speed": 4.8, "sprint_speed": 7.8, "max_poise": 10.0, "dodge_distance": 5.4,
+                    "block_pose": 0.9},
+             (0.55, 2.3, 1.55), (3, 4, 4, 5))
+
+    # Ninetales: zorra de fuego; quema, hostiga a distancia y se mueve mucho.
+    make_moveset("ninetales", {
+        "light_1": make_attack("light_1", "Mordisco", t=0.9, dmg=0.85),
+        "light_2": make_attack("light_2", "Coletazo", t=0.9, dmg=0.85, reach=1.1),
+        "light_3": make_attack("light_3", "Colmillo ígneo", t=0.9, dmg=0.85, extra={"burn_time": 2.0}),
+        "heavy_1": make_attack("heavy_1", "Abanico de colas", t=0.95, dmg=0.9, reach=1.2, extra={"burn_time": 2.0}),
+        "heavy_2": make_attack("heavy_2", "Embestida", t=0.95, dmg=0.9, reach=1.1),
+        "running": make_attack("running", "Ataque rápido", t=0.85, dmg=0.9, extra={"lunge_speed": 10}),
+    }, [], {
+        "LH": make_combo("running", "Pirueta", "skill_tail", t=0.85, dmg=0.8, reach=1.1, extra={"lunge_speed": 8, "burn_time": 2.0}),
+        "LLH": make_combo("heavy_1", "Rueda de fuego", "skill_tail", t=0.85, dmg=0.9, reach=1.2, extra={"burn_time": 2.0}),
+        "LLLH": make_combo("heavy_2", "Estallido", "skill_body", t=0.9, dmg=1.0, reach=1.15, extra={"burn_time": 3.0, "knockback": 7}),
+        "HL": make_combo("light_3", "Dentellada", "skill_body", t=0.8, dmg=0.95, extra={"burn_time": 2.0}),
+    })
+    make_def("ninetales", "Ninetales", "Hechicera",
+             "Rápida y frágil. Casi todo lo que hace quema: desgasta desde lejos y remata con las colas.",
+             _FIRE, {"max_health": 95.0, "jog_speed": 5.0, "sprint_speed": 8.4, "strafe_speed": 3.6, "max_poise": 7.0,
+                     "dodge_distance": 5.2},
+             (0.5, 1.5, 1.0), (2, 4, 3, 4))
+
+    # Mr. Mime: ilusionista; control del espacio con barreras y empujones.
+    make_moveset("mrmime", {
+        "light_1": make_attack("light_1", "Bofetón", t=0.95, dmg=0.9, reach=1.05),
+        "light_2": make_attack("light_2", "Palmada", t=0.95, dmg=0.9, reach=1.05),
+        "light_3": make_attack("light_3", "Patada cómica", t=0.95, dmg=0.95),
+        "heavy_1": make_attack("heavy_1", "Muro invisible", t=0.95, dmg=0.95, reach=1.15, extra={"knockback": 7}),
+        "heavy_2": make_attack("heavy_2", "Empujón", t=0.95, dmg=0.95, reach=1.15, extra={"knockback": 8}),
+        "running": make_attack("running", "Tropezón", t=0.9, dmg=0.9, extra={"lunge_speed": 9}),
+    }, [], {
+        "LH": make_combo("light_3", "Guantazo", "skill_claw", t=0.85, dmg=1.0, reach=1.05, extra={"knockback": 7}),
+        "LLH": make_combo("heavy_2", "Pared móvil", "skill_body", t=0.85, dmg=0.9, reach=1.2, extra={"knockback": 10}),
+        "LLLH": make_combo("heavy_1", "Gran final", "skill_kick", t=0.9, dmg=1.15, poise=1.4, reach=1.15, extra={"knockback": 8}),
+        "HL": make_combo("light_1", "Réplica", "skill_punch", t=0.8, dmg=1.0, reach=1.1),
+    })
+    make_def("mrmime", "Mr. Mime", "Ilusionista",
+             "Controla el espacio: barreras que empujan, aturdimientos y proyectiles teledirigidos. Aguanta poco de cerca.",
+             _MIME, {"max_health": 100.0, "jog_speed": 4.6, "max_poise": 9.0, "dodge_distance": 5.4},
+             (0.5, 1.8, 1.2), (3, 3, 2, 4))
     print("ok")
 
 

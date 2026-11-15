@@ -1,0 +1,40 @@
+[gd_resource type="Resource" script_class="ProjectileAbility" format=3]
+
+[ext_resource type="Script" path="res://combat/abilities/projectile_ability.gd" id="1_script"]
+[ext_resource type="Script" path="res://combat/attack_data.gd" id="2_attack"]
+
+[sub_resource type="Resource" id="hit"]
+script = ExtResource("2_attack")
+display_name = "Rapidez"
+damage = 5
+poise_damage = 7
+guard_stamina_damage = 5.5
+stamina_cost = 0
+stagger_time = 0.2
+knockback = 1
+hitstop = 0.05
+heat_gain = 0
+
+[resource]
+script = ExtResource("1_script")
+hit = SubResource("hit")
+display_name = "Rapidez"
+color = Color(1, 0.9, 0.5, 1)
+action = &"skill_shot"
+anim_speed = 2.3
+heat_cost = 20
+cooldown = 4
+duration = 1.05
+cancel_start = 0.9
+tracking = 6
+track_until = 0.8
+spawn_time = 0.3
+spawn_offset = Vector3(0, 1.6, -1.1)
+speed = 22
+radius = 0.3
+lifetime = 1.8
+homing = 3.2
+explode_radius = 0
+visual_scale = 0.5
+count = 5
+interval = 0.1

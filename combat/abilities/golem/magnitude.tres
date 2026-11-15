@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="AreaAbility" format=3]
+
+[ext_resource type="Script" path="res://combat/abilities/area_ability.gd" id="1_script"]
+[ext_resource type="Script" path="res://combat/attack_data.gd" id="2_attack"]
+
+[sub_resource type="Resource" id="hit"]
+script = ExtResource("2_attack")
+display_name = "Magnitud"
+damage = 20
+poise_damage = 70
+guard_stamina_damage = 35
+stamina_cost = 0
+stagger_time = 0.9
+knockback = 6
+hitstop = 0.1
+heat_gain = 0
+
+[resource]
+script = ExtResource("1_script")
+hit = SubResource("hit")
+display_name = "Magnitud"
+color = Color(0.75, 0.55, 0.3, 1)
+action = &"skill_roar"
+heat_cost = 45
+cooldown = 13
+duration = 1.35
+cancel_start = 1.1
+tracking = 0
+track_until = 0
+trigger_time = 0.55
+radius = 6.5
+caster_shake = 0.8
+interruptible = false

@@ -1,0 +1,35 @@
+[gd_resource type="Resource" script_class="DashAbility" format=3]
+
+[ext_resource type="Script" path="res://combat/abilities/dash_ability.gd" id="1_script"]
+[ext_resource type="Script" path="res://combat/attack_data.gd" id="2_attack"]
+
+[sub_resource type="Resource" id="hit"]
+script = ExtResource("2_attack")
+display_name = "Nitrocarga"
+damage = 18
+poise_damage = 36
+guard_stamina_damage = 27
+stamina_cost = 0
+stagger_time = 0.6
+knockback = 5
+hitstop = 0.09
+heat_gain = 0
+burn_time = 2
+
+[resource]
+script = ExtResource("1_script")
+hit = SubResource("hit")
+display_name = "Nitrocarga"
+color = Color(1, 0.55, 0.2, 1)
+action = &"skill_body"
+heat_cost = 25
+cooldown = 6
+duration = 0.85
+cancel_start = 0.7
+tracking = 7
+track_until = 0.2
+dash_start = 0.2
+dash_end = 0.5
+radius = 1.3
+offset = Vector3(0, 0.8, -0.8)
+dash_speed = 26.7

@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="AttackData" format=3]
+
+[ext_resource type="Script" path="res://combat/attack_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+display_name = "Psicocorte"
+action = &"attack_light_1"
+anim_speed = 1.176
+duration = 0.85
+active_start = 0.255
+active_end = 0.357
+combo_start = 0.468
+cancel_start = 0.552
+damage = 24.7
+poise_damage = 38
+guard_stamina_damage = 33.2
+stamina_cost = 24.0
+stagger_time = 0.7
+knockback = 5.0
+hitstop = 0.12
+hitbox_offset_start = Vector3(0, 2.025, -1.485)
+hitbox_offset_end = Vector3(0, 1.755, -1.9575)
+hitbox_radius = 1.08
+lunge_speed = 4.5
+lunge_start = 0.17
+lunge_end = 0.323
+tracking = 4.0
+hyper_armor = 40.0
+heat_gain = 20

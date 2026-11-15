@@ -1,0 +1,38 @@
+[gd_resource type="Resource" script_class="ProjectileAbility" format=3]
+
+[ext_resource type="Script" path="res://combat/abilities/projectile_ability.gd" id="1_script"]
+[ext_resource type="Script" path="res://combat/attack_data.gd" id="2_attack"]
+
+[sub_resource type="Resource" id="hit"]
+script = ExtResource("2_attack")
+display_name = "Paranormal"
+damage = 16
+poise_damage = 22.4
+guard_stamina_damage = 17.6
+stamina_cost = 0
+stagger_time = 0.5
+knockback = 3
+hitstop = 0.05
+heat_gain = 0
+
+[resource]
+script = ExtResource("1_script")
+hit = SubResource("hit")
+display_name = "Paranormal"
+color = Color(0.9, 0.6, 1, 1)
+action = &"skill_mind"
+anim_speed = 1.8
+heat_cost = 25
+cooldown = 5
+duration = 0.8
+cancel_start = 0.62
+tracking = 6
+track_until = 0.3
+spawn_time = 0.3
+spawn_offset = Vector3(0, 1.1, -1)
+speed = 26
+radius = 0.4
+lifetime = 1.8
+homing = 2.2
+explode_radius = 0
+visual_scale = 0.9

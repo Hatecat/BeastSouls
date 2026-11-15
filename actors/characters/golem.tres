@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="CharacterDef" format=3]
+
+[ext_resource type="Script" path="res://actors/characters/character_def.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://actors/visuals/golem_visual.tscn" id="2_visual"]
+[ext_resource type="Resource" path="res://combat/attacks/golem/moveset.tres" id="3_moveset"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"golem"
+display_name = "Golem"
+role = "Coloso"
+description = "El más duro y el más lento. Nada lo interrumpe y sus áreas son enormes, pero cada golpe se ve venir."
+color = Color(0.75, 0.55, 0.3, 1)
+visual = ExtResource("2_visual")
+moveset = ExtResource("3_moveset")
+stats = Dictionary[StringName, Variant]({
+&"max_health": 160,
+&"jog_speed": 3.4,
+&"sprint_speed": 5.8,
+&"strafe_speed": 2.4,
+&"max_poise": 34,
+&"max_stamina": 120,
+&"dodge_distance": 3.2,
+&"turn_speed": 8,
+&"walk_anim_speed": 2
+})
+body_radius = 0.85
+body_height = 2.0
+lock_height = 1.3
+rating_health = 5
+rating_speed = 1
+rating_power = 5
+rating_range = 3

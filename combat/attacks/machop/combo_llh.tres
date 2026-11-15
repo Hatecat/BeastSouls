@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="AttackData" format=3]
+
+[ext_resource type="Script" path="res://combat/attack_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+display_name = "Tajo cruzado"
+action = &"skill_punch"
+anim_speed = 1.333
+duration = 0.788
+active_start = 0.27
+active_end = 0.375
+combo_start = 0.488
+cancel_start = 0.525
+damage = 23.8
+poise_damage = 38.2
+guard_stamina_damage = 34
+stamina_cost = 26.0
+stagger_time = 0.8
+knockback = 6.0
+hitstop = 0.12
+hitbox_offset_start = Vector3(0, 0.99, -0.9)
+hitbox_offset_end = Vector3(0, 0.99, -1.17)
+hitbox_radius = 0.81
+lunge_speed = 6.0
+lunge_start = 0.188
+lunge_end = 0.338
+tracking = 4.0
+hyper_armor = 40.0
+heat_gain = 14.0

@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="CharacterDef" format=3]
+
+[ext_resource type="Script" path="res://actors/characters/character_def.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://actors/visuals/ninetales_visual.tscn" id="2_visual"]
+[ext_resource type="Resource" path="res://combat/attacks/ninetales/moveset.tres" id="3_moveset"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"ninetales"
+display_name = "Ninetales"
+role = "Hechicera"
+description = "Rápida y frágil. Casi todo lo que hace quema: desgasta desde lejos y remata con las colas."
+color = Color(1, 0.55, 0.2, 1)
+visual = ExtResource("2_visual")
+moveset = ExtResource("3_moveset")
+stats = Dictionary[StringName, Variant]({
+&"max_health": 95,
+&"jog_speed": 5,
+&"sprint_speed": 8.4,
+&"strafe_speed": 3.6,
+&"max_poise": 7,
+&"dodge_distance": 5.2
+})
+body_radius = 0.5
+body_height = 1.5
+lock_height = 1.0
+rating_health = 2
+rating_speed = 4
+rating_power = 3
+rating_range = 4

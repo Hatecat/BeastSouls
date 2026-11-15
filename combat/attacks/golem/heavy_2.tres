@@ -1,0 +1,34 @@
+[gd_resource type="Resource" script_class="AttackData" format=3]
+
+[ext_resource type="Script" path="res://combat/attack_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+display_name = "Machacar"
+action = &"attack_heavy_2"
+anim_speed = 0.8
+duration = 1.312
+active_start = 0.45
+active_end = 0.625
+combo_start = 0.812
+cancel_start = 0.875
+damage = 31.4
+poise_damage = 67.5
+guard_stamina_damage = 60
+stamina_cost = 26.0
+stagger_time = 0.8
+knockback = 6.0
+hitstop = 0.12
+hitbox_offset_start = Vector3(0, 1.375, -1.25)
+hitbox_offset_end = Vector3(0, 1.375, -1.625)
+hitbox_radius = 1.12
+lunge_speed = 6.0
+lunge_start = 0.312
+lunge_end = 0.562
+tracking = 4.0
+hyper_armor = 90
+chargeable = true
+charge_point = 0.312
+max_charge = 0.8
+charge_multiplier = 1.35
+heat_gain = 14.0

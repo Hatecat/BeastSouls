@@ -11,6 +11,12 @@ const PATHS := [
 	"res://actors/characters/snorlax.tres",
 	"res://actors/characters/beedrill.tres",
 	"res://actors/characters/vaporeon.tres",
+	"res://actors/characters/machop.tres",
+	"res://actors/characters/poliwrath.tres",
+	"res://actors/characters/golem.tres",
+	"res://actors/characters/mewtwo.tres",
+	"res://actors/characters/ninetales.tres",
+	"res://actors/characters/mrmime.tres",
 ]
 
 static var _all: Array[CharacterDef] = []

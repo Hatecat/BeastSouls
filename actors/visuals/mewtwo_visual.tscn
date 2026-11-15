@@ -1,0 +1,46 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://actors/visuals/character_visual.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://assets/models/placeholder/mewtwo.glb" id="2_model"]
+
+[node name="MewtwoVisual" type="Node3D"]
+script = ExtResource("1_script")
+model_scene = ExtResource("2_model")
+target_height = 2.3
+surface = &"skin"
+spring_patterns = PackedStringArray("tail_", "ear")
+action_map = Dictionary[StringName, StringName]({
+&"attack_heavy_1": &"pm0150_00_00_00410_attack02",
+&"attack_heavy_2": &"pm0150_00_00_00400_attack01",
+&"attack_light_1": &"pm0150_00_00_00450_rangeattack01",
+&"attack_light_2": &"pm0150_00_00_00410_attack02",
+&"attack_light_3": &"pm0150_00_00_00400_attack01",
+&"attack_running": &"pm0150_00_00_00410_attack02",
+&"block": &"pm0150_00_00_00460_rangeattack02_start",
+&"death": &"pm0150_00_00_00520_down01_start",
+&"dodge": &"pm0150_00_00_00146_stepout01",
+&"hit": &"pm0150_00_00_00500_damage01",
+&"idle": &"pm0150_00_00_00001_battlewait01",
+&"jump": &"pm0150_00_00_00151_jumpup01",
+&"run": &"pm0150_00_00_00100_run01",
+&"skill_boost": &"pm0150_00_00_00320_refresh01",
+&"skill_cast": &"pm0150_00_00_00460_rangeattack02_start",
+&"skill_kick": &"pm0150_00_00_00410_attack02",
+&"skill_punch": &"pm0150_00_00_00400_attack01",
+&"skill_roar": &"pm0150_00_00_00300_roar01",
+&"skill_shot": &"pm0150_00_00_00450_rangeattack01",
+&"walk": &"pm0150_00_00_00030_walk01"
+})
+action_speed = Dictionary[StringName, float]({
+&"dodge": 0.5
+})
+sockets = Dictionary[StringName, StringName]({
+&"chest": &"spine_02_47",
+&"foot_l": &"left_foot_51",
+&"foot_r": &"right_foot_57",
+&"hand_l": &"left_hand_30",
+&"hand_r": &"right_hand_43",
+&"head": &"head_19",
+&"mouth": &"jaw_2",
+&"tail_tip": &"tail_12_61"
+})

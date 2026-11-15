@@ -13,6 +13,9 @@ var look_point := Vector3.INF
 var look_limit_yaw := deg_to_rad(55.0)
 var look_limit_pitch := deg_to_rad(28.0)
 
+## Huesos que se escalan cada fotograma (hueso → factor): encogen su cadena entera (CharacterVisual.bone_scale).
+var scaled_bones: Dictionary[int, float] = {}
+
 var _yaw := 0.0
 var _pitch := 0.0
 ## Flexión por golpe: vector de rotación (eje * ángulo) en el espacio del visual, con muelle.
@@ -39,6 +42,8 @@ func _process_modification_with_delta(delta: float) -> void:
 	var skel := get_skeleton()
 	if skel == null or visual == null or not visual.is_inside_tree():
 		return
+	for b: int in scaled_bones:
+		skel.set_bone_pose_scale(b, skel.get_bone_pose_scale(b) * scaled_bones[b])
 	var v_basis := visual.global_basis.orthonormalized()
 	var conv := skel.global_basis.orthonormalized().inverse() * v_basis
 	# --- Mirada ---

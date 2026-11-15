@@ -1,0 +1,39 @@
+[gd_resource type="Resource" script_class="ProjectileAbility" format=3]
+
+[ext_resource type="Script" path="res://combat/abilities/projectile_ability.gd" id="1_script"]
+[ext_resource type="Script" path="res://combat/attack_data.gd" id="2_attack"]
+
+[sub_resource type="Resource" id="hit"]
+script = ExtResource("2_attack")
+display_name = "Lanzarrocas"
+damage = 26
+poise_damage = 36.4
+guard_stamina_damage = 28.6
+stamina_cost = 0
+stagger_time = 0.8
+knockback = 7
+hitstop = 0.12
+heat_gain = 0
+
+[resource]
+script = ExtResource("1_script")
+hit = SubResource("hit")
+display_name = "Lanzarrocas"
+color = Color(0.75, 0.55, 0.3, 1)
+action = &"skill_shot"
+anim_speed = 1
+heat_cost = 30
+cooldown = 6
+duration = 1.2
+cancel_start = 1
+tracking = 6
+track_until = 0.3
+spawn_time = 0.5
+spawn_offset = Vector3(0, 1.5, -1.3)
+speed = 15
+radius = 0.6
+lifetime = 2.4
+homing = 0.4
+explode_radius = 2.2
+visual_scale = 1.7
+interruptible = false

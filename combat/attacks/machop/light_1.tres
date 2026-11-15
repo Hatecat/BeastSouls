@@ -1,0 +1,28 @@
+[gd_resource type="Resource" script_class="AttackData" format=3]
+
+[ext_resource type="Script" path="res://combat/attack_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+display_name = "Golpe kárate"
+action = &"attack_light_1"
+anim_speed = 1.688
+duration = 0.576
+active_start = 0.208
+active_end = 0.304
+combo_start = 0.288
+cancel_start = 0.36
+damage = 10.2
+poise_damage = 12.8
+guard_stamina_damage = 15.3
+stamina_cost = 14.0
+stagger_time = 0.45
+knockback = 2.5
+hitstop = 0.07
+hitbox_offset_start = Vector3(0.595, 1.02, -0.68)
+hitbox_offset_end = Vector3(-0.51, 0.935, -0.935)
+hitbox_radius = 0.64
+lunge_speed = 3.0
+lunge_start = 0.096
+lunge_end = 0.256
+tracking = 6.0
